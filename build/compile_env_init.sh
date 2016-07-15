@@ -128,53 +128,6 @@ PKG_CONFIG_PATH=${PKG_CONFIG_PATH%:}
 
 export PATH="$COMPILE_BASE/bin:$PATH"
 
-# function wget_library() {{{ Download open source libray
-function wget_library()
-{
-    # http://ftp.gnu.org/gnu/wget/wget-1.18.tar.xz
-    # http://ftp.gnu.org/gnu/tar/tar-1.29.tar.xz
-    # http://ftp.gnu.org/gnu/sed/sed-4.2.2.tar.bz2
-    # http://ftp.gnu.org/gnu/gzip/gzip-1.8.tar.xz
-
-
-    wget_lib $BINUTILS_FILE_NAME "http://ftp.gnu.org/gnu/binutils/$BINUTILS_FILE_NAME"
-    # https://github.com/antlr/antlr4/archive/4.5.3.tar.gz
-    wget_lib $ISL_FILE_NAME "ftp://gcc.gnu.org/pub/gcc/infrastructure/$ISL_FILE_NAME"
-    wget_lib $GMP_FILE_NAME "http://ftp.gnu.org/gnu/gmp/$GMP_FILE_NAME"
-    wget_lib $MPC_FILE_NAME "http://ftp.gnu.org/gnu/mpc/$MPC_FILE_NAME"
-    wget_lib $MPFR_FILE_NAME "http://ftp.gnu.org/gnu/mpfr/$MPFR_FILE_NAME"
-    wget_lib $GCC_FILE_NAME "http://ftp.gnu.org/gnu/gcc/gcc-$GCC_VERSION/$GCC_FILE_NAME"
-    wget_lib $BISON_FILE_NAME "http://ftp.gnu.org/gnu/bison/$BISON_FILE_NAME"
-    wget_lib $AUTOMAKE_FILE_NAME "http://ftp.gnu.org/gnu/automake/$AUTOMAKE_FILE_NAME"
-    wget_lib $AUTOCONF_FILE_NAME "http://ftp.gnu.org/gnu/autoconf/$AUTOCONF_FILE_NAME"
-    wget_lib $LIBTOOL_FILE_NAME "http://ftp.gnu.org/gnu/libtool/$LIBTOOL_FILE_NAME"
-    wget_lib $M4_FILE_NAME "http://ftp.gnu.org/gnu/m4/$M4_FILE_NAME"
-    wget_lib $GLIBC_FILE_NAME "http://ftp.gnu.org/gnu/glibc/$GLIBC_FILE_NAME"
-    wget_lib $MAKE_FILE_NAME "http://ftp.gnu.org/gnu/make/$MAKE_FILE_NAME"
-    wget_lib $PATCH_FILE_NAME "http://ftp.gnu.org/gnu/patch/$PATCH_FILE_NAME"
-    wget_lib $READLINE_FILE_NAME "http://ftp.gnu.org/gnu/readline/$READLINE_FILE_NAME"
-
-    wget_lib $RE2C_FILE_NAME "https://sourceforge.net/projects/re2c/files/$RE2C_VERSION/$RE2C_FILE_NAME/download"
-    wget_lib $FLEX_FILE_NAME "https://sourceforge.net/projects/flex/files/$FLEX_FILE_NAME/download"
-    wget_lib $PKGCONFIG_FILE_NAME "https://pkg-config.freedesktop.org/releases/$PKGCONFIG_FILE_NAME"
-
-    wget_lib $PPL_FILE_NAME "http://bugseng.com/products/ppl/download/ftp/releases/${PPL_VERSION}/$PPL_FILE_NAME"
-    wget_lib $CLOOG_FILE_NAME "http://www.bastoul.net/cloog/pages/download/$CLOOG_FILE_NAME"
-    # http://www.bastoul.net/cloog/pages/download/piplib-1.4.0.tar.gz
-
-
-    wget_lib $PYTHON_FILE_NAME "https://www.python.org/ftp/python/$PYTHON_VERSION/$PYTHON_FILE_NAME"
-
-    wget_lib $CMAKE_FILE_NAME "https://cmake.org/files/v${CMAKE_VERSION%.*}/$CMAKE_FILE_NAME"
-
-    if [ "$wget_fail" = "1" ];then
-        exit;
-    fi
-
-
-}
-# }}}
-
 mkdir -p $HOME/$project_abbreviation/pkgs
 cd $HOME/$project_abbreviation/pkgs
 
@@ -423,6 +376,10 @@ function compile_glibc()
     ../glibc-${GLIBC_VERSION}/configure --prefix=$COMPILE_BASE/glib
 
     make_run "$?/glibc"
+    if [ "$?" != "0" ];then
+        exit 1;
+    fi
+
 
     cd ..
     /bin/rm -rf glibc-$GLIBC_VERSION
@@ -514,6 +471,9 @@ exit;
 # -darwin-i386-cc
 
 make_run "$?/openssl"
+if [ "$?" != "0" ];then
+    exit 1;
+fi
 
 cd ..
 
