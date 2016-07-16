@@ -195,7 +195,7 @@ function compile()
     fi
 
     if [ -n "$AFTER_MAKE_COMMAND" ];then
-        ${!AFTER_MAKE_COMMAND}
+        ${AFTER_MAKE_COMMAND}
         if [ "$?" != "0" ];then
             echo "command error. command: ${!AFTER_MAKE_COMMAND}" >&2
             exit 1;
