@@ -2,6 +2,7 @@
 
 function check_minimum_env_requirements()
 {
+    :
 #wget
 # gcc 4.4.7
 # make
@@ -199,7 +200,7 @@ function compile()
             echo "command error. command: ${!AFTER_MAKE_COMMAND}" >&2
             exit 1;
         fi
-    if
+    fi
 
     # cd ../
     cd -
