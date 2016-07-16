@@ -187,3 +187,22 @@ exit;
 #./configure 
 
 
+
+
+
+#wget http://download.savannah.gnu.org/releases/acl/acl-2.2.52.src.tar.gz
+##yum install libacl libacl-devel
+#yum install libattr libattr-devel
+#tar zxf acl-2.2.52.src.tar.gz
+#cd acl-2.2.52
+#./configure --prefix=/usr/local/chg/base/opt/acl --enable-lib64=yes
+#make
+#make install
+#cd ..
+
+
+
+
+
+# php dba ext
+#./configure --with-php-config=/usr/local/chg/base/opt/php/bin/php-config  --enable-dba=shared --with-qdbm= --with-gdbm= --with-ndbm= --with-db4= --with-dbm= --with-tcadb=

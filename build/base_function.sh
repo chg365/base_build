@@ -2148,7 +2148,7 @@ function compile_php()
     ./configure --prefix=$PHP_BASE \
                 --sysconfdir=$PHP_FPM_CONFIG_DIR \
                 --with-config-file-path=$PHP_CONFIG_DIR \
-                $(is_installed_apache && echo "--with-apxs2=$APACHE_BASE/bin/apxs" || echo "") \
+                $(is_installed_apache && echo --with-apxs2=$APACHE_BASE/bin/apxs || echo "") \
                 --with-openssl=$OPENSSL_BASE \
                 --enable-mysqlnd  \
                 --with-zlib-dir=$ZLIB_BASE \
@@ -2177,7 +2177,7 @@ function compile_php()
                 --enable-maintainer-zts \
                 --with-gmp=$GMP_BASE \
                 --enable-fpm \
-                $( [ \"$os_name\" != \"Darwin\" ] && echo \"--with-fpm-acl\" ) \
+                $( [ \"$os_name\" != \"Darwin\" ] && echo --with-fpm-acl ) \
                 --enable-opcache
     "
 #                --with-gd=$LIBGD_BASE \
