@@ -1158,7 +1158,11 @@ function is_installed_ImageMagick()
         return 1;
     fi
     local version=`pkg-config --modversion $FILENAME`
-    if [ "$version" != "$IMAGEMAGICK_VERSION" ];then
+    if [ "$version" != "${IMAGEMAGICK_VERSION%-*}" ];then
+        return 1;
+    fi
+    local version=`sed -n 's/^#define MAGICKCORE_VERSION "\([0-9.-]\{1,\}\)"$/\1/p' ${IMAGEMAGICK_BASE}/include/ImageMagick-${IMAGEMAGICK_VERSION%%.*}/MagickCore/magick-baseconfig.h`;
+    if [ "$version" != "${IMAGEMAGICK_VERSION}" ];then
         return 1;
     fi
     return;
@@ -2905,7 +2909,7 @@ function deal_pkg_config_path()
     done
 
     if [ "$j" = "" ];then
-        echo "ERROR: deal_pkg_config_path parameter error. value: $*  dir is not find pkgconfig dir." >&2
+        # echo "ERROR: deal_pkg_config_path parameter error. value: $*  dir is not find pkgconfig dir." >&2
         return 0;
         #return 1;
     fi
