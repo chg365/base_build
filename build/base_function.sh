@@ -2499,7 +2499,7 @@ function compile_php_extension_libsodium()
     ./configure --with-php-config=$PHP_BASE/bin/php-config --with-libsodium=$LIBSODIUM_BASE
     "
 
-    compile "php_extension_libsodium" "$PHP_LIBSODIUM_FILE_NAME" "libsodium-$PHP_LIBSODIUM_VERSION" "sodium.so" "PHP_EXTENSION_LIBSODIUM_CONFIGURE"
+    compile "php_extension_libsodium" "$PHP_LIBSODIUM_FILE_NAME" "libsodium-$PHP_LIBSODIUM_VERSION" "libsodium.so" "PHP_EXTENSION_LIBSODIUM_CONFIGURE"
 
     /bin/rm -rf package.xml
 }
