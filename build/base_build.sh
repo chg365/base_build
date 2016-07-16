@@ -51,20 +51,23 @@ if [ $? -ne 0 ];then
 fi
 # }}}
 # {{{ docbook2pdf fontconfig需要
-if [ "$os_name" != 'Darwin' ];then
 # fontconfig需要工具
-which docbook2pdf > /dev/null 2>&1
+function check_docbook2pdf()
+{
+    if [ "$os_name" != 'Darwin' ];then
+        which docbook2pdf > /dev/null 2>&1;
 
-if [ $? -ne 0 ];then
-    echo "缺少工具docbook2pdf."
-    if [ "$os_name" = 'Linux' ];then
-        echo "linux下执行： sudo yum install docbook-utils-pdf 安装";
-	else
-		echo "需要安装 docbook-utils-pdf";
-	fi
-	exit;
-fi
-fi
+        if [ $? -ne 0 ];then
+            echo "缺少工具docbook2pdf." >&2
+            if [ "$os_name" = 'Linux' ];then
+                echo "linux下执行： sudo yum install docbook-utils-pdf 安装";
+            else
+                echo "需要安装 docbook-utils-pdf";
+            fi
+            return 1;
+        fi
+    fi
+}
 # }}}
 # sed {{{
 # sed 版本检测 mac中 BSD版本 -i参数，如果不备份，后面必须有 ''

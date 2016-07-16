@@ -295,7 +295,8 @@ function wget_base_library()
     wget_lib $LIBXPM_FILE_NAME        "http://xorg.freedesktop.org/releases/individual/lib/$LIBXPM_FILE_NAME"
     # wget_lib $LIBGD_FILE_NAME       "https://bitbucket.org/libgd/gd-libgd/downloads/$LIBGD_FILE_NAME"
     wget_lib $LIBGD_FILE_NAME         "http://fossies.org/linux/www/$LIBGD_FILE_NAME"
-    wget_lib $IMAGEMAGICK_FILE_NAME   "http://www.imagemagick.org/download/$IMAGEMAGICK_FILE_NAME"
+    wget_lib $IMAGEMAGICK_FILE_NAME  "https://sourceforge.net/projects/imagemagick/files/${IMAGEMAGICK_VERSION%-*}-sources/$IMAGEMAGICK_FILE_NAME/download"
+    # wget_lib $IMAGEMAGICK_FILE_NAME   "http://www.imagemagick.org/download/$IMAGEMAGICK_FILE_NAME"
     wget_lib $GMP_FILE_NAME           "ftp://ftp.gmplib.org/pub/gmp/$GMP_FILE_NAME"
     wget_lib $IMAP_FILE_NAME          "ftp://ftp.cac.washington.edu/imap/$IMAP_FILE_NAME"
     wget_lib $KERBEROS_FILE_NAME      "http://web.mit.edu/kerberos/dist/krb5/${KERBEROS_VERSION%.*}/$KERBEROS_FILE_NAME"
@@ -1791,6 +1792,7 @@ function compile_fontconfig()
         return;
     fi
 
+    compile_freetype
     compile_libiconv
     compile_libxml2
 
@@ -2819,6 +2821,26 @@ function check_php_version()
     echo -e "PHP VERSION is \033[0;32mthe latest.\033[0m"
 }
 # }}}
+# {{{ function check_imagemagick_version()
+function check_imagemagick_version()
+{
+    local new_version=`curl http://www.imagemagick.org/download/ 2>/dev/null|sed -n '/^.\{1,\} href="ImageMagick-\([0-9.-]\{1,\}\).tar.gz">.\{1,\}$/{
+    s//\1/p
+    q
+    }'`
+    if [ -z "$new_version" ];then
+        echo -e "探测php新版本\033[0;31m失败\033[0m" >&2
+        return 1;
+    fi
+
+    version_compare $PHP_VERSION $new_version
+    if [ "$?" !=0 ];then
+        echo -e "PHP current version: \033[0;33m${PHP_VERSION}\033[0m\tserver's version: \033[0;35m${new_version}\033[0m"
+    fi
+
+    echo -e "PHP VERSION is \033[0;32mthe latest.\033[0m"
+}
+# }}}
 # {{{ function check_pecl_ext_version()
 function check_pecl_ext_version()
 {
@@ -2899,7 +2921,7 @@ function deal_pkg_config_path()
             echo "ERROR: deal_pkg_config_path parameter error. value: $i" >&2
             return 1;
         fi
-        for j in `find $i -name pkgconfig -type d -mindepth 0 -maxdepth 2`;
+        for j in `find $i -mindepth 0 -maxdepth 2 -name pkgconfig -type d`;
         do
             echo ${PKG_CONFIG_PATH}: |grep -q "$j:";
             if [ "$?" != 0 ];then
