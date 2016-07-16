@@ -216,7 +216,7 @@ function compile()
     # /bin/rm -rf $FILE_DIR
     /bin/rm -rf $tmp_str
 
-    if [ "$?" != 0 ];then
+    if [ "$?" != "0" ];then
         echo "rm dir error. command: /bin/rm -rf $FILE_DIR" >&2
         exit 1;
     fi
@@ -671,13 +671,13 @@ function is_installed_icu()
 #        return 1;
 #    fi
 #    local version=`$ICU_BASE/bin/icu-config --version|sed -n '/^[a-zA-Z0-9.]\{1,\}$/p'`
-    local FILENAME="$ICU_BASE/lib/pkgconfig/icu-io.pc"
+    local FILENAME="$ICU_BASE/lib/pkgconfig/icu-uc.pc"
     if [ ! -f "$FILENAME" ];then
         return 1;
     fi
 
     local version=`pkg-config --modversion $FILENAME`
-    if [ "${version//./_}" != "$ICU_VERSION" ];then
+    if [ "${version}" != "$ICU_VERSION" ];then
         return 1;
     fi
     return;
@@ -1334,7 +1334,7 @@ function compile_icu()
     ./configure --prefix=$ICU_BASE
     "
 
-    compile "icu" "$ICU_FILE_NAME" "icu-$ICU_VERSION" "$ICU_BASE" "ICU_CONFIGURE"
+    compile "icu" "$ICU_FILE_NAME" "icu/source" "$ICU_BASE" "ICU_CONFIGURE"
 }
 # }}}
 # {{{ function compile_zlib()
