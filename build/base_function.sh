@@ -1792,13 +1792,15 @@ function compile_fontconfig()
         return;
     fi
 
+    compile_expat
     compile_freetype
     compile_libiconv
     compile_libxml2
 
     FONTCONFIG_CONFIGURE="
     ./configure --prefix=$FONTCONFIG_BASE --enable-iconv --enable-libxml2 \
-                --with-libiconv=$LIBICONV_BASE
+                --with-libiconv=$LIBICONV_BASE \
+                --with-expat=$EXPAT_BASE
     "
 
     compile "fontconfig" "$FONTCONFIG_FILE_NAME" "fontconfig-$FONTCONFIG_VERSION" "$FONTCONFIG_BASE" "FONTCONFIG_CONFIGURE"
@@ -2901,12 +2903,12 @@ function pkg_config_path_init()
     for i in ${tmp_arr[@]}; do
     {
         if [ -d "$i" ];then
-            PKG_CONFIG_PATH="$i:$PKG_CONFIG_PATH";
+            export PKG_CONFIG_PATH="$i:$PKG_CONFIG_PATH";
         fi
     }
     done
 
-    PKG_CONFIG_PATH=${PKG_CONFIG_PATH%:}
+    export PKG_CONFIG_PATH=${PKG_CONFIG_PATH%:}
     #PKG_CONFIG_PATH="$CONTRIB_BASE/lib/pkgconfig:$CONTRIB_BASE/share/pkgconfig:$PKG_CONFIG_PATH"
 }
 # }}}
@@ -2925,7 +2927,7 @@ function deal_pkg_config_path()
         do
             echo ${PKG_CONFIG_PATH}: |grep -q "$j:";
             if [ "$?" != 0 ];then
-                PKG_CONFIG_PATH="$j:$PKG_CONFIG_PATH"
+                export PKG_CONFIG_PATH="$j:$PKG_CONFIG_PATH"
             fi
         done
     done
