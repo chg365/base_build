@@ -2347,17 +2347,9 @@ function compile_php_extension_swoole()
         return;
     fi
 
-    #编译时如果没有pcre，使用时会有意想不到的结果 $memory_table->count() > 0，但是foreach 结果为空
-    #yum install pcre.x86_64 pcre-devel.x86_64
-    # CPPFLAGS="-I$PCRE_BASE/include" LDFLAGS="-L$PCRE_BASE/lib -Wl,-R$PCRE_BASE/lib" \
     PHP_EXTENSION_SWOOLE_CONFIGURE="
-    ./configure --with-php-config=$PHP_BASE/bin/php-config \
-                --enable-sockets \
-                --enable-openssl \
-                --with-swoole \
-                --enable-swoole
+    configure_php_swoole_command
     "
-    # --enable-pthreads
 
     compile "php_extension_swoole" "$SWOOLE_FILE_NAME" "swoole-$SWOOLE_VERSION" "swoole.so" "PHP_EXTENSION_SWOOLE_CONFIGURE"
 
@@ -2725,6 +2717,19 @@ configure_zeromq_command()
     ./autogen.sh \
     && \
     ./configure --prefix=$ZEROMQ_BASE
+}
+# }}}
+# {{{ configure_php_swoole_command()
+configure_php_swoole_command()
+{
+    #编译时如果没有pcre，使用时会有意想不到的结果 $memory_table->count() > 0，但是foreach 结果为空
+    #yum install pcre.x86_64 pcre-devel.x86_64
+    CPPFLAGS="-I$CONTRIB_BASE/include" LDFLAGS="-L$CONTRIB_BASE/lib$tmp_ldflags" \
+    ./configure --with-php-config=$PHP_BASE/bin/php-config \
+                --enable-sockets \
+                --enable-openssl \
+                --with-swoole \
+                --enable-swoole
 }
 # }}}
 # }}}
