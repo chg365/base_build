@@ -1377,11 +1377,8 @@ function compile_libiconv()
         return;
     fi
 
-    compile_libintl
-
     LIBICONV_CONFIGURE="
     ./configure --prefix=$LIBICONV_BASE \
-                --with-libintl-prefix=$LIBINITL_BASE
     "
     #  --with-iconv-prefix=$LIBICONV_BASE \
 
@@ -1404,7 +1401,6 @@ function compile_gettext()
                 --disable-nls \
                 --without-emacs
     "
-    #--with-libintl-prefix \
 
     compile "gettext" "$GETTEXT_FILE_NAME" "gettext-$GETTEXT_VERSION" "$GETTEXT_BASE" "GETTEXT_CONFIGURE"
 }
@@ -1471,9 +1467,8 @@ function compile_libevent()
 
     compile_openssl
 
-    #CPPFLAGS="-I$CONTRIB_BASE/include" LDFLAGS="-L$CONTRIB_BASE/lib$tmp_ldflags" \
     LIBEVENT_CONFIGURE="
-    ./configure --prefix=$LIBEVENT_BASE
+    configure_libevent_command
     "
 
     compile "libevent" "$LIBEVENT_FILE_NAME" "libevent-$LIBEVENT_VERSION" "$LIBEVENT_BASE" "LIBEVENT_CONFIGURE"
@@ -2264,6 +2259,8 @@ function compile_php_extension_intl()
                 --enable-intl --with-icu-dir=$ICU_BASE
     "
     compile "php_extension_intl" "$PHP_FILE_NAME" "php-$PHP_VERSION/ext/intl/" "intl.so" "PHP_EXTENSION_INTL_CONFIGURE"
+
+#for i in `otool -L $PHP_EXTENSION_DIR/intl.so|awk '{ print $1; }'|sed -n '/^[^\/]/p'`; do { install_name_tool -change $i $ICU_BASE/lib/$(basename $i) $PHP_EXTENSION_DIR/intl.so; } done
 }
 # }}}
 # {{{ function compile_php_extension_pdo_pgsql()
@@ -2472,6 +2469,10 @@ function compile_php_extension_zeromq()
     fi
 
     compile_zeromq
+
+#wget http://pecl.php.net/get/zmq-1.1.3.tgz
+#    tar zxf zmq-1.1.3.tgz
+#    cd zmq-1.1.3
 
     PHP_EXTENSION_ZEROMQ_CONFIGURE="
     ./configure --with-php-config=$PHP_BASE/bin/php-config --with-zmq=/usr/local/chg/base/opt/zeromq --enable-zmq-pthreads
@@ -2721,6 +2722,13 @@ configure_zeromq_command()
     ./autogen.sh \
     && \
     ./configure --prefix=$ZEROMQ_BASE
+}
+# }}}
+# {{{ configure_libevent_command()
+configure_libevent_command()
+{
+    CPPFLAGS="-I$OPENSSL_BASE/include" LDFLAGS="-L$OPENSSL_BASE/lib$tmp_ldflags" \
+    ./configure --prefix=$LIBEVENT_BASE
 }
 # }}}
 # {{{ configure_php_swoole_command()

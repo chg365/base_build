@@ -88,6 +88,7 @@ tmp_ldflags=" -Wl,-R$CONTRIB_BASE/lib"
 if [ "$os_name" = 'Darwin' ];then
     #tmp_ldflags=" -lstdc++"
     tmp_ldflags=""
+    export DYLD_FALLBACK_LIBRARY_PATH="$CONTRIB_BASE/lib"
 fi
 
 export PATH="$( [ "$os_name" = 'Darwin' ] && [ -d "/usr/local/opt/bison/bin" ] && echo " -L/usr/local/opt/bison/bin" ):$CONTRIB_BASE/bin:$PATH"
@@ -128,7 +129,7 @@ compile_php_extension_zeromq
 compile_php_extension_intl
 #compile_php_extension_apcu
 #compile_php_extension_memcached
-#compile_php_extension_event
+compile_php_extension_event
 #compile_php_extension_libevent
 compile_php_extension_libsodium
 compile_php_extension_swoole
