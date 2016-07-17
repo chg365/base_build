@@ -207,3 +207,18 @@ exit;
 
 # php dba ext
 #./configure --with-php-config=/usr/local/chg/base/opt/php/bin/php-config  --enable-dba=shared --with-qdbm= --with-gdbm= --with-ndbm= --with-db4= --with-dbm= --with-tcadb=
+
+
+
+#wget http://pecl.php.net/get/apcu_bc-1.0.3.tgz
+#tar zxf apcu_bc-1.0.3.tgz
+#cd apcu_bc-1.0.3
+#/usr/local/chg/base/opt/php/bin/phpize
+#./configure --with-php-config=/usr/local/chg/base/opt/php/bin/php-config  --enable-apc
+#make
+#make install
+#ldd /usr/local/chg/base/opt/php/lib/php/extensions/no-debug-zts-20151012/apc.so
+#http://pecl.php.net/get/mongodb-1.1.8.tgz
+#http://pecl.php.net/get/mongo-1.6.14.tgz
+#https://www.mongodb.com/
+
