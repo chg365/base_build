@@ -2288,8 +2288,10 @@ function compile_php_extension_apcu()
     fi
 
     PHP_EXTENSION_APCU_CONFIGURE="
-    ./configure --with-php-config=$PHP_BASE/bin/php-config --enable-apcu --enable-apc-bc
+    ./configure --with-php-config=$PHP_BASE/bin/php-config --enable-apcu \
+                --enable-apcu-clear-signal  --enable-apcu-spinlocks
     "
+                # --enable-coverage
     compile "php_extension_apcu" "$APCU_FILE_NAME" "apcu-$APCU_VERSION" "apcu.so" "PHP_EXTENSION_APCU_CONFIGURE"
 
     /bin/rm -rf package.xml

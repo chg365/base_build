@@ -127,7 +127,7 @@ compile_php_extension_pthreads
 #compile_php_extension_qrencode
 compile_php_extension_zeromq
 compile_php_extension_intl
-#compile_php_extension_apcu
+compile_php_extension_apcu
 #compile_php_extension_memcached
 compile_php_extension_event
 #compile_php_extension_libevent
