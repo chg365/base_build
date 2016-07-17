@@ -326,7 +326,7 @@ function wget_base_library()
     # wget_lib $ZEROMQ_FILE_NAME        "https://github.com/zeromq/zeromq${version/./-}/releases/download/v${ZEROMQ_VERSION}/$ZEROMQ_FILE_NAME"
     wget_lib $ZEROMQ_FILE_NAME        "https://github.com/zeromq/${ZEROMQ_FILE_NAME%-*}/archive/v${ZEROMQ_VERSION}.tar.gz"
     wget_lib $LIBSODIUM_FILE_NAME     "https://download.libsodium.org/libsodium/releases/$LIBSODIUM_FILE_NAME"
-    wget_lib $PHP_ZMQ_FILE_NAME       "wget https://github.com/mkoppanen/php-zmq/archive/${PHP_ZMQ_VERSION}.tar.gz"
+    wget_lib $PHP_ZMQ_FILE_NAME       "https://github.com/mkoppanen/php-zmq/archive/${PHP_ZMQ_VERSION}.tar.gz"
     # wget_lib $SWFUPLOAD_FILE_NAME    "http://swfupload.googlecode.com/files/SWFUpload%20v$SWFUPLOAD_VERSION%20Core.zip"
 
     if [ "$os_name" = 'Darwin' ];then
@@ -2463,7 +2463,7 @@ function compile_php_extension_imagick()
 # {{{ function compile_php_extension_zeromq()
 function compile_php_extension_zeromq()
 {
-    is_installed_php_extension zeromq
+    is_installed_php_extension zmq
     if [ "$?" = "0" ];then
         return;
     fi
@@ -2471,10 +2471,11 @@ function compile_php_extension_zeromq()
     compile_zeromq
 
     PHP_EXTENSION_ZEROMQ_CONFIGURE="
-    ./configure --with-php-config=$PHP_BASE/bin/php-config --with-zmq
+    ./configure --with-php-config=$PHP_BASE/bin/php-config --with-zmq=/usr/local/chg/base/opt/zeromq --enable-zmq-pthreads
     "
+                # --with-czmq=
 
-    compile "php_extension_zeromq" "$PHP_ZMQ_FILE_NAME" "php-zmq-$PHP_ZMQ_VERSION" "zeromq.so" "PHP_EXTENSION_ZEROMQ_CONFIGURE"
+    compile "php_extension_zeromq" "$PHP_ZMQ_FILE_NAME" "php-zmq-$PHP_ZMQ_VERSION" "zmq.so" "PHP_EXTENSION_ZEROMQ_CONFIGURE"
 }
 # }}}
 # {{{ function compile_php_extension_libsodium()
