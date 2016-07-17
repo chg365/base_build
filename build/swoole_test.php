@@ -19,7 +19,7 @@ $flag = 1;
 foreach ($table as $key => $row)
 {
     $flag = 0;
-    break;
     //echo $key . "\t" . $row['id'] . "\t" . $row['name'] . "\t" . $row['num'] . PHP_EOL;
+    break;
 }
 exit($flag);
