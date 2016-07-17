@@ -2347,6 +2347,9 @@ function compile_php_extension_swoole()
         return;
     fi
 
+    compile_openssl
+    compile_pcre
+
     PHP_EXTENSION_SWOOLE_CONFIGURE="
     configure_php_swoole_command
     "
