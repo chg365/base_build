@@ -19,6 +19,7 @@ function check_minimum_env_requirements()
 # xz
 # bzip2
 # bison
+# yum install cyrus-sasl-devel # /usr/include/sasl/sasl.h
 }
 # {{{ function check_bison_version()
 function check_bison_version()
@@ -52,6 +53,53 @@ function check_bison_version()
         echo 'check bison version faild' >&2;
         return 1;
     fi
+}
+# }}}
+# {{{ function get_ldflags()
+get_ldflags()
+{
+    #mac下不支持 LDFLAGS -Wl, -R.../lib
+    local i=1;
+    local str=""
+    for i in `echo "$@"|tr ' ' "\n" |sort -u`;
+    do
+    {
+        if [ -d "${i}" ];then
+            if [ "$OS_NAME" = "Darwin" ];then
+                str="${str} -L${i}"
+            elif [ "$OS_NAME" = "Linux" ];then
+                str="${str} -L${i} -Wl,-R${i}"
+            else
+                str="${str} -L${i} -Wl,-R${i}"
+                echo "未知系统[$OS_NAME]处理方式" >&2
+            fi
+        else
+            echo "${i} 不是目录" >&2
+        fi
+    }
+    done
+
+    echo $str
+    # MAC
+    # export DYLD_FALLBACK_LIBRARY_PATH="$CONTRIB_BASE/lib"
+}
+# }}}
+# {{{ function get_cppflags()
+get_cppflags()
+{
+    local i=1;
+    local str=""
+    for i in `echo "$@"|tr ' ' "\n" |sort -u`;
+    do
+    {
+        if [ -d "${i}" ];then
+            str="${str} -I${i}"
+        else
+            echo "${i} 不是目录" >&2
+        fi
+    }
+    done
+    echo $str
 }
 # }}}
 # function echo_build_start {{{
@@ -301,6 +349,7 @@ function wget_base_library()
     wget_lib $IMAP_FILE_NAME          "ftp://ftp.cac.washington.edu/imap/$IMAP_FILE_NAME"
     wget_lib $KERBEROS_FILE_NAME      "http://web.mit.edu/kerberos/dist/krb5/${KERBEROS_VERSION%.*}/$KERBEROS_FILE_NAME"
     wget_lib $LIBMEMCACHED_FILE_NAME  "https://launchpad.net/libmemcached/${LIBMEMCACHED_VERSION%.*}/$LIBMEMCACHED_VERSION/+download/$LIBMEMCACHED_FILE_NAME"
+    wget_lib $MEMCACHED_FILE_NAME     "http://memcached.org/files/${MEMCACHED_FILE_NAME}"
     #  https://github.com/downloads/libevent/libevent/$LIBEVENT_FILE_NAME
     # wget_lib $LIBEVENT_FILE_NAME      "https://sourceforge.net/projects/levent/files//libevent-${LIBEVENT_VERSION%.*}/$LIBEVENT_FILE_NAME"
     wget_lib $LIBEVENT_FILE_NAME      "https://sourceforge.net/projects/levent/files/release-${LIBEVENT_VERSION}/$LIBEVENT_FILE_NAME/download"
@@ -311,13 +360,26 @@ function wget_base_library()
     # http://mirror.bjtu.edu.cn/apache/httpd/$APACHE_FILE_NAME
     wget_lib $APACHE_FILE_NAME        "http://archive.apache.org/dist/httpd/$APACHE_FILE_NAME"
     wget_lib $APCU_FILE_NAME          "http://pecl.php.net/get/$APCU_FILE_NAME"
-    wget_lib $MEMCACHED_FILE_NAME     "http://pecl.php.net/get/$MEMCACHED_FILE_NAME"
+    wget_lib $APCU_BC_FILE_NAME       "http://pecl.php.net/get/$APCU_BC_FILE_NAME"
+    wget_lib $YAF_FILE_NAME           "http://pecl.php.net/get/$YAF_FILE_NAME"
+    wget_lib $XDEBUG_FILE_NAME        "http://pecl.php.net/get/$XDEBUG_FILE_NAME"
+    wget_lib $RAPHF_FILE_NAME         "http://pecl.php.net/get/$RAPHF_FILE_NAME"
+    wget_lib $PROPRO_FILE_NAME        "http://pecl.php.net/get/$PROPRO_FILE_NAME"
+    wget_lib $PECL_HTTP_FILE_NAME     "http://pecl.php.net/get/$PECL_HTTP_FILE_NAME"
+    wget_lib $AMQP_FILE_NAME          "http://pecl.php.net/get/$AMQP_FILE_NAME"
+    wget_lib $MAILPARSE_FILE_NAME     "http://pecl.php.net/get/$MAILPARSE_FILE_NAME"
+    wget_lib $PHP_REDIS_FILE_NAME     "http://pecl.php.net/get/$PHP_REDIS_FILE_NAME"
+    wget_lib $PHP_MONGODB_FILE_NAME   "http://pecl.php.net/get/$PHP_MONGODB_FILE_NAME"
+    wget_lib $SOLR_FILE_NAME          "http://pecl.php.net/get/$SOLR_FILE_NAME"
+
+    # wget_lib $PHP_MEMCACHED_FILE_NAME "http://pecl.php.net/get/$PHP_MEMCACHED_FILE_NAME"
+    wget_lib $PHP_MEMCACHED_FILE_NAME "https://github.com/php-memcached-dev/php-memcached/archive/${PHP_MEMCACHED_VERSION}.tar.gz"
     wget_lib $EVENT_FILE_NAME         "http://pecl.php.net/get/$EVENT_FILE_NAME"
     wget_lib $DIO_FILE_NAME           "http://pecl.php.net/get/$DIO_FILE_NAME"
     wget_lib $PHP_LIBEVENT_FILE_NAME  "http://pecl.php.net/get/$PHP_LIBEVENT_FILE_NAME"
     wget_lib $IMAGICK_FILE_NAME       "http://pecl.php.net/get/$IMAGICK_FILE_NAME"
     wget_lib $PHP_LIBSODIUM_FILE_NAME "http://pecl.php.net/get/$PHP_LIBSODIUM_FILE_NAME"
-    wget_lib $QRENCODE_FILE_NAME      "https://codeload.github.com/dreamsxin/qrencodeforphp/tar.gz/master"
+    wget_lib $QRENCODE_FILE_NAME      "https://github.com/chg365/qrencode/archive/${QRENCODE_VERSION}.tar.gz"
     wget_lib $ZEND_FILE_NAME          "https://packages.zendframework.com/releases/ZendFramework-$ZEND_VERSION/$ZEND_FILE_NAME"
     wget_lib $SMARTY_FILE_NAME        "https://github.com/smarty-php/smarty/archive/v$SMARTY_VERSION.tar.gz"
     wget_lib $CKEDITOR_FILE_NAME      "http://download.cksource.com/CKEditor/CKEditor/CKEditor%20$CKEDITOR_VERSION/$CKEDITOR_FILE_NAME"
@@ -329,7 +391,7 @@ function wget_base_library()
     wget_lib $PHP_ZMQ_FILE_NAME       "https://github.com/mkoppanen/php-zmq/archive/${PHP_ZMQ_VERSION}.tar.gz"
     # wget_lib $SWFUPLOAD_FILE_NAME    "http://swfupload.googlecode.com/files/SWFUpload%20v$SWFUPLOAD_VERSION%20Core.zip"
 
-    if [ "$os_name" = 'Darwin' ];then
+    if [ "$OS_NAME" = 'Darwin' ];then
 
         wget_lib $KBPROTO_FILE_NAME          "http://xorg.freedesktop.org/archive/individual/proto/$KBPROTO_FILE_NAME"
         wget_lib $INPUTPROTO_FILE_NAME       "http://xorg.freedesktop.org/archive/individual/proto/$INPUTPROTO_FILE_NAME"
@@ -591,6 +653,19 @@ function is_installed_jpeg()
     fi
     local version=`$JPEG_BASE/bin/djpeg -verbose < /dev/null 2>&1|sed -n '1p' |awk '{ print $(NF-1); }'`
     if [ "$version" != "$JPEG_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
+# {{{ function is_installed_memcached()
+function is_installed_memcached()
+{
+    if [ ! -f "$MEMCACHED_BASE/bin/memcached" ];then
+        return 1;
+    fi
+    local version=`$MEMCACHED_BASE/bin/memcached -V |awk '{ print $NF; }'`
+    if [ "$version" != "$MEMCACHED_VERSION" ];then
         return 1;
     fi
     return;
@@ -1250,6 +1325,24 @@ function is_installed_zeromq()
     return;
 }
 # }}}
+# {{{ function is_installed_rabbitmq-c()
+function is_installed_rabbitmq-c()
+{
+    local tmp_str=""
+    if echo "$HOST_TYPE"|grep -q x86_64 ; then
+        tmp_str="64"
+    fi
+    local FILENAME="$RABBITMQ_C_BASE/lib${tmp_str}/pkgconfig/librabbitmq.pc"
+    if [ ! -f "$FILENAME" ];then
+        return 1;
+    fi
+    local version=`pkg-config --modversion $FILENAME`
+    if [ "${version}" != "$RABBITMQ_C_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
 # }}}
 # {{{ compile functions
 # {{{ function compile_re2c()
@@ -1487,6 +1580,26 @@ function compile_jpeg()
     "
 
     compile "jpeg" "$JPEG_FILE_NAME" "jpeg-$JPEG_VERSION" "$JPEG_BASE" "JPEG_CONFIGURE"
+}
+# }}}
+# {{{ function compile_memcached()
+function compile_memcached()
+{
+    is_installed memcached "$MEMCACHED_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    compile_libevent
+
+    MEMCACHED_CONFIGURE="
+    ./configure --prefix=$MEMCACHED_BASE \
+                --with-libevent=$LIBEVENT_BASE \
+                $( echo "$HOST_TYPE"|grep -q x86_64 && echo "--enable-64bit" )
+    "
+                # --enable-dtrace
+
+    compile "memcached" "$MEMCACHED_FILE_NAME" "memcached-$MEMCACHED_VERSION" "$MEMCACHED_BASE" "MEMCACHED_CONFIGURE"
 }
 # }}}
 # {{{ function compile_expat()
@@ -1768,7 +1881,7 @@ function compile_libXpm()
         return;
     fi
 
-    if [ "$os_name" = 'Darwin' ];then
+    if [ "$OS_NAME" = 'Darwin' ];then
         compile_libX11
         :
     fi
@@ -1862,7 +1975,7 @@ function compile_libmemcached()
 #yum  install  gcc*
 #CC="gcc44" CXX="g++44"
 
-#if [ "$os_name" = 'Darwin' ];then
+#if [ "$OS_NAME" = 'Darwin' ];then
 ## 1.0.18编译不过去时的处理
 #if [ "$LIBMEMCACHED_VERSION" = "1.0.18" ]; then
 #
@@ -1890,15 +2003,23 @@ function compile_libmemcached()
 #
 #fi
 #fi
+
+    # yum install cyrus-sasl-devel
     #gcc (GCC) 4.4.6 时没有问题
     #CC="gcc44" CXX="g++44"  \
     LIBMEMCACHED_CONFIGURE="
     ./configure --prefix=$LIBMEMCACHED_BASE
     "
-                #--with-libevent=$LIBEVENT_BASE
+                # --enable-libmemcachedprotocol
+                # --enable-hsieh_hash
+                # --enable-memaslap
+                # --enable-deprecated
+                # --enable-dtrace
+
                 # --with-mysql=
                 # --with-gearmand=
                 # --with-memcached=
+                # --with-sphinx-build=
 
     compile "libmemcached" "$LIBMEMCACHED_FILE_NAME" "libmemcached-$LIBMEMCACHED_VERSION" "$LIBMEMCACHED_BASE" "LIBMEMCACHED_CONFIGURE"
 }
@@ -2049,7 +2170,8 @@ function compile_libgd()
     compile_jpeg
     # compile_libXpm
 
-    # CPPFLAGS="-I$CONTRIB_BASE/include$( [ "$os_name" = 'Darwin' ] && echo " -I$LIBX11_BASE/include" )" LDFLAGS="-L$CONTRIB_BASE/lib$tmp_ldflags$( [ "$os_name" = 'Darwin' ] && echo " -I$LIBX11_BASE/lib" )" \
+    # CPPFLAGS="$(get_cppflags ${ZLIB_BASE}/include ${LIBPNG_BASE}/include ${LIBICONV_BASE}/include ${FREETYPE_BASE}/include ${FONTCONFIG_BASE}/include ${JPEG_BASE}/include $([ "$OS_NAME" = 'Darwin' ] && echo " $LIBX11_BASE/include") )" \
+    # LDFLAGS="$(get_ldflags ${ZLIB_BASE}/lib ${LIBPNG_BASE}/lib ${LIBICONV_BASE}/lib ${FREETYPE_BASE}/lib ${FONTCONFIG_BASE}/lib ${JPEG_BASE}/lib $([ "$OS_NAME" = 'Darwin' ] && echo " $LIBX11_BASE/lib") )" \
     LIBGD_CONFIGURE="
     ./configure --prefix=$LIBGD_BASE --with-libiconv-prefix=$LIBICONV_BASE \
                 --with-zlib=$ZLIB_BASE \
@@ -2115,6 +2237,23 @@ function compile_zeromq()
     compile "zeromq" "$ZEROMQ_FILE_NAME" "${ZEROMQ_FILE_NAME%-*}-$ZEROMQ_VERSION" "$ZEROMQ_BASE" "ZEROMQ_CONFIGURE"
 }
 # }}}
+# {{{ function compile_rabbitmq-c()
+function compile_rabbitmq-c()
+{
+    is_installed rabbitmq-c "$RABBITMQ_C_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    # compile_libsodium
+
+    RABBITMQ_C_CONFIGURE="
+    cmake -DCMAKE_INSTALL_PREFIX=$RABBITMQ_C_BASE
+    "
+
+    compile "rabbitmq-c" "$RABBITMQ_C_FILE_NAME" "rabbitmq-c-${RABBITMQ_C_VERSION}" "$RABBITMQ_C_BASE" "RABBITMQ_C_CONFIGURE"
+}
+# }}}
 # {{{ function compile_php()
 function compile_php()
 {
@@ -2172,7 +2311,7 @@ function compile_php()
                 --enable-maintainer-zts \
                 --with-gmp=$GMP_BASE \
                 --enable-fpm \
-                $( [ \"$os_name\" != \"Darwin\" ] && echo --with-fpm-acl ) \
+                $( [ \"$OS_NAME\" != \"Darwin\" ] && echo --with-fpm-acl ) \
                 --enable-opcache
     "
 #                --with-gd=$LIBGD_BASE \
@@ -2297,6 +2436,208 @@ function compile_php_extension_apcu()
     /bin/rm -rf package.xml
 }
 # }}}
+# {{{ function compile_php_extension_apcu_bc()
+function compile_php_extension_apcu_bc()
+{
+    is_installed_php_extension apc
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    compile_php_extension_apcu
+
+    PHP_EXTENSION_APCU_BC_CONFIGURE="
+    ./configure --with-php-config=$PHP_BASE/bin/php-config --enable-apc
+    "
+    compile "php_extension_apcu_bc" "$APCU_BC_FILE_NAME" "apcu_bc-$APCU_BC_VERSION" "apc.so" "PHP_EXTENSION_APCU_BC_CONFIGURE"
+
+    /bin/rm -rf package.xml
+}
+# }}}
+# {{{ function compile_php_extension_yaf()
+function compile_php_extension_yaf()
+{
+    is_installed_php_extension yaf
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    PHP_EXTENSION_YAF_CONFIGURE="
+    ./configure --with-php-config=$PHP_BASE/bin/php-config --enable-yaf
+    "
+    compile "php_extension_yaf" "$YAF_FILE_NAME" "yaf-$YAF_VERSION" "yaf.so" "PHP_EXTENSION_YAF_CONFIGURE"
+
+    /bin/rm -rf package.xml
+}
+# }}}
+# {{{ function compile_php_extension_xdebug()
+function compile_php_extension_xdebug()
+{
+    is_installed_php_extension xdebug
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    PHP_EXTENSION_XDEBUG_CONFIGURE="
+    ./configure --with-php-config=$PHP_BASE/bin/php-config --enable-xdebug
+    "
+    compile "php_extension_xdebug" "$XDEBUG_FILE_NAME" "xdebug-$XDEBUG_VERSION" "xdebug.so" "PHP_EXTENSION_XDEBUG_CONFIGURE"
+    sed -i.bak.$$ 's/^\(extension=xdebug\.so\)$/zend_\1/' $php_ini
+
+    /bin/rm -rf package.xml
+}
+# }}}
+# {{{ function compile_php_extension_raphf()
+function compile_php_extension_raphf()
+{
+    is_installed_php_extension raphf
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    PHP_EXTENSION_RAPHF_CONFIGURE="
+    ./configure --with-php-config=$PHP_BASE/bin/php-config --enable-raphf
+    "
+    compile "php_extension_raphf" "$RAPHF_FILE_NAME" "raphf-$RAPHF_VERSION" "raphf.so" "PHP_EXTENSION_RAPHF_CONFIGURE"
+
+    /bin/rm -rf package.xml
+}
+# }}}
+# {{{ function compile_php_extension_propro()
+function compile_php_extension_propro()
+{
+    is_installed_php_extension propro
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    PHP_EXTENSION_PROPRO_CONFIGURE="
+    ./configure --with-php-config=$PHP_BASE/bin/php-config --enable-propro
+    "
+    compile "php_extension_propro" "$PROPRO_FILE_NAME" "propro-$PROPRO_VERSION" "propro.so" "PHP_EXTENSION_PROPRO_CONFIGURE"
+
+    /bin/rm -rf package.xml
+}
+# }}}
+# {{{ function compile_php_extension_pecl_http()
+function compile_php_extension_pecl_http()
+{
+    is_installed_php_extension http
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    PHP_EXTENSION_PECL_HTTP_CONFIGURE="
+    ./configure --with-php-config=$PHP_BASE/bin/php-config --with-http \
+                --with-http-zlib-dir=$ZLIB_BASE \
+                --with-http-libcurl-dir=$CURL_BASE \
+                --with-http-libevent-dir=$LIBEVENT_BASE
+    "
+                # --with-http-libidn-dir=
+
+    compile "php_extension_pecl_http" "$PECL_HTTP_FILE_NAME" "pecl_http-$PECL_HTTP_VERSION" "http.so" "PHP_EXTENSION_PECL_HTTP_CONFIGURE"
+
+    /bin/rm -rf package.xml
+}
+# }}}
+# {{{ function compile_php_extension_amqp()
+function compile_php_extension_amqp()
+{
+    is_installed_php_extension amqp
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    compile_rabbitmq-c
+
+    PHP_EXTENSION_AMQP_CONFIGURE="
+    configure_php_amqp_command
+    "
+
+    compile "php_extension_amqp" "$AMQP_FILE_NAME" "amqp-$AMQP_VERSION" "amqp.so" "PHP_EXTENSION_AMQP_CONFIGURE"
+
+    /bin/rm -rf package.xml
+}
+# }}}
+# {{{ function compile_php_extension_mailparse()
+function compile_php_extension_mailparse()
+{
+    is_installed_php_extension mailparse
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    PHP_EXTENSION_MAILPARSE_CONFIGURE="
+    ./configure --with-php-config=$PHP_BASE/bin/php-config --enable-mailparse
+    "
+
+    compile "php_extension_mailparse" "$MAILPARSE_FILE_NAME" "mailparse-$MAILPARSE_VERSION" "mailparse.so" "PHP_EXTENSION_MAILPARSE_CONFIGURE"
+
+    /bin/rm -rf package.xml
+}
+# }}}
+# {{{ function compile_php_extension_redis()
+function compile_php_extension_redis()
+{
+    is_installed_php_extension redis
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    PHP_EXTENSION_REDIS_CONFIGURE="
+    ./configure --with-php-config=$PHP_BASE/bin/php-config --enable-redis
+    "
+                # --enable-redis-igbinary
+
+    compile "php_extension_redis" "$PHP_REDIS_FILE_NAME" "redis-$PHP_REDIS_VERSION" "redis.so" "PHP_EXTENSION_REDIS_CONFIGURE"
+
+    /bin/rm -rf package.xml
+}
+# }}}
+# {{{ function compile_php_extension_mongodb()
+function compile_php_extension_mongodb()
+{
+    is_installed_php_extension mongodb
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    compile_openssl
+    compile_pcre
+
+    PHP_EXTENSION_MONGODB_CONFIGURE="
+    ./configure --with-php-config=$PHP_BASE/bin/php-config --enable-mongodb --with-openssl-dir=$OPENSSL_BASE --with-pcre-dir=$PCRE_BASE
+    "
+                # --with-libbson --with-libmongoc
+
+    compile "php_extension_mongodb" "$PHP_MONGODB_FILE_NAME" "mongodb-$PHP_MONGODB_VERSION" "mongodb.so" "PHP_EXTENSION_MONGODB_CONFIGURE"
+
+    /bin/rm -rf package.xml
+}
+# }}}
+# {{{ function compile_php_extension_solr()
+function compile_php_extension_solr()
+{
+    is_installed_php_extension solr
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    compile_curl
+    compile_libxml2
+
+    PHP_EXTENSION_SOLR_CONFIGURE="
+    ./configure --with-php-config=$PHP_BASE/bin/php-config \
+                --enable-solr \
+                --with-curl=$CURL_BASE \
+                --with-libxml-dir=$LIBXML2_BASE
+    "
+
+    compile "php_extension_solr" "$SOLR_FILE_NAME" "solr-$SOLR_VERSION" "solr.so" "PHP_EXTENSION_SOLR_CONFIGURE"
+
+    /bin/rm -rf package.xml
+}
+# }}}
 # {{{ function compile_php_extension_memcached()
 function compile_php_extension_memcached()
 {
@@ -2308,14 +2649,20 @@ function compile_php_extension_memcached()
     compile_zlib
     compile_libmemcached
 
+# yum install cyrus-sasl-devel or --disable-memcached-sasl
     PHP_EXTENSION_MEMCACHED_CONFIGURE="
     ./configure --with-php-config=$PHP_BASE/bin/php-config \
                 --with-libmemcached-dir=$LIBMEMCACHED_BASE \
+                --enable-memcached-json \
                 --with-zlib-dir=$ZLIB_BASE
     "
+                # --enable-memcached-igbinary
                 # --enable-memcached
+                # --enable-memcached-protocol
+                # --disable-memcached-sasl
+                # --enable-memcached-msgpack
 
-    compile "php_extension_memcached" "$MEMCACHED_FILE_NAME" "memcached-$MEMCACHED_VERSION" "memcached.so" "PHP_EXTENSION_MEMCACHED_CONFIGURE"
+    compile "php_extension_memcached" "$PHP_MEMCACHED_FILE_NAME" "php-memcached-$PHP_MEMCACHED_VERSION" "memcached.so" "PHP_EXTENSION_MEMCACHED_CONFIGURE"
 
     /bin/rm -rf package.xml
 }
@@ -2380,7 +2727,7 @@ function compile_php_extension_qrencode()
     "
 
     # $PHP_BASE/bin/phpize --clean
-    compile "php_extension_qrencode" "$QRENCODE_FILE_NAME" "qrencodeforphp-$QRENCODE_VERSION" "qrencode.so" "PHP_EXTENSION_QRENCODE_CONFIGURE"
+    compile "php_extension_qrencode" "$QRENCODE_FILE_NAME" "qrencode-$QRENCODE_VERSION" "qrencode.so" "PHP_EXTENSION_QRENCODE_CONFIGURE"
 
     /bin/rm -rf package.xml
 }
@@ -2729,7 +3076,7 @@ configure_zeromq_command()
 # {{{ configure_libevent_command()
 configure_libevent_command()
 {
-    CPPFLAGS="-I$OPENSSL_BASE/include" LDFLAGS="-L$OPENSSL_BASE/lib$tmp_ldflags" \
+    CPPFLAGS="$(get_cppflags $OPENSSL_BASE/include)" LDFLAGS="$(get_ldflags $OPENSSL_BASE/lib)" \
     ./configure --prefix=$LIBEVENT_BASE
 }
 # }}}
@@ -2737,13 +3084,24 @@ configure_libevent_command()
 configure_php_swoole_command()
 {
     #编译时如果没有pcre，使用时会有意想不到的结果 $memory_table->count() > 0，但是foreach 结果为空
-    #yum install pcre.x86_64 pcre-devel.x86_64
-    CPPFLAGS="-I$CONTRIB_BASE/include" LDFLAGS="-L$CONTRIB_BASE/lib$tmp_ldflags" \
+    CPPFLAGS="$( get_cppflags $OPENSSL_BASE/include $PCRE_BASE/include)" LDFLAGS="$(get_ldflags $OPENSSL_BASE/lib $PCRE_BASE/lib )" \
     ./configure --with-php-config=$PHP_BASE/bin/php-config \
                 --enable-sockets \
                 --enable-openssl \
                 --with-swoole \
                 --enable-swoole
+}
+# }}}
+# {{{ configure_php_amqp_command()
+configure_php_amqp_command()
+{
+    local tmp_str=""
+    if echo "$HOST_TYPE"|grep -q x86_64 ; then
+        tmp_str="64"
+    fi
+    CPPFLAGS="$(get_cppflags $RABBITMQ_C_BASE/include)" LDFLAGS="$(get_ldflags $RABBITMQ_C_BASE/lib${tmp_str})" \
+    ./configure --with-php-config=$PHP_BASE/bin/php-config --with-amqp \
+                --with-librabbitmq-dir=$RABBITMQ_C_BASE
 }
 # }}}
 # }}}
@@ -2781,7 +3139,7 @@ function compile_php_extension_rabbitmq()
     compile_rabbitmq
 
     PHP_EXTENSION_rabbitmq_CONFIGURE="
-    ./configure --with-php-config=$PHP_BASE/bin/php-config --with-librabbitmq-dir=$LIBRABBITMQ_BASE
+    ./configure --with-php-config=$PHP_BASE/bin/php-config --with-librabbitmq-dir=$RABBITMQ_C_BASE
     "
 
     compile "php_extension_rabbitmq" "$rabbitmq_FILE_NAME" "rabbitmq-$rabbitmq_VERSION" "rabbitmq.so" "PHP_EXTENSION_rabbitmq_CONFIGURE"
@@ -2792,7 +3150,7 @@ echo_build_start rabbitmq
 tar zxf ""
 cd
  $PHP_BASE/bin/phpize
- ./configure --with-php-config=$PHP_BASE/bin/php-config --with-librabbitmq-dir=$LIBRABBITMQ
+ ./configure --with-php-config=$PHP_BASE/bin/php-config --with-librabbitmq-dir=$RABBITMQ_C_BASE
 make_run "$?/PHP rabbitmq"
 if [ "$?" != "0" ];then
     exit 1;

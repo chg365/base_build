@@ -35,7 +35,6 @@
 #yum install gcc gcc-c++ autoconf m4 libarchive cmake m4 bison xz bzip2 re2c file
 
 curr_dir=$(cd "$(dirname "$0")"; pwd);
-os_name=`uname -s`;
 
 base_define_file=$curr_dir/base_define.sh
 base_function_file=$curr_dir/base_function.sh
