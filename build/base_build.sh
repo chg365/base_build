@@ -113,6 +113,7 @@ compile_zlib
 compile_libgd
 compile_php
 compile_memcached
+compile_sphinx
 compile_php_extension_imagick
 #compile_php_extension_dio
 compile_php_extension_pthreads
@@ -136,6 +137,8 @@ compile_php_extension_solr
 compile_php_extension_mongodb
 compile_php_extension_swoole
 compile_php_extension_memcached
+compile_php_extension_tidy
+compile_php_extension_sphinx
 compile_mysql
 
 $PHP_BASE/bin/php --ini
@@ -190,9 +193,6 @@ sed -i '/extension=pthreads.so/d' $php_ini
 #./configure 
 
 
-
-
-
 #wget http://download.savannah.gnu.org/releases/acl/acl-2.2.52.src.tar.gz
 ##yum install libacl libacl-devel
 #yum install libattr libattr-devel
@@ -210,76 +210,8 @@ sed -i '/extension=pthreads.so/d' $php_ini
 # php dba ext
 #./configure --with-php-config=/usr/local/chg/base/opt/php/bin/php-config  --enable-dba=shared --with-qdbm= --with-gdbm= --with-ndbm= --with-db4= --with-dbm= --with-tcadb=
 
-
-#https://www.mongodb.com/
-#https://fastdl.mongodb.org/src/mongodb-src-r3.2.8.tar.gz?_ga=1.116392006.1520954878.1468772281
-
-LIBXSLT_VERSION="1.1.29"
-LIBXSLT_FILE_NAME="libxslt-${LIBXSLT_VERSION}.tar.gz"
-TIDY_VERSION="5.2.0"
-TIDY_FILE_NAME="tidy-html5-${TIDY_VERSION}.tar.gz"
-wget https://github.com/htacg/tidy-html5/archive/${TIDY_VERSION}.tar.gz
-wget ftp://xmlsoft.org/libxslt/$LIBXSLT_FILE_NAME
-
-tar zxf libxslt-1.1.29.tar.gz
-cd libxslt-1.1.29
-./configure --prefix=/usr/local/chg/base/contrib/ --with-libxml-prefix=
-./configure --prefix=/usr/local/chg/base/contrib/
-make
-make install
-cd ..
-rm -rf libxslt-1.1.29
-
-tar zxf tidy-html5-5.2.0.tar.gz
-cd tidy-html5-5.2.0/build/cmake/
-export PATH="/usr/local/chg/base/contrib/bin:$PATH"
-cmake ../.. -DCMAKE_INSTALL_PREFIX=/usr/local/chg/base/contrib
-make
-make install
-cd ../../../
-rm -rf tidy-html5-5.2.0
-
-
-
-
-tar Jxf php-7.0.7.tar.xz
-cd php-7.0.7/ext/tidy
-/usr/local/chg/base/opt/php/bin/phpize
-./configure --with-php-config=/usr/local/chg/base/opt/php/bin/php-config --with-tidy=/usr/local/chg/base/contrib
-sed -i 's/\<buffio.h/tidybuffio.h/' tidy.c
-make
-make install
-ldd /usr/local/chg/base/opt/php/lib/php/extensions/no-debug-zts-20151012/tidy.so
-cd ../../..
-rm -rf php-7.0.7
-
-
-wget --content-disposition --no-check-certificate https://github.com/sphinxsearch/sphinx/archive/2.2.10-release.tar.gz
-tar zxf sphinx-2.2.10-release.tar.gz
-cd sphinx-2.2.10-release
-./configure --prefix=/usr/local/chg/base/opt/sphinx --with-mysql=/usr/local/chg/base/opt/mysql
-make && make install
-cd ..
-rm -rf sphinx-2.2.10-release
-
-tar zxf sphinx-2.2.10-release.tar.gz
-cd sphinx-2.2.10-release/api/libsphinxclient/
-./configure --prefix=/usr/local/chg/base/contrib
-make && make install
-cd ../../
-cd ..
-rm -rf sphinx-2.2.10-release
-
-wget --content-disposition --no-check-certificate https://github.com/php/pecl-search_engine-sphinx/archive/php7.tar.gz
-tar zxf pecl-search_engine-sphinx-php7.tar.gz
-cd pecl-search_engine-sphinx-php7
-/usr/local/chg/base/opt/php/bin/phpize
-./configure --with-php-config=/usr/local/chg/base/opt/php/bin/php-config --with-sphinx=/usr/local/chg/base/contrib
-make && make install
-ldd /usr/local/chg/base/opt/php/lib/php/extensions/no-debug-zts-20151012/sphinx.so
-
-
-
+#wget --content-disposition --no-check-certificate https://github.com/FoolCode/SphinxQL-Query-Builder/archive/0.0.2.tar.gz
+# http://stock.qq.com/a/20160718/005704.htm
 
 
 wget http://pecl.php.net/get/geoip-1.1.0.tgz

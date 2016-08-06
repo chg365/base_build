@@ -318,6 +318,8 @@ function wget_base_library()
     wget_lib $PHP_FILE_NAME           "http://cn2.php.net/distributions/$PHP_FILE_NAME"
     wget_lib $PTHREADS_FILE_NAME      "http://pecl.php.net/get/$PTHREADS_FILE_NAME"
     wget_lib $SWOOLE_FILE_NAME        "http://pecl.php.net/get/$SWOOLE_FILE_NAME"
+    wget_lib $LIBXSLT_FILE_NAME       "ftp://xmlsoft.org/libxslt/$LIBXSLT_FILE_NAME"
+    wget_lib $TIDY_FILE_NAME          "https://github.com/htacg/tidy-html5/archive/${TIDY_VERSION}.tar.gz"
 
     # wget_lib $LIBPNG_FILE_NAME     "https://sourceforge.net/projects/libpng/files/libpng$(echo ${LIBPNG_VERSION%\.*}|sed 's/\.//g')/$LIBPNG_VERSION/$LIBPNG_FILE_NAME/download"
     local version=${LIBPNG_VERSION%.*};
@@ -671,6 +673,47 @@ function is_installed_memcached()
     return;
 }
 # }}}
+# {{{ function is_installed_tidy()
+function is_installed_tidy()
+{
+    if [ ! -f "$TIDY_BASE/bin/tidy" ];then
+        return 1;
+    fi
+    local version=`$TIDY_BASE/bin/tidy --version |awk '{ print $NF; }'`
+    if [ "$version" != "$TIDY_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
+# {{{ function is_installed_sphinx()
+function is_installed_sphinx()
+{
+    if [ ! -f "$SPHINX_BASE/bin/searchd" ];then
+        return 1;
+    fi
+    local version=`LD_LIBRARY_PATH="$MYSQL_BASE/lib:$LD_LIBRARY_PATH"  $SPHINX_BASE/bin/searchd -h|sed -n '1p'|awk -F'[ -]' '{ print $2; }'`
+    if [ "$version" != "$SPHINX_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
+# {{{ function is_installed_sphinxclient()
+function is_installed_sphinxclient()
+{
+    if [ ! -f "$SPHINX_CLIENT_BASE/lib/libsphinxclient.so" ];then
+        return 1;
+    fi
+    # 没有版本比较
+    return;
+    # local version=`LD_LIBRARY_PATH="$MYSQL_BASE/lib:$LD_LIBRARY_PATH"  $SPHINX_BASE/bin/searchd -h|sed -n '1p'|awk -F'[ -]' '{ print $2; }'`
+    if [ "$version" != "$SPHINX_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
 # {{{ function is_installed_libmcrypt()
 function is_installed_libmcrypt()
 {
@@ -800,6 +843,20 @@ function is_installed_libxml2()
     fi
     local version=`pkg-config --modversion $FILENAME`
     if [ "$version" != "$LIBXML2_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
+# {{{ function is_installed_libxslt()
+function is_installed_libxslt()
+{
+    local FILENAME="$LIBXSLT_BASE/lib/pkgconfig/libxslt.pc"
+    if [ ! -f "$FILENAME" ];then
+        return 1;
+    fi
+    local version=`pkg-config --modversion $FILENAME`
+    if [ "$version" != "$LIBXSLT_VERSION" ];then
         return 1;
     fi
     return;
@@ -1521,6 +1578,75 @@ function compile_libxml2()
     "
 
     compile "libxml2" "$LIBXML2_FILE_NAME" "libxml2-$LIBXML2_VERSION" "$LIBXML2_BASE" "LIBXML2_CONFIGURE"
+}
+# }}}
+# {{{ function compile_libxslt()
+function compile_libxslt()
+{
+    is_installed libxslt "$LIBXSLT_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    compile_libxml2
+
+    LIBXSLT_CONFIGURE="
+    ./configure --prefix=$LIBXSLT_BASE \
+                --with-libxml-prefix=$LIBXML2_BASE
+    "
+
+    compile "libxslt" "$LIBXSLT_FILE_NAME" "libxslt-$LIBXSLT_VERSION" "$LIBXSLT_BASE" "LIBXSLT_CONFIGURE"
+}
+# }}}
+# {{{ function compile_tidy()
+function compile_tidy()
+{
+    is_installed tidy "$TIDY_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    compile_libxslt
+
+    export PATH="$LIBXSLT_BASE/bin:$PATH"
+
+    TIDY_CONFIGURE="
+    cmake ../.. -DCMAKE_INSTALL_PREFIX=$TIDY_BASE
+    "
+
+    compile "tidy" "$TIDY_FILE_NAME" "tidy-html5-$TIDY_VERSION/build/cmake" "$TIDY_BASE" "TIDY_CONFIGURE"
+}
+# }}}
+# {{{ function compile_sphinx()
+function compile_sphinx()
+{
+    is_installed sphinx "$SPHINX_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    compile_mysql
+
+    SPHINX_CONFIGURE="
+    ./configure --prefix=$SPHINX_BASE --with-mysql=$MYSQL_BASE
+    "
+
+    compile "sphinx" "$SPHINX_FILE_NAME" "sphinx-${SPHINX_VERSION}-release" "$SPHINX_BASE" "SPHINX_CONFIGURE"
+}
+# }}}
+# {{{ function compile_sphinxclient()
+function compile_sphinxclient()
+{
+    is_installed sphinxclient "$SPHINX_CLIENT_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    SPHINXCLIENT_CONFIGURE="
+    ./configure --prefix=$SPHINX_CLIENT_BASE
+    "
+
+    compile "sphinxclient" "$SPHINX_FILE_NAME" "sphinx-${SPHINX_VERSION}-release/api/libsphinxclient" "$SPHINX_CLIENT_BASE" "SPHINXCLIENT_CONFIGURE"
 }
 # }}}
 # {{{ function compile_json()
@@ -2808,6 +2934,44 @@ function compile_php_extension_libsodium()
     /bin/rm -rf package.xml
 }
 # }}}
+# {{{ function compile_php_extension_tidy()
+function compile_php_extension_tidy()
+{
+    is_installed_php_extension tidy
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    compile_tidy
+
+    PHP_EXTENSION_TIDY_CONFIGURE="
+    configure_php_tidy_command
+    "
+
+    compile "php_extension_tidy" "$PHP_FILE_NAME" "php-${PHP_VERSION}/ext/tidy" "tidy.so" "PHP_EXTENSION_TIDY_CONFIGURE"
+
+    /bin/rm -rf package.xml
+}
+# }}}
+# {{{ function compile_php_extension_sphinx()
+function compile_php_extension_sphinx()
+{
+    is_installed_php_extension sphinx
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    compile_sphinxclient
+
+    PHP_EXTENSION_SPHINX_CONFIGURE="
+    ./configure --with-php-config=$PHP_BASE/bin/php-config --with-sphinx=$SPHINX_CLIENT_BASE
+    "
+
+    compile "php_extension_sphinx" "$PHP_SPHINX_FILE_NAME" "pecl-search_engine-sphinx-${PHP_SPHINX_VERSION}" "sphinx.so" "PHP_EXTENSION_SPHINX_CONFIGURE"
+
+    /bin/rm -rf package.xml
+}
+# }}}
 # {{{ function compile_mysql()
 function compile_mysql()
 {
@@ -3112,6 +3276,13 @@ configure_php_amqp_command()
     CPPFLAGS="$(get_cppflags $RABBITMQ_C_BASE/include)" LDFLAGS="$(get_ldflags $RABBITMQ_C_BASE/lib${tmp_str})" \
     ./configure --with-php-config=$PHP_BASE/bin/php-config --with-amqp \
                 --with-librabbitmq-dir=$RABBITMQ_C_BASE
+}
+# }}}
+# {{{ configure_php_tidy_command()
+configure_php_tidy_command()
+{
+    sed -i 's/\<buffio.h/tidybuffio.h/' tidy.c
+    ./configure --with-php-config=$PHP_BASE/bin/php-config --with-tidy=$TIDY_BASE
 }
 # }}}
 # }}}
