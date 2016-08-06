@@ -117,11 +117,10 @@ compile_php_extension_imagick
 #compile_php_extension_dio
 compile_php_extension_pthreads
 compile_php_extension_qrencode
-#compile_php_extension_zeromq
+compile_php_extension_zeromq
 compile_php_extension_intl
-#compile_php_extension_apcu
+compile_php_extension_apcu
 compile_php_extension_apcu_bc
-#compile_php_extension_memcached
 compile_php_extension_event
 #compile_php_extension_libevent
 compile_php_extension_libsodium
@@ -308,3 +307,6 @@ make
 make install
 ldd /usr/local/chg/base/opt/php/lib/php/extensions/no-debug-zts-20151012/geoip.so
 
+
+
+http://www.rabbitmq.com/releases/rabbitmq-server/v3.6.5/rabbitmq-server-3.6.5.tar.xz

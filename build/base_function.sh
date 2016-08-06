@@ -80,8 +80,6 @@ get_ldflags()
     done
 
     echo $str
-    # MAC
-    # export DYLD_FALLBACK_LIBRARY_PATH="$CONTRIB_BASE/lib"
 }
 # }}}
 # {{{ function get_cppflags()
@@ -213,6 +211,7 @@ function compile()
     echo_build_start $NAME
     decompress $FILE_NAME
     if [ "$?" != "0" ];then
+        echo "decompress file error. FILE_NAME: $FILE_NAME" >&2
         # return 1;
         exit 1;
     fi
@@ -384,6 +383,7 @@ function wget_base_library()
     wget_lib $SMARTY_FILE_NAME        "https://github.com/smarty-php/smarty/archive/v$SMARTY_VERSION.tar.gz"
     wget_lib $CKEDITOR_FILE_NAME      "http://download.cksource.com/CKEditor/CKEditor/CKEditor%20$CKEDITOR_VERSION/$CKEDITOR_FILE_NAME"
     wget_lib $JQUERY_FILE_NAME        "http://code.jquery.com/$JQUERY_FILE_NAME"
+    wget_lib $RABBITMQ_C_FILE_NAME    "https://github.com/alanxz/rabbitmq-c/archive/v${RABBITMQ_C_VERSION}.tar.gz"
     version=${ZEROMQ_VERSION%.*};
     # wget_lib $ZEROMQ_FILE_NAME        "https://github.com/zeromq/zeromq${version/./-}/releases/download/v${ZEROMQ_VERSION}/$ZEROMQ_FILE_NAME"
     wget_lib $ZEROMQ_FILE_NAME        "https://github.com/zeromq/${ZEROMQ_FILE_NAME%-*}/archive/v${ZEROMQ_VERSION}.tar.gz"
@@ -1264,7 +1264,7 @@ function is_installed_php_extension()
         return 1;
     fi
 
-    $PHP_BASE/bin/php -m | grep -q $1
+    $PHP_BASE/bin/php -m | grep -q "^$1\$"
     if [ "$?" != "0" ];then
         return 1;
     fi
@@ -1428,6 +1428,10 @@ function compile_icu()
     "
 
     compile "icu" "$ICU_FILE_NAME" "icu/source" "$ICU_BASE" "ICU_CONFIGURE"
+    if [ "$OS_NAME" = "Darwin" ];then
+        repair_dynamic_shared_library $ICU_BASE/lib "libicu*dylib"
+    fi
+
 }
 # }}}
 # {{{ function compile_zlib()
@@ -1967,59 +1971,12 @@ function compile_libmemcached()
         return;
     fi
 
-#解决以下问题：
-#make[1]: *** [libmemcached/csl/libmemcached_libmemcached_la-context.lo] 错误 1
-#make[1]: *** 正在等待未完成的任务….
-#make[1]: *** [libmemcached/csl/libmemcached_libmemcached_la-parser.lo] 错误 1
-#
-#yum  install  gcc*
-#CC="gcc44" CXX="g++44"
-
-#if [ "$OS_NAME" = 'Darwin' ];then
-## 1.0.18编译不过去时的处理
-#if [ "$LIBMEMCACHED_VERSION" = "1.0.18" ]; then
-#
-##在libmemcached/byteorder.cc的头部加上下面的代码即可：
-#
-###ifdef HAVE_SYS_TYPES_H
-###include <sys/types.h>
-###endif
-##同时，将clients/memflush.cc里if (opt_servers == false)的代码替换成if (opt_servers == NULL)，一切就顺利了。
-#
-#
-#sed -i.bak 's/if (opt_servers == false)/if (opt_servers == NULL)/g' clients/memflush.cc
-#
-#tmp_str=`sed -n '/#include/=' libmemcached/byteorder.cc`;
-#line_num=`echo $tmp_str | sed -n 's/^.* \([0-9]\{1,\}\)$/\1/p'`;
-#if [ "$tmp_str" != "" ] && [ "$line_num" != "" ];then
-#    sed -i.bak "${line_num}a\\
-#\\
-##ifdef HAVE_SYS_TYPES_H \\
-##include <sys/types.h> \\
-##endif
-#" libmemcached/byteorder.cc
-#
-#fi
-#
-#fi
-#fi
-
     # yum install cyrus-sasl-devel
     #gcc (GCC) 4.4.6 时没有问题
     #CC="gcc44" CXX="g++44"  \
     LIBMEMCACHED_CONFIGURE="
-    ./configure --prefix=$LIBMEMCACHED_BASE
+    configure_libmemcached_command
     "
-                # --enable-libmemcachedprotocol
-                # --enable-hsieh_hash
-                # --enable-memaslap
-                # --enable-deprecated
-                # --enable-dtrace
-
-                # --with-mysql=
-                # --with-gearmand=
-                # --with-memcached=
-                # --with-sphinx-build=
 
     compile "libmemcached" "$LIBMEMCACHED_FILE_NAME" "libmemcached-$LIBMEMCACHED_VERSION" "$LIBMEMCACHED_BASE" "LIBMEMCACHED_CONFIGURE"
 }
@@ -2259,6 +2216,7 @@ function compile_php()
 {
     is_installed php "$PHP_BASE"
     if [ "$?" = "0" ];then
+        PHP_EXTENSION_DIR="$( find $PHP_LIB_DIR -name "no-debug-*" )"
         return;
     fi
 
@@ -2339,7 +2297,6 @@ function compile_php()
 
     compile "php" "$PHP_FILE_NAME" "php-$PHP_VERSION" "$PHP_BASE" "PHP_CONFIGURE" "after_php_make_install"
 
-        #DYLD_FALLBACK_LIBRARY_PATH="$ICU_BASE/lib" #执行php --ini时报错，加载不上库文件，要这个变量
 }
 # }}}
 # {{{ function after_php_make_install()
@@ -2398,8 +2355,9 @@ function compile_php_extension_intl()
                 --enable-intl --with-icu-dir=$ICU_BASE
     "
     compile "php_extension_intl" "$PHP_FILE_NAME" "php-$PHP_VERSION/ext/intl/" "intl.so" "PHP_EXTENSION_INTL_CONFIGURE"
-
-#for i in `otool -L $PHP_EXTENSION_DIR/intl.so|awk '{ print $1; }'|sed -n '/^[^\/]/p'`; do { install_name_tool -change $i $ICU_BASE/lib/$(basename $i) $PHP_EXTENSION_DIR/intl.so; } done
+    if [ "$OS_NAME" = "Darwin" ];then
+        repair_dynamic_shared_library $PHP_EXTENSION_DIR/intl.so
+    fi
 }
 # }}}
 # {{{ function compile_php_extension_pdo_pgsql()
@@ -3065,6 +3023,58 @@ function compile_jquery()
 }
 # }}}
 # {{{ configure command functions
+# {{{ configure_libmemcached_command()
+configure_libmemcached_command()
+{
+    #解决以下问题：
+    #make[1]: *** [libmemcached/csl/libmemcached_libmemcached_la-context.lo] 错误 1
+    #make[1]: *** 正在等待未完成的任务….
+    #make[1]: *** [libmemcached/csl/libmemcached_libmemcached_la-parser.lo] 错误 1
+    #
+    #yum  install  gcc*
+    #CC="gcc44" CXX="g++44"
+
+    if [ "$OS_NAME" = 'Darwin' ];then
+        # 1.0.18编译不过去时的处理
+        if [ "$LIBMEMCACHED_VERSION" = "1.0.18" ]; then
+            #在libmemcached/byteorder.cc的头部加上下面的代码即可：
+
+            ##ifdef HAVE_SYS_TYPES_H
+            ##include <sys/types.h>
+            ##endif
+            #同时，将clients/memflush.cc里if (opt_servers == false)的代码替换成if (opt_servers == NULL)，一切就顺利了。
+
+
+            sed -i.bak 's/if (opt_servers == false)/if (opt_servers == NULL)/g' clients/memflush.cc
+
+            tmp_str=`sed -n '/#include/=' libmemcached/byteorder.cc`;
+            line_num=`echo $tmp_str | sed -n 's/^.* \([0-9]\{1,\}\)$/\1/p'`;
+            if [ "$tmp_str" != "" ] && [ "$line_num" != "" ];then
+                sed -i.bak "${line_num}a\\
+\\
+#ifdef HAVE_SYS_TYPES_H \\
+#include <sys/types.h> \\
+#endif
+" libmemcached/byteorder.cc
+
+            fi
+        fi
+    fi
+
+    ./configure --prefix=$LIBMEMCACHED_BASE
+                # --enable-libmemcachedprotocol
+                # --enable-hsieh_hash
+                # --enable-memaslap
+                # --enable-deprecated
+                # --enable-dtrace
+
+                # --with-mysql=
+                # --with-gearmand=
+                # --with-memcached=
+                # --with-sphinx-build=
+
+}
+# }}}
 # {{{ configure_zeromq_command()
 configure_zeromq_command()
 {
@@ -3320,5 +3330,54 @@ function deal_pkg_config_path()
 function export_path()
 {
     export PATH="$COMPILE_BASE/bin:$CONTRIB_BASE/bin:$PATH"
+}
+# }}}
+# {{{ function repair_dynamic_shared_library() moc下解决Library not loaded 问题
+function repair_dynamic_shared_library()
+{
+    if [ "$OS_NAME" != "Darwin" ];then
+        echo "this funtion[repair_dynamic_shared_library] not support  current OS[$OS_NAME]." >&2
+        return;
+    fi
+
+    local dir1="$1"
+    local filepattern="$2"
+    local i=""
+    local j=""
+    for i in `find ${dir1} $( [ "$filepattern" != "" ] && echo "-name $filepattern" || echo "-type f")`;
+    do
+    {
+        local filename="${i##*/}"
+        for j in `otool -L $i|awk '{print $1; }' |grep -v '^/'`;
+        do
+        {
+            local filename1="${j##*/}"
+            if [ "$filename" = "${filename1}" ];then
+                if [ "${i%%/*}" != "" ];then
+                    echo "file not is absolute path. file: $i " >&2
+                    return 1;
+                fi
+                install_name_tool -id $i $i;
+                if [ "$?" != "0" ];then
+                    return 1;
+                fi
+            else
+                local num=`find $BASE_DIR -name ${filename1} |wc -l`;
+                if [ "$num" = "0" ];then
+                    echo "cant find file. filename: $j    file: $i" >&2 
+                    return;
+                elif [ "$num" != "1" ];then
+                    echo "find more file with the same name. filename: $j  file: $i" >&2
+                fi
+                local f=`find $BASE_DIR -name ${filename1}`;
+                install_name_tool -change  $j $f $i ;
+                if [ "$?" != "0" ];then
+                    return 1;
+                fi
+            fi
+        }
+        done
+    }
+    done
 }
 # }}}

@@ -323,9 +323,5 @@ mysql_cnf=$MYSQL_CONFIG_DIR/my.cnf
 
 PHP_INCLUDE_PATH=".:$BASE_DIR/conf:$BASE_DIR/lib/php:$BASE_DIR/inc";
 
-#PHP_EXTENSION_DIR="$( find $PHP_LIB_DIR -name "no-debug-*" )"
-
 APACHE_LOG_DIR=$LOG_DIR/apache
 APACHE_RUN_DIR=$BASE_DIR/run/apache
-
-
