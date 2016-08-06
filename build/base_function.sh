@@ -1628,7 +1628,9 @@ function compile_sphinx()
     compile_mysql
 
     SPHINX_CONFIGURE="
-    ./configure --prefix=$SPHINX_BASE --with-mysql=$MYSQL_BASE
+    ./configure --prefix=$SPHINX_BASE \
+                --sysconfdir=$BASE_DIR/etc/sphinx
+                --with-mysql=$MYSQL_BASE
     "
 
     compile "sphinx" "$SPHINX_FILE_NAME" "sphinx-${SPHINX_VERSION}-release" "$SPHINX_BASE" "SPHINX_CONFIGURE"
