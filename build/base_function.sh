@@ -320,6 +320,8 @@ function wget_base_library()
     wget_lib $SWOOLE_FILE_NAME        "http://pecl.php.net/get/$SWOOLE_FILE_NAME"
     wget_lib $LIBXSLT_FILE_NAME       "ftp://xmlsoft.org/libxslt/$LIBXSLT_FILE_NAME"
     wget_lib $TIDY_FILE_NAME          "https://github.com/htacg/tidy-html5/archive/${TIDY_VERSION}.tar.gz"
+    wget_lib $SPHINX_FILE_NAME        "https://github.com/sphinxsearch/sphinx/archive/${SPHINX_VERSION}-release.tar.gz"
+    wget_lib $PHP_SPHINX_FILE_NAME    "https://github.com/php/pecl-search_engine-sphinx/archive/${PHP_SPHINX_VERSION}.tar.gz"
 
     # wget_lib $LIBPNG_FILE_NAME     "https://sourceforge.net/projects/libpng/files/libpng$(echo ${LIBPNG_VERSION%\.*}|sed 's/\.//g')/$LIBPNG_VERSION/$LIBPNG_FILE_NAME/download"
     local version=${LIBPNG_VERSION%.*};
@@ -1615,6 +1617,9 @@ function compile_tidy()
     "
 
     compile "tidy" "$TIDY_FILE_NAME" "tidy-html5-$TIDY_VERSION/build/cmake" "$TIDY_BASE" "TIDY_CONFIGURE"
+    if [ "$OS_NAME" = "Darwin" ];then
+        repair_dynamic_shared_library $ICU_BASE/lib "lib*tidy*.dylib"
+    fi
 }
 # }}}
 # {{{ function compile_sphinx()
@@ -1645,7 +1650,7 @@ function compile_sphinxclient()
     fi
 
     SPHINXCLIENT_CONFIGURE="
-    ./configure --prefix=$SPHINX_CLIENT_BASE
+    configure_sphinxclient_command
     "
 
     compile "sphinxclient" "$SPHINX_FILE_NAME" "sphinx-${SPHINX_VERSION}-release/api/libsphinxclient" "$SPHINX_CLIENT_BASE" "SPHINXCLIENT_CONFIGURE"
@@ -2953,6 +2958,9 @@ function compile_php_extension_tidy()
     compile "php_extension_tidy" "$PHP_FILE_NAME" "php-${PHP_VERSION}/ext/tidy" "tidy.so" "PHP_EXTENSION_TIDY_CONFIGURE"
 
     /bin/rm -rf package.xml
+    if [ "$OS_NAME" = "Darwin" ];then
+        repair_dynamic_shared_library $PHP_EXTENSION_DIR/tidy.so
+    fi
 }
 # }}}
 # {{{ function compile_php_extension_sphinx()
@@ -3189,6 +3197,17 @@ function compile_jquery()
 }
 # }}}
 # {{{ configure command functions
+# {{{ configure_sphinxclient_command()
+configure_sphinxclient_command()
+{
+    if [ "$OS_NAME" = "Darwin" ];then
+        CXXCPP="gcc -E" \
+        ./configure --prefix=$SPHINX_CLIENT_BASE
+    else
+        ./configure --prefix=$SPHINX_CLIENT_BASE
+    fi
+}
+# }}}
 # {{{ configure_libmemcached_command()
 configure_libmemcached_command()
 {
@@ -3283,7 +3302,8 @@ configure_php_amqp_command()
 # {{{ configure_php_tidy_command()
 configure_php_tidy_command()
 {
-    sed -i 's/\<buffio.h/tidybuffio.h/' tidy.c
+    # sed -i.bak.$$ 's/\<buffio.h/tidybuffio.h/' tidy.c
+    sed $( [ "$OS_NAME" = "Darwin" ] && echo "-i ''" ||  echo '-i ' ) 's/\([^a-zA-Z0-9_-]\)buffio.h/\1tidybuffio.h/' tidy.c
     ./configure --with-php-config=$PHP_BASE/bin/php-config --with-tidy=$TIDY_BASE
 }
 # }}}
