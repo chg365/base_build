@@ -1,5 +1,10 @@
 #!/bin/bash
 
+export LANG=C
+export LC_ALL=C
+ 
+echo `date "+%Y-%d-%m %H:%M:%S"` start
+start_time=`date +%s`
 curr_dir=$(cd "$(dirname "$0")"; pwd);
 #otool -L
 #brew install
@@ -154,6 +159,11 @@ $PHP_BASE/bin/php --ini
 
 /bin/rm -rf $php_ini.bak.$$
 /bin/rm -rf $mysql_cnf.bak.$$
+
+
+echo `date "+%Y-%d-%m %H:%M:%S"` end
+end_time=`date +%s`
+echo "used times: $((end_time - start_time))s"
 
 exit;
 cp $php_ini $PHP_CONFIG_DIR/php-cli.ini

@@ -76,6 +76,7 @@ KBPROTO_BASE=$LIBX11_BASE
 INPUTPROTO_BASE=$LIBX11_BASE
 XEXTPROTO_BASE=$LIBX11_BASE
 XTRANS_BASE=$LIBX11_BASE
+XF86BIGFONTPROTO_BASE=$CONTRIB_BASE
 #fi
 
 SQLITE_BASE=$CONTRIB_BASE
@@ -115,7 +116,7 @@ ICU_VERSION="57.1" # http://site.icu-project.org/
 LIBZIP_VERSION="1.1.3" # http://www.nih.at/libzip/index.html
 GETTEXT_VERSION="0.19.7" # http://ftp.gnu.org/gnu/gettext/
 LIBICONV_VERSION="1.14" # http://ftp.gnu.org/gnu/libiconv/
-LIBXML2_VERSION="2.9.3" # ftp://xmlsoft.org/libxml2/
+LIBXML2_VERSION="2.9.4" # ftp://xmlsoft.org/libxml2/
 JSON_VERSION="0.12" # https://github.com/json-c/json-c/releases
 LIBMCRYPT_VERSION="2.5.8" # http://sourceforge.net/projects/mcrypt/files/Libmcrypt/
 LIBXPM_VERSION="3.5.11"
@@ -158,6 +159,7 @@ KBPROTO_VERSION="1.0.7"
 INPUTPROTO_VERSION="2.3.1"
 XEXTPROTO_VERSION="7.3.0"
 XTRANS_VERSION="1.3.5"
+XF86BIGFONTPROTO_VERSION="1.2.0"
 #fi
 
 LIBSODIUM_VERSION="1.0.10"
@@ -315,6 +317,7 @@ LIBPTHREAD_STUBS_FILE_NAME="libpthread-stubs-$LIBPTHREAD_STUBS_VERSION.tar.bz2"
 LIBXCB_FILE_NAME="libxcb-$LIBXCB_VERSION.tar.bz2"
 XCB_PROTO_FILE_NAME="xcb-proto-$XCB_PROTO_VERSION.tar.bz2"
 MACROS_FILE_NAME="util-macros-$MACROS_VERSION.tar.bz2"
+XF86BIGFONTPROTO_FILE_NAME="xf86bigfontproto-${XF86BIGFONTPROTO_VERSION}.tar.bz2"
 #fi
 
 GEOLITE2_CITY_MMDB_FILE_NAME="GeoLite2-City.mmdb.gz"

@@ -415,6 +415,7 @@ function wget_base_library()
         wget_lib $LIBXCB_FILE_NAME           "http://xorg.freedesktop.org/archive/individual/xcb/$LIBXCB_FILE_NAME"
         wget_lib $XCB_PROTO_FILE_NAME        "http://xorg.freedesktop.org/archive/individual/xcb/$XCB_PROTO_FILE_NAME"
         wget_lib $MACROS_FILE_NAME           "http://xorg.freedesktop.org/archive/individual/util/$MACROS_FILE_NAME"
+        wget_lib $XF86BIGFONTPROTO_FILE_NAME "http://xorg.freedesktop.org/archive/individual/proto/${XF86BIGFONTPROTO_FILE_NAME}"
 
 #    fi
 
@@ -1108,6 +1109,20 @@ function is_installed_xtrans()
     return;
 }
 # }}}
+# {{{ function is_installed_xf86bigfontproto()
+function is_installed_xf86bigfontproto()
+{
+    local FILENAME="$XF86BIGFONTPROTO_BASE/lib/pkgconfig/xf86bigfontproto.pc"
+    if [ ! -f "$FILENAME" ];then
+        return 1;
+    fi
+    local version=`pkg-config --modversion $FILENAME`
+    if [ "${version}" != "$XF86BIGFONTPROTO_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
 # {{{ function is_installed_libX11()
 function is_installed_libX11()
 {
@@ -1610,8 +1625,11 @@ function compile_libxml2()
     ./configure --prefix=$LIBXML2_BASE \
                 --with-iconv=$LIBICONV_BASE \
                 --with-zlib=$ZLIB_BASE \
+                $( [ "$OS_NAME" = "Darwin" ] && echo "--without-lzma") \
                 --without-python
     "
+# xmlIO.c:1450:52: error: use of undeclared identifier 'LZMA_OK' mac上2.9.3报错. 加 --without-lzma
+#或者 sed -n 's/LZMA_OK/LZMA_STREAM_END/p' xmlIO.c
 
     compile "libxml2" "$LIBXML2_FILE_NAME" "libxml2-$LIBXML2_VERSION" "$LIBXML2_BASE" "LIBXML2_CONFIGURE"
 }
@@ -2016,6 +2034,21 @@ function compile_xtrans()
     compile "xtrans" "$XTRANS_FILE_NAME" "xtrans-$XTRANS_VERSION" "$XTRANS_BASE" "XTRANS_CONFIGURE"
 }
 # }}}
+# {{{ function compile_xf86bigfontproto()
+function compile_xf86bigfontproto()
+{
+    is_installed xf86bigfontproto "$XF86BIGFONTPROTO_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    XF86BIGFONTPROTO_CONFIGURE="
+    ./configure --prefix=$XF86BIGFONTPROTO_BASE
+    "
+
+    compile "xf86bigfontproto" "$XF86BIGFONTPROTO_FILE_NAME" "xf86bigfontproto-$XF86BIGFONTPROTO_VERSION" "$XF86BIGFONTPROTO_BASE" "XF86BIGFONTPROTO_CONFIGURE"
+}
+# }}}
 # {{{ function compile_libX11()
 function compile_libX11()
 {
@@ -2026,13 +2059,14 @@ function compile_libX11()
 
     compile_macros
     compile_xcb-proto
-    compile_libpthread-stubs
     compile_libXau
     compile_libxcb
     compile_kbproto
     compile_inputproto
     compile_xextproto
     compile_xtrans
+    compile_libpthread-stubs
+    compile_xf86bigfontproto
 
     LIBX11_CONFIGURE="
     ./configure --prefix=$LIBX11_BASE --enable-ipv6 --enable-loadable-i18n
@@ -3781,3 +3815,4 @@ function repair_dynamic_shared_library()
     done
 }
 # }}}
+
