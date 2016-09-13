@@ -118,7 +118,9 @@ compile_php_extension_imagick
 #compile_php_extension_dio
 compile_php_extension_pthreads
 compile_php_extension_qrencode
+if [ "$OS_NAME" = "Darwin" ];then
 compile_php_extension_zeromq
+fi
 compile_php_extension_intl
 compile_php_extension_apcu
 compile_php_extension_apcu_bc
@@ -140,6 +142,13 @@ compile_php_extension_memcached
 compile_php_extension_tidy
 compile_php_extension_sphinx
 compile_mysql
+# geoip2
+compile_libmaxminddb
+compile_php_extension_maxminddb
+compile_geoipupdate
+cp_GeoLite2_data
+install_web_service_common_php
+install_geoip2_php
 
 $PHP_BASE/bin/php --ini
 

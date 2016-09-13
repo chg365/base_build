@@ -394,8 +394,15 @@ function wget_base_library()
     wget_lib $LIBSODIUM_FILE_NAME     "https://download.libsodium.org/libsodium/releases/$LIBSODIUM_FILE_NAME"
     wget_lib $PHP_ZMQ_FILE_NAME       "https://github.com/mkoppanen/php-zmq/archive/${PHP_ZMQ_VERSION}.tar.gz"
     # wget_lib $SWFUPLOAD_FILE_NAME    "http://swfupload.googlecode.com/files/SWFUpload%20v$SWFUPLOAD_VERSION%20Core.zip"
+    wget_lib $GEOLITE2_CITY_MMDB_FILE_NAME "http://geolite.maxmind.com/download/geoip/database/$GEOLITE2_CITY_MMDB_FILE_NAME"
+    wget_lib $GEOLITE2_COUNTRY_MMDB_FILE_NAME "http://geolite.maxmind.com/download/geoip/database/$GEOLITE2_COUNTRY_MMDB_FILE_NAME"
+    wget_lib $LIBMAXMINDDB_FILE_NAME  "https://github.com/maxmind/libmaxminddb/releases/download/${LIBMAXMINDDB_VERSION}/${LIBMAXMINDDB_FILE_NAME}"
+    wget_lib $MAXMIND_DB_READER_PHP_FILE_NAME "https://github.com/maxmind/MaxMind-DB-Reader-php/archive/v${MAXMIND_DB_READER_PHP_VERSION}.tar.gz"
+    wget_lib $WEB_SERVICE_COMMON_PHP_FILE_NAME "https://github.com/maxmind/web-service-common-php/archive/v${WEB_SERVICE_COMMON_PHP_VERSION}.tar.gz"
+    wget_lib $GEOIP2_PHP_FILE_NAME    "https://github.com/maxmind/GeoIP2-php/archive/v${GEOIP2_PHP_VERSION}.tar.gz"
+    wget_lib $GEOIPUPDATE_FILE_NAME   "https://github.com/maxmind/geoipupdate/releases/download/v${GEOIPUPDATE_VERSION}/$GEOIPUPDATE_FILE_NAME"
 
-    if [ "$OS_NAME" = 'Darwin' ];then
+#    if [ "$OS_NAME" = 'Darwin' ];then
 
         wget_lib $KBPROTO_FILE_NAME          "http://xorg.freedesktop.org/archive/individual/proto/$KBPROTO_FILE_NAME"
         wget_lib $INPUTPROTO_FILE_NAME       "http://xorg.freedesktop.org/archive/individual/proto/$INPUTPROTO_FILE_NAME"
@@ -409,7 +416,7 @@ function wget_base_library()
         wget_lib $XCB_PROTO_FILE_NAME        "http://xorg.freedesktop.org/archive/individual/xcb/$XCB_PROTO_FILE_NAME"
         wget_lib $MACROS_FILE_NAME           "http://xorg.freedesktop.org/archive/individual/util/$MACROS_FILE_NAME"
 
-    fi
+#    fi
 
     if [ "$wget_fail" = "1" ];then
         exit 1;
@@ -1402,6 +1409,33 @@ function is_installed_rabbitmq-c()
     return;
 }
 # }}}
+# {{{ function is_installed_libmaxminddb()
+function is_installed_libmaxminddb()
+{
+    local FILENAME="$LIBMAXMINDDB_BASE/lib/pkgconfig/libmaxminddb.pc"
+    if [ ! -f "$FILENAME" ];then
+        return 1;
+    fi
+    local version=`pkg-config --modversion $FILENAME`
+    if [ "${version}" != "$LIBMAXMINDDB_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
+# {{{ function is_installed_geoipupdate()
+function is_installed_geoipupdate()
+{
+    if [ ! -f "$GEOIPUPDATE_BASE/bin/geoipupdate" ];then
+        return 1;
+    fi
+    local version=`$GEOIPUPDATE_BASE/bin/geoipupdate -V|awk '{print $NF;}'`
+    if [ "$version" != "$GEOIPUPDATE_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
 # }}}
 # {{{ compile functions
 # {{{ function compile_re2c()
@@ -2018,10 +2052,11 @@ function compile_libXpm()
         return;
     fi
 
-    if [ "$OS_NAME" = 'Darwin' ];then
+
+#    if [ "$OS_NAME" = 'Darwin' ];then
+        compile_xproto
         compile_libX11
-        :
-    fi
+#fi
     LIBXPM_CONFIGURE="
     ./configure --prefix=$LIBXPM_BASE
     "
@@ -2258,7 +2293,7 @@ function compile_libgd()
     compile_freetype
     compile_fontconfig
     compile_jpeg
-    # compile_libXpm
+    compile_libXpm
 
     # CPPFLAGS="$(get_cppflags ${ZLIB_BASE}/include ${LIBPNG_BASE}/include ${LIBICONV_BASE}/include ${FREETYPE_BASE}/include ${FONTCONFIG_BASE}/include ${JPEG_BASE}/include $([ "$OS_NAME" = 'Darwin' ] && echo " $LIBX11_BASE/include") )" \
     # LDFLAGS="$(get_ldflags ${ZLIB_BASE}/lib ${LIBPNG_BASE}/lib ${LIBICONV_BASE}/lib ${FREETYPE_BASE}/lib ${FONTCONFIG_BASE}/lib ${JPEG_BASE}/lib $([ "$OS_NAME" = 'Darwin' ] && echo " $LIBX11_BASE/lib") )" \
@@ -2268,9 +2303,9 @@ function compile_libgd()
                 --with-png=$LIBPNG_BASE \
                 --with-freetype=$FREETYPE_BASE \
                 --with-fontconfig=$FONTCONFIG_BASE \
-                --with-jpeg=$JPEG_BASE \
+                --with-xpm=$LIBXPM_BASE
+                --with-jpeg=$JPEG_BASE
     "
-#              --with-xpm=$LIBXPM_BASE
                 # --with-vpx=
                 # --with-tiff=
 
@@ -2362,11 +2397,11 @@ function compile_php()
     compile_libmcrypt
     compile_curl
     compile_gmp
-#    compile_libgd
+    compile_libgd
     compile_freetype
     compile_jpeg
     compile_libpng
-#compile_libXpm
+    compile_libXpm
 
     # EXTRA_LIBS="-lresolv" \
     PHP_CONFIGURE="
@@ -2403,15 +2438,15 @@ function compile_php()
                 --with-gmp=$GMP_BASE \
                 --enable-fpm \
                 $( [ \"$OS_NAME\" != \"Darwin\" ] && echo --with-fpm-acl ) \
+                --with-gd=$LIBGD_BASE \
+                --with-freetype-dir=$FREETYPE_BASE \
+                --enable-gd-native-ttf \
+                --with-jpeg-dir=$JPEG_BASE \
+                --with-png-dir=$LIBPNG_BASE \
+                --with-xpm-dir=$LIBXPM_BASE \
+                --with-zlib-dir=$ZLIB_BASE \
                 --enable-opcache
     "
-#                --with-gd=$LIBGD_BASE \
-#                --with-freetype-dir=$FREETYPE_BASE \
-#                --enable-gd-native-ttf \
-#                --with-jpeg-dir=$JPEG_BASE \
-#                --with-png-dir=$LIBPNG_BASE \
-#                --with-zlib-dir=$ZLIB_BASE \
-#               --with-xpm-dir=$LIBXPM_BASE \
 
                 # --with-libzip=$LIBZIP_BASE \
 
@@ -3120,6 +3155,171 @@ function compile_pixman()
     compile "pixman" "$PIXMAN_FILE_NAME" "pixman-$PIXMAN_VERSION" "$PIXMAN_BASE" "PIXMAN_CONFIGURE"
 }
 # }}}
+# {{{ function compile_libmaxminddb()
+function compile_libmaxminddb()
+{
+    is_installed libmaxminddb "$LIBMAXMINDDB_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    LIBMAXMINDDB_CONFIGURE="
+    ./configure --prefix=$LIBMAXMINDDB_BASE
+    "
+
+    compile "libmaxminddb" "$LIBMAXMINDDB_FILE_NAME" "libmaxminddb-$LIBMAXMINDDB_VERSION" "$LIBMAXMINDDB_BASE" "LIBMAXMINDDB_CONFIGURE"
+}
+# }}}
+# {{{ function compile_php_extension_maxminddb()
+function compile_php_extension_maxminddb()
+{
+    is_installed_php_extension maxminddb
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    compile_libmaxminddb
+
+    PHP_EXTENSION_MAXMINDDB_CONFIGURE="
+    configure_php_maxminddb_command
+    "
+    local ext_dir="MaxMind-DB-Reader-php-$MAXMIND_DB_READER_PHP_VERSION/ext"
+    local file_name="$MAXMIND_DB_READER_PHP_FILE_NAME"
+
+    compile "php_extension_maxminddb" "$file_name" "$ext_dir" "maxminddb.so" "PHP_EXTENSION_MAXMINDDB_CONFIGURE" "after_php_extension_maxminddb_make_install"
+}
+# }}}
+# {{{ function after_php_extension_maxminddb_make_install()
+function after_php_extension_maxminddb_make_install()
+{
+    mkdir -p $BASE_DIR/inc/MaxMind
+    if [ "$?" != "0" ];then
+        echo "mkdir faild. command: mkdir -p $BASE_DIR/inc/MaxMind" >&2
+        return 1;
+    fi
+    cp -r ../src/MaxMind/* $BASE_DIR/inc/MaxMind
+    if [ "$?" != "0" ];then
+        echo " copy file faild. command: cp -r ../src/MaxMind/* $BASE_DIR/inc/MaxMind" >&2
+        return 1;
+    fi
+}
+# }}}
+# {{{ function compile_geoipupdate()
+function compile_geoipupdate()
+{
+    is_installed geoipupdate "$GEOIPUPDATE_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    GEOIPUPDATE_CONFIGURE="
+    ./configure --prefix=$GEOIPUPDATE_BASE
+    "
+
+    compile "geoipupdate" "$GEOIPUPDATE_FILE_NAME" "geoipupdate-$GEOIPUPDATE_VERSION" "$GEOIPUPDATE_BASE" "GEOIPUPDATE_CONFIGURE"
+    cp $curr_dir/GeoIP2_update.conf $BASE_DIR/etc/
+}
+# }}}
+# }}}
+# {{{ function cp_GeoLite2_data()
+function cp_GeoLite2_data()
+{
+    if [ -z "$GEOIP2_ETC_DIR" ];then
+        echo "variable GEOIP2_ETC_DIR is nod exists." >&2
+        return 1;
+    fi
+
+    mkdir -p $GEOIP2_ETC_DIR
+
+    if [ ! -f "$GEOLITE2_CITY_MMDB_FILE_NAME" ] || [ ! -f "$GEOLITE2_COUNTRY_MMDB_FILE_NAME" ];then
+        echo "file [${GEOLITE2_CITY_MMDB_FILE_NAME}] or [${GEOLITE2_COUNTRY_MMDB_FILE_NAME}]  not exists." >&2
+        return 1;
+    fi 
+
+    if [ ! -f  "$GEOIP2_ETC_DIR/GeoLite2-City.mmdb" ];then
+        gunzip -c $GEOLITE2_CITY_MMDB_FILE_NAME > $GEOIP2_ETC_DIR/GeoLite2-City.mmdb
+        if [ "$?" != "0" ];then
+            echo "gunzip faild. file: $GEOLITE2_CITY_MMDB_FILE_NAME" >&2
+            return 1;
+        fi
+    fi
+
+    if [ ! -f  "$GEOIP2_ETC_DIR/GeoLite2-Country.mmdb" ];then
+        gunzip -c $GEOLITE2_COUNTRY_MMDB_FILE_NAME > $GEOIP2_ETC_DIR/GeoLite2-Country.mmdb
+        if [ "$?" != "0" ];then
+            echo "gunzip faild. file: $GEOLITE2_COUNTRY_MMDB_FILE_NAME" >&2
+            return 1;
+        fi
+    fi
+    return 0;
+}
+# }}}
+# {{{ function install_web_service_common_php()
+function install_web_service_common_php()
+{
+    echo_build_start "install_web_service_common_php"
+    decompress $WEB_SERVICE_COMMON_PHP_FILE_NAME
+    if [ "$?" != "0" ];then
+        echo "decompress file error. file_name: $WEB_SERVICE_COMMON_PHP_FILE_NAME" >&2
+        # return 1;
+        exit 1;
+    fi
+
+    mkdir -p $BASE_DIR/inc/MaxMind
+    if [ "$?" != "0" ];then
+        echo "mkdir faild. command: mkdir -p $BASE_DIR/inc/MaxMind" >&2
+        # return 1;
+        exit 1;
+    fi
+
+    cp -r web-service-common-php-$WEB_SERVICE_COMMON_PHP_VERSION/src/* $BASE_DIR/inc/MaxMind
+    if [ "$?" != "0" ];then
+        echo "copy file faild. command: cp -r $web-service-common-php-$WEB_SERVICE_COMMON_PHP_VERSION/src/* $BASE_DIR/inc/MaxMind" >&2
+        # return 1;
+        exit 1;
+    fi
+
+    rm -rf web-service-common-php-$WEB_SERVICE_COMMON_PHP_VERSION
+    if [ "$?" != "0" ];then
+        echo "delete dir faild. command: rm -rf web-service-common-php-$WEB_SERVICE_COMMON_PHP_VERSION" >&2
+        # return 1;
+        exit 1;
+    fi
+
+}
+# }}}
+# {{{ function install_geoip2_php()
+function install_geoip2_php()
+{
+    echo_build_start "install_geoip2_php"
+    decompress $GEOIP2_PHP_FILE_NAME
+    if [ "$?" != "0" ];then
+        echo "decompress file error. file_name: $GEOIP2_PHP_FILE_NAME" >&2
+        # return 1;
+        exit 1;
+    fi
+
+    mkdir -p $BASE_DIR/inc/GeoIp2
+    if [ "$?" != "0" ];then
+        echo "mkdir faild. command: mkdir -p $BASE_DIR/inc/GeoIp2" >&2
+        # return 1;
+        exit 1;
+    fi
+
+    cp -r GeoIP2-php-$GEOIP2_PHP_VERSION/src/* $BASE_DIR/inc/GeoIp2/
+    if [ "$?" != "0" ];then
+        echo "copy file faild. command: cp -r GeoIP2-php-$GEOIP2_PHP_VERSION/src/* $BASE_DIR/inc/GeoIp2/" >&2
+        # return 1;
+        exit 1;
+    fi
+
+    rm -rf GeoIP2-php-$GEOIP2_PHP_VERSION
+    if [ "$?" != "0" ];then
+        echo "delete dir faild. command: GeoIP2-php-$GEOIP2_PHP_VERSION" >&2
+        # return 1;
+        exit 1;
+    fi
+}
 # }}}
 # {{{ function compile_zendFramework()
 function compile_zendFramework()
@@ -3305,6 +3505,13 @@ configure_php_tidy_command()
     # sed -i.bak.$$ 's/\<buffio.h/tidybuffio.h/' tidy.c
     sed $( [ "$OS_NAME" = "Darwin" ] && echo "-i ''" ||  echo '-i ' ) 's/\([^a-zA-Z0-9_-]\)buffio.h/\1tidybuffio.h/' tidy.c
     ./configure --with-php-config=$PHP_BASE/bin/php-config --with-tidy=$TIDY_BASE
+}
+# }}}
+# {{{ configure_php_maxminddb_command()
+configure_php_maxminddb_command()
+{
+    CPPFLAGS="$(get_cppflags $LIBMAXMINDDB_BASE/include)" LDFLAGS="$(get_ldflags $LIBMAXMINDDB_BASE/lib${tmp_str})" \
+    ./configure --with-php-config=$PHP_BASE/bin/php-config --with-maxminddb
 }
 # }}}
 # }}}
