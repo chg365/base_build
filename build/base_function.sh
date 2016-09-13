@@ -3468,8 +3468,8 @@ configure_libmemcached_command()
 
             sed -i.bak 's/if (opt_servers == false)/if (opt_servers == NULL)/g' clients/memflush.cc
 
-            tmp_str=`sed -n '/#include/=' libmemcached/byteorder.cc`;
-            line_num=`echo $tmp_str | sed -n 's/^.* \([0-9]\{1,\}\)$/\1/p'`;
+            local tmp_str=`sed -n '/#include/=' libmemcached/byteorder.cc`;
+            local line_num=`echo $tmp_str | sed -n 's/^.* \([0-9]\{1,\}\)$/\1/p'`;
             if [ "$tmp_str" != "" ] && [ "$line_num" != "" ];then
                 sed -i.bak "${line_num}a\\
 \\
@@ -3546,7 +3546,7 @@ configure_php_tidy_command()
 # {{{ configure_php_maxminddb_command()
 configure_php_maxminddb_command()
 {
-    CPPFLAGS="$(get_cppflags $LIBMAXMINDDB_BASE/include)" LDFLAGS="$(get_ldflags $LIBMAXMINDDB_BASE/lib${tmp_str})" \
+    CPPFLAGS="$(get_cppflags $LIBMAXMINDDB_BASE/include)" LDFLAGS="$(get_ldflags $LIBMAXMINDDB_BASE/lib)" \
     ./configure --with-php-config=$PHP_BASE/bin/php-config --with-maxminddb
 }
 # }}}
