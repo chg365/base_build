@@ -1967,6 +1967,8 @@ function compile_libxcb()
         return;
     fi
 
+    compile_libpthread-stubs
+
     LIBXCB_CONFIGURE="
     ./configure --prefix=$LIBXCB_BASE
     "
