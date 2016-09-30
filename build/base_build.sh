@@ -149,6 +149,7 @@ compile_php_extension_memcached
 compile_php_extension_tidy
 compile_php_extension_sphinx
 compile_mysql
+compile_nginx
 # geoip2
 compile_libmaxminddb
 compile_php_extension_maxminddb
@@ -156,6 +157,7 @@ compile_geoipupdate
 cp_GeoLite2_data
 install_web_service_common_php
 install_geoip2_php
+
 
 $PHP_BASE/bin/php --ini
 
