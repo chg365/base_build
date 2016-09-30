@@ -403,6 +403,8 @@ function wget_base_library()
     wget_lib $GEOIPUPDATE_FILE_NAME   "https://github.com/maxmind/geoipupdate/releases/download/v${GEOIPUPDATE_VERSION}/$GEOIPUPDATE_FILE_NAME"
     wget_lib $ELECTRON_FILE_NAME      "https://github.com/electron/electron/archive/v${ELECTRON_VERSION}.tar.gz"
 
+    wget_lib $PHANTOMJS_FILE_NAME     "https://github.com/ariya/phantomjs/archive/${PHANTOMJS_VERSION}.tar.gz"
+
 #    if [ "$OS_NAME" = 'Darwin' ];then
 
         wget_lib $KBPROTO_FILE_NAME          "http://xorg.freedesktop.org/archive/individual/proto/$KBPROTO_FILE_NAME"
