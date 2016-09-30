@@ -355,7 +355,7 @@ function wget_base_library()
     wget_lib $MEMCACHED_FILE_NAME     "http://memcached.org/files/${MEMCACHED_FILE_NAME}"
     #  https://github.com/downloads/libevent/libevent/$LIBEVENT_FILE_NAME
     # wget_lib $LIBEVENT_FILE_NAME      "https://sourceforge.net/projects/levent/files//libevent-${LIBEVENT_VERSION%.*}/$LIBEVENT_FILE_NAME"
-    wget_lib $LIBEVENT_FILE_NAME      "https://sourceforge.net/projects/levent/files/release-${LIBEVENT_VERSION}/$LIBEVENT_FILE_NAME/download"
+    wget_lib $LIBEVENT_FILE_NAME      "https://sourceforge.net/projects/levent/files/release-${LIBEVENT_VERSION}-stable/$LIBEVENT_FILE_NAME/download"
     wget_lib $LIBQRENCODE_FILE_NAME   "http://fukuchi.org/works/qrencode/$LIBQRENCODE_FILE_NAME"
     wget_lib $POSTGRESQL_FILE_NAME    "https://ftp.postgresql.org/pub/source/v$POSTGRESQL_VERSION/$POSTGRESQL_FILE_NAME"
     wget_lib $APR_FILE_NAME           "http://mirrors.cnnic.cn/apache//apr/$APR_FILE_NAME"
@@ -401,6 +401,7 @@ function wget_base_library()
     wget_lib $WEB_SERVICE_COMMON_PHP_FILE_NAME "https://github.com/maxmind/web-service-common-php/archive/v${WEB_SERVICE_COMMON_PHP_VERSION}.tar.gz"
     wget_lib $GEOIP2_PHP_FILE_NAME    "https://github.com/maxmind/GeoIP2-php/archive/v${GEOIP2_PHP_VERSION}.tar.gz"
     wget_lib $GEOIPUPDATE_FILE_NAME   "https://github.com/maxmind/geoipupdate/releases/download/v${GEOIPUPDATE_VERSION}/$GEOIPUPDATE_FILE_NAME"
+    wget_lib $ELECTRON_FILE_NAME      "https://github.com/electron/electron/archive/v${ELECTRON_VERSION}.tar.gz"
 
 #    if [ "$OS_NAME" = 'Darwin' ];then
 
@@ -880,6 +881,7 @@ function is_installed_libevent()
         return 1;
     fi
     local version=`pkg-config --modversion $FILENAME`
+    version=${version%-*}
     if [ "$version" != "$LIBEVENT_VERSION" ];then
         return 1;
     fi
@@ -1753,7 +1755,7 @@ function compile_libevent()
     configure_libevent_command
     "
 
-    compile "libevent" "$LIBEVENT_FILE_NAME" "libevent-$LIBEVENT_VERSION" "$LIBEVENT_BASE" "LIBEVENT_CONFIGURE"
+    compile "libevent" "$LIBEVENT_FILE_NAME" "libevent-${LIBEVENT_VERSION}-stable" "$LIBEVENT_BASE" "LIBEVENT_CONFIGURE"
 }
 # }}}
 # {{{ function compile_jpeg()
@@ -3615,14 +3617,30 @@ other ....
 # {{{ function check_version()
 function check_version()
 {
-    local func_name="check_$1_version";
+    local func_name="check_${1}_version";
     function_exists "$func_name";
 
     if [ "$?" != "0" ];
     then
-        echo "$1的版本检测更新未实现"
+        echo "${1}的版本检测更新未实现"
         return 1;
     fi
+    $func_name
+}
+# }}}
+# {{{ function check_soft_updates()
+function check_soft_updates()
+{
+#check_version php
+#    check_version mysql
+#    check_version imagemagick
+#check_version pkgconfig
+
+# github
+#check_version re2c
+#check_version tidy
+    check_version sphinx
+    check_version php_sphinx
 }
 # }}}
 # {{{ function check_php_version()
@@ -3638,52 +3656,209 @@ function check_php_version()
         return 1;
     fi
 
-    version_compare $PHP_VERSION $new_version
-    if [ "$?" !=0 ];then
-        echo -e "PHP current version: \033[0;33m${PHP_VERSION}\033[0m\tserver's version: \033[0;35m${new_version}\033[0m"
+    if [ "$new_version" = "$PHP_VERSION" ];then
+        echo -e "php version is \033[0;32mthe latest.\033[0m"
+        return
     fi
 
-    echo -e "PHP VERSION is \033[0;32mthe latest.\033[0m"
+    is_new_version $new_version $PHP_VERSION
+    if [ "$?" = "0" ];then
+        echo -e "php current version: \033[0;33m${PHP_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+        return 0;
+    fi
+
+    echo -e "php version is \033[0;32mthe latest.\033[0m"
+}
+# }}}
+# {{{ function check_mysql_version()
+function check_mysql_version()
+{
+    local new_version=`curl http://dev.mysql.com/downloads/mysql/ 2>/dev/null |sed -n 's/<h1> \{0,\}MySQL \{1,\}Community \{1,\}Server \{0,\}\(.\{1,\}\) \{0,\}<\/h1>/\1/p'`;
+    new_version=${new_version// /}
+    if [ -z "$new_version" ];then
+        echo -e "探测mysql新版本\033[0;31m失败\033[0m" >&2
+        return 1;
+    fi
+
+    if [ "$new_version" = "$MYSQL_VERSION" ];then
+        echo -e "mysql version is \033[0;32mthe latest.\033[0m"
+        return
+    fi
+
+    is_new_version $new_version $MYSQL_VERSION
+    if [ "$?" = "0" ];then
+        echo -e "mysql current version: \033[0;33m${MYSQL_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+        return 0;
+    fi
+
+    echo -e "mysql version is \033[0;32mthe latest.\033[0m"
 }
 # }}}
 # {{{ function check_imagemagick_version()
 function check_imagemagick_version()
 {
-    local new_version=`curl http://www.imagemagick.org/download/ 2>/dev/null|sed -n '/^.\{1,\} href="ImageMagick-\([0-9.-]\{1,\}\).tar.gz">.\{1,\}$/{
-    s//\1/p
-    q
-    }'`
+    local new_version=`curl http://www.imagemagick.org/download/releases/ 2>/dev/null|sed -n 's/^.\{1,\} href="ImageMagick-\([0-9.-]\{1,\}\).tar.gz">.\{1,\}$/\1/p'|sort -r|head -1`
     if [ -z "$new_version" ];then
-        echo -e "探测php新版本\033[0;31m失败\033[0m" >&2
+        echo -e "探测imagemagick新版本\033[0;31m失败\033[0m" >&2
         return 1;
     fi
 
-    version_compare $PHP_VERSION $new_version
-    if [ "$?" !=0 ];then
-        echo -e "PHP current version: \033[0;33m${PHP_VERSION}\033[0m\tserver's version: \033[0;35m${new_version}\033[0m"
+    if [ "$new_version" = "$IMAGEMAGICK_VERSION" ];then
+        echo -e ""imagemagick version is \033[0;32mthe latest.\033[0m"
+        return
     fi
 
-    echo -e "PHP VERSION is \033[0;32mthe latest.\033[0m"
+    is_new_version ${new_version//-/.} ${IMAGEMAGICK_VERSION//-/.}
+    if [ "$?" = "0" ];then
+        echo -e "imagemagick current version: \033[0;33m${IMAGEMAGICK_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+        return 0;
+    fi
+
+    echo -e "imagemagick version is \033[0;32mthe latest.\033[0m"
+}
+# }}}
+# {{{ function check_pkgconfig_version()
+function check_pkgconfig_version()
+{
+    local new_version=`curl https://pkg-config.freedesktop.org/releases/ 2>/dev/null |sed -n 's/^.\{1,\} href="pkg-config-\([0-9.]\{1,\}\).tar.gz">.\{1,\}$/\1/p'|sort -r|head -1`
+    if [ -z "$new_version" ];then
+        echo -e "探测pkgconfig新版本\033[0;31m失败\033[0m" >&2
+        return 1;
+    fi
+
+    if [ "$new_version" = "$PKGCONFIG_VERSION" ];then
+        echo -e ""pkgconfig version is \033[0;32mthe latest.\033[0m"
+        return
+    fi
+
+    local tmp_new=$new_version;
+    if [ `echo $new_version |tr -cd . |wc -c` = "1" ];then
+        tmp_new="${tmp_new}.0"
+    fi
+
+    local tmp_old=$PKGCONFIG_VERSION
+    if [ `echo $PKGCONFIG_VERSION | tr -cd . |wc -c` = "1" ];then
+        tmp_old="${tmp_old}.0"
+    fi
+
+    is_new_version $tmp_new $tmp_old
+    if [ "$?" = "0" ];then
+        echo -e "pkgconfig current version: \033[0;33m${PKGCONFIG_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+        return 0;
+    fi
+
+    echo -e "pkgconfig version is \033[0;32mthe latest.\033[0m"
+}
+# }}}
+# {{{ function check_re2c_version()
+function check_re2c_version()
+{
+    check_github_soft_version re2c $RE2C_VERSION "https://github.com/skvadrik/re2c/releases"
+}
+# }}}
+# {{{ function check_tidy_version()
+function check_tidy_version()
+{
+    check_github_soft_version tidy $TIDY_VERSION "https://github.com/htacg/tidy-html5/releases"
+}
+# }}}
+# {{{ function check_sphinx_version()
+function check_sphinx_version()
+{
+    check_github_soft_version sphinx $SPHINX_VERSION "https://github.com/sphinxsearch/sphinx/releases"
+}
+# }}}
+# {{{ function check_pecl_sphinx_version()
+function check_pecl_sphinx_version()
+{
+    local version=$PHP_SPHINX_VERSION;
+    if [ "$PHP_SPHINX_VERSION" = "php7" ]; then
+        version="1.0.0"
+    fi
+    check_github_soft_version pecl-search_engine-sphinx $version "https://github.com/sphinxsearch/sphinx/releases"
+    check_php_pecl_version sphinx $version "http://pecl.php.net/package/sphinx"
+}
+# }}}
+# {{{ function check_github_soft_version()
+function check_github_soft_version()
+{
+    local soft=$1;
+    local current_version=$2
+    local url=$3;
+                                                                                                                                   # release\|beta
+    local new_version=`curl $url 2>/dev/null |sed -n "s/^.\{1,\} href=\"[^\"]\{1,\}${soft}[^\"]\{0,\}\/archive\/\(RELEASE_\)\{0,1\}\([0-9._]\{1,\}\)\(-\(release\)\)\{0,1\}.tar.gz\"[^>]\{0,\}>.\{0,\}$/\2/p"|sort -r|head -1`
+    if [ -z "$new_version" ];then
+        echo -e "Check ${soft} version \033[0;31mfaild\033[0m." >&2
+        return 1;
+    fi
+
+    if [ "$new_version" = "$current_version" ];then
+        echo -e "${soft} version is \033[0;32mthe latest.\033[0m"
+        return
+    fi
+
+    if [ "$current_version" = "php7" ];then
+        if [ "$soft" = "pecl-search_engine-sphinx" ];then
+            if [ "$new_version" = "1_3_3" ];then
+                echo -e "${soft} version is \033[0;32mthe latest.\033[0m"
+                return;
+            fi
+        elif ["$soft" = "" ];then
+            :
+        fi
+    fi
+
+    local tmp_new=$new_version;
+    local tmp_old=$current_version
+
+    local new_num=`echo $new_version |tr -cd . |wc -c`;
+    local old_num=`echo $current_version | tr -cd . |wc -c`;
+
+    if [ "$old_num" -gt "$new_num" ];then
+        local difference=$(($old_num - $new_num))
+        while [ "$difference" -gt "0" ]
+        do
+            $tmp_new="${tmp_new}.0"
+            (($difference--))
+        done
+    elif [ "$new_num" -gt "$old_num" ];then
+        local difference=$(($new_num - $old_num))
+        while [ "$difference" -gt "0" ]
+        do
+            $tmp_old="${tmp_old}.0"
+            (($difference--))
+        done
+    fi
+
+    is_new_version $tmp_new $tmp_old
+    if [ "$?" = "0" ];then
+        echo -e "${soft} current version: \033[0;33m${current_version}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+        return 0;
+    fi
+
+    echo -e "${soft} version is \033[0;32mthe latest.\033[0m"
 }
 # }}}
 # {{{ function check_pecl_ext_version()
 function check_pecl_ext_version()
 {
     local ext=$1;
+    local curent_version=$2;
+
     local new_version=`curl http://pecl.php.net/package/${ext} 2>/dev/null|sed -n "/^.\{1,\}${ext}-\([0-9.]\{1,\}\).tgz.\{1,\}$/{
          s//\1/p
          q
          }"`;
 
     if [ -z "$new_version" ];then
-        echo -e "探测php扩展${ext}的新版本\033[0;31m失败\033[0m" >&2
+        echo -e "chekc php pecl ${ext} version \033[0;31mfaild\033[0m." >&2
         return 1;
     fi
 
     local version=`echo ${ext}_VERSION|tr '[a-z]' '[A-Z]'`
     version_compare ${!version} $new_version
     if [ "$?" !=0 ];then
-        echo -e "PHP extension ${ext} current version: \033[0;33m${!version}\033[0m\tserver's version: \033[0;35m${new_version}\033[0m"
+        echo -e "PHP extension ${ext} current version: \033[0;33m${!version}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
     fi
 
     echo -e "PHP extension ${ext} VERSION is \033[0;32mthe latest.\033[0m"
@@ -3705,16 +3880,107 @@ function check_sourceforge_soft_version()
      local version=`echo ${soft}_VERSION|tr '[a-z]' '[A-Z]'`
      version_compare ${!version} $new_version
      if [ "$?" !=0 ];then
-         echo -e "${soft} current version: \033[0;33m${!version}\033[0m\tserver's version: \033[0;35m${new_version}\033[0m"
+         echo -e "${soft} current version: \033[0;33m${!version}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
      fi
 
      echo -e "${soft} VERSION is \033[0;32mthe latest.\033[0m"
 }
 # }}}
-# {{{ function version_compare()
+# {{{ function version_compare() 11出错误 0 相同 1 前高于后 2 前低于后
 function version_compare()
 {
+    local new_version=$1;
+    local old_version=$2;
+
+    if [ -z "$new_version" -o -z "$old_version" ]; then
+        echo "parameter error. new_version: ${new_version} old_version: ${old_version}" >&2
+        return 11;
+    fi
+
+    echo $new_version | grep -q  '^[0-9.]\{1,\}$'
+
+    if [ "$?" != 0 ]; then
+        echo "The version number format does not support." >&2
+        return 11;
+    fi
+
+    echo $old_version | grep -q  '^[0-9.]\{1,\}$'
+
+    if [ "$?" != 0 ]; then
+        echo "The version number format does not support." >&2
+        return 11;
+    fi
+
+    local new_version_vars=( ${new_version//./ } )
+    local old_version_vars=( ${old_version//./ } )
+
+    if [ "${#new_version_vars[*]}" -ne "${#old_version_vars[@]}" ]; then
+        echo "The version number format does not match. new_version: ${new_version} old_version: ${old_version}" >&2
+        return 11;
+    fi
+
+    local i=0;
+
+    for ((;i<=${#old_version_vars[@]};i++))
+    {
+        if [ "${old_version_vars[i]}"  -lt "${new_version_vars[i]}" ]; then
+            return 1;
+        elif [ "${old_version_vars[i]}"  -gt "${new_version_vars[i]}" ]; then
+            return 2;
+        fi
+    }
+
     return 0;
+}
+# }}}
+# {{{ function is_new_version() 返回值0，为是新版本
+function is_new_version()
+{
+    local new_version=$1;
+    local old_version=$2;
+
+    if [ -z "$new_version" -o -z "$old_version" ]; then
+        echo "parameter error. new_version: ${new_version} old_version: ${old_version}" >&2
+        return 1;
+    fi
+
+    if [ "$new_version" = "$old_version" ];then
+        return 1;
+    fi
+
+    echo $new_version | grep -q  '^[0-9.]\{1,\}$'
+
+    if [ "$?" != 0 ]; then
+        echo "The version number format does not support." >&2
+        return 1;
+    fi
+
+    echo $old_version | grep -q  '^[0-9.]\{1,\}$'
+
+    if [ "$?" != 0 ]; then
+        echo "The version number format does not support." >&2
+        return 1;
+    fi
+
+    local new_version_vars=( ${new_version//./ } )
+    local old_version_vars=( ${old_version//./ } )
+
+    if [ "${#new_version_vars[*]}" -ne "${#old_version_vars[@]}" ]; then
+        echo "The version number format does not match. new_version: ${new_version} old_version: ${old_version}" >&2
+        return 1;
+    fi
+
+    local i=0;
+    for ((;i<${#old_version_vars[@]};i++))
+    {
+        if [ "${old_version_vars[i]}"  -lt "${new_version_vars[i]}" ]; then
+            return 0;
+        elif [ "${old_version_vars[i]}"  -gt "${new_version_vars[i]}" ]; then
+            echo "Warning: The version number error. new_version: ${new_version} old_version: ${old_version}" >&2
+            return 1;
+        fi
+    }
+
     return 1;
 }
 # }}}

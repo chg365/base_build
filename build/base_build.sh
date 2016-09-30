@@ -112,6 +112,8 @@ fi
 ################################################################################
 export LC_CTYPE=C 
 export LANG=C
+check_soft_updates
+exit;
 pkg_config_path_init
 compile_zeromq
 compile_zlib
