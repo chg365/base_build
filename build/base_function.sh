@@ -3645,32 +3645,32 @@ function check_version()
 # {{{ function check_soft_updates()
 function check_soft_updates()
 {
-#    check_version php
-#    check_version mysql
-    check_version imagemagick
+check_version php
+check_version mysql
+check_version imagemagick
 check_version pkgconfig
 
 # github
-#check_version re2c
-#check_version tidy
-#check_version sphinx
-#check_version pecl_sphinx
-#check_version openjpeg
-#check_version fontforge
-#check_version pdf2htmlEX
-#check_pecl_memcached_version
-#check_pecl_qrencode_version
-#check_version smarty
-#check_version rabbitmq
-#check_version zeromq
-#check_pecl_zmq_version 
-#check_version libmaxminddb
-#check_version maxmind_db_reader_php
-#check_version web_service_common_php
-#check_version geoip2_php
-#check_version geoipupdate
-#check_version electron
-#check_version phantomjs
+check_version re2c
+check_version tidy
+check_version sphinx
+check_version pecl_sphinx
+check_version openjpeg
+check_version fontforge
+check_version pdf2htmlEX
+check_pecl_memcached_version
+check_pecl_qrencode_version
+check_version smarty
+check_version rabbitmq
+check_version zeromq
+check_pecl_zmq_version 
+check_version libmaxminddb
+check_version maxmind_db_reader_php
+check_version web_service_common_php
+check_version geoip2_php
+check_version geoipupdate
+check_version electron
+check_version phantomjs
 check_version laravel
 check_version laravel_framework
 }
@@ -3678,52 +3678,38 @@ check_version laravel_framework
 # {{{ function check_php_version()
 function check_php_version()
 {
-    # local new_version=`curl http://php.net/downloads.php 2>/dev/null|sed -n 's/^.\{1,\}php-\([0-9.]\{1,\}\)\.tar\.xz.\{1,\}$/\1/p'|sed -n '1p'`
-    local new_version=`curl http://php.net/downloads.php 2>/dev/null|sed -n '/^.\{1,\}php-\([0-9.]\{1,\}\)\.tar\.xz.\{1,\}$/{
-    s//\1/p
-    q
-    }'`
+    local new_version=`curl http://php.net/downloads.php 2>/dev/null|sed -n 's/^.\{1,\}php-\([0-9.]\{1,\}\)\.tar\.xz.\{1,\}$/\1/p'|sort -rV|head -1`
     if [ -z "$new_version" ];then
         echo -e "探测php新版本\033[0;31m失败\033[0m" >&2
         return 1;
     fi
 
-    if [ "$new_version" = "$PHP_VERSION" ];then
-        echo -e "php version is \033[0;32mthe latest.\033[0m"
-        return
-    fi
-
-    is_new_version $new_version $PHP_VERSION
+    is_new_version $PHP_VERSION $new_version
     if [ "$?" = "0" ];then
-        echo -e "php current version: \033[0;33m${PHP_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+        echo -e "php version is \033[0;32mthe latest.\033[0m"
         return 0;
     fi
 
-    echo -e "php version is \033[0;32mthe latest.\033[0m"
+    echo -e "php current version: \033[0;33m${PHP_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
 # {{{ function check_mysql_version()
 function check_mysql_version()
 {
-    local new_version=`curl http://dev.mysql.com/downloads/mysql/ 2>/dev/null |sed -n 's/<h1> \{0,\}MySQL \{1,\}Community \{1,\}Server \{0,\}\(.\{1,\}\) \{0,\}<\/h1>/\1/p'`;
+    local new_version=`curl http://dev.mysql.com/downloads/mysql/ 2>/dev/null |sed -n 's/<h1> \{0,\}MySQL \{1,\}Community \{1,\}Server \{0,\}\(.\{1,\}\) \{0,\}<\/h1>/\1/p'|sort -rV|head -1`;
     new_version=${new_version// /}
     if [ -z "$new_version" ];then
         echo -e "探测mysql新版本\033[0;31m失败\033[0m" >&2
         return 1;
     fi
 
-    if [ "$new_version" = "$MYSQL_VERSION" ];then
-        echo -e "mysql version is \033[0;32mthe latest.\033[0m"
-        return
-    fi
-
-    is_new_version $new_version $MYSQL_VERSION
+    is_new_version $MYSQL_VERSION $new_version
     if [ "$?" = "0" ];then
-        echo -e "mysql current version: \033[0;33m${MYSQL_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+        echo -e "mysql version is \033[0;32mthe latest.\033[0m"
         return 0;
     fi
 
-    echo -e "mysql version is \033[0;32mthe latest.\033[0m"
+    echo -e "mysql current version: \033[0;33m${MYSQL_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
 # {{{ function check_imagemagick_version()
@@ -3735,18 +3721,13 @@ function check_imagemagick_version()
         return 1;
     fi
 
-    if [ "$new_version" = "$IMAGEMAGICK_VERSION" ];then
-        echo -e "imagemagick version is \033[0;32mthe latest.\033[0m"
-        return
-    fi
-
-    is_new_version ${new_version//-/.} ${IMAGEMAGICK_VERSION//-/.}
+    is_new_version ${IMAGEMAGICK_VERSION} ${new_version}
     if [ "$?" = "0" ];then
-        echo -e "imagemagick current version: \033[0;33m${IMAGEMAGICK_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+        echo -e "imagemagick version is \033[0;32mthe latest.\033[0m"
         return 0;
     fi
 
-    echo -e "imagemagick version is \033[0;32mthe latest.\033[0m"
+    echo -e "imagemagick current version: \033[0;33m${IMAGEMAGICK_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
 # {{{ function check_pkgconfig_version()
@@ -3758,28 +3739,13 @@ function check_pkgconfig_version()
         return 1;
     fi
 
-    if [ "$new_version" = "$PKGCONFIG_VERSION" ];then
-        echo -e "pkgconfig version is \033[0;32mthe latest.\033[0m"
-        return
-    fi
-
-    local tmp_new=$new_version;
-    if [ `echo $new_version |tr -cd . |wc -c` = "1" ];then
-        tmp_new="${tmp_new}.0"
-    fi
-
-    local tmp_old=$PKGCONFIG_VERSION
-    if [ `echo $PKGCONFIG_VERSION | tr -cd . |wc -c` = "1" ];then
-        tmp_old="${tmp_old}.0"
-    fi
-
-    is_new_version $tmp_new $tmp_old
+    is_new_version $PKGCONFIG_VERSION $new_version
     if [ "$?" = "0" ];then
-        echo -e "pkgconfig current version: \033[0;33m${PKGCONFIG_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+        echo -e "pkgconfig version is \033[0;32mthe latest.\033[0m"
         return 0;
     fi
 
-    echo -e "pkgconfig version is \033[0;32mthe latest.\033[0m"
+    echo -e "pkgconfig current version: \033[0;33m${PKGCONFIG_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
 # {{{ function check_re2c_version()
@@ -3943,24 +3909,10 @@ function check_github_soft_version()
 
                                                                                                                                    # release\|beta
     local new_version=`curl $url 2>/dev/null |sed -n "s/^.\{1,\} href=\"[^\"]\{1,\}${soft}[^\"]\{0,\}\/archive\/\(RELEASE_\)\{0,1\}v\{0,1\}\([0-9._]\{1,\}\)\(-\(release\)\)\{0,1\}.tar.gz\"[^>]\{0,\}>.\{0,\}$/\2/p"|sort -rV|head -1`
-#    local new_version=`curl $url 2>/dev/null |sed -n "/^.\{1,\} href=\"[^\"]\{1,\}${soft}[^\"]\{0,\}\/archive\/\(RELEASE_\)\{0,1\}v\{0,1\}\([0-9._]\{1,\}\)\(-\(release\)\)\{0,1\}.tar.gz\"[^>]\{0,\}>.\{0,\}$/{
-#        s//\2/p
-#        q
-#        }"`
 
     if [ -z "$new_version" ];then
         echo -e "Check ${soft} version \033[0;31mfaild\033[0m." >&2
         return 1;
-    fi
-
-    if [ "$new_version" = "$current_version" ];then
-        echo -e "${soft} version is \033[0;32mthe latest.\033[0m"
-        return
-    fi
-
-    # 特殊处理
-    if [ "$sof" = "openjpeg" ];then
-:
     fi
 
     if [ "$current_version" = "php7" ];then
@@ -3994,38 +3946,15 @@ function check_github_soft_version()
         fi
     fi
 
-    local tmp_new=$new_version;
-    local tmp_old=$current_version
-
-    local new_num=`echo $new_version |tr -cd . |wc -c`;
-    local old_num=`echo $current_version | tr -cd . |wc -c`;
-
-
-    if [ "$old_num" -gt "$new_num" ];then
-        local difference=$(($old_num - $new_num))
-        while [ "$difference" -gt "0" ]
-        do
-            tmp_new="${tmp_new}.0"
-            ((difference--))
-        done
-    elif [ "$new_num" -gt "$old_num" ];then
-        local difference=$(($new_num - $old_num))
-        while [ "$difference" -gt "0" ]
-        do
-            tmp_old="${tmp_old}.0"
-            ((difference--))
-        done
-    fi
-
-    is_new_version $tmp_new $tmp_old
+    is_new_version $current_version $new_version
     if [ "$?" = "0" ];then
-        echo -e "${soft} current version: \033[0;33m${current_version}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+        echo -e "${soft} version is \033[0;32mthe latest.\033[0m"
         return 0;
     elif [ "$?" = "11" ] ; then
         return;
     fi
 
-    echo -e "${soft} version is \033[0;32mthe latest.\033[0m"
+    echo -e "${soft} current version: \033[0;33m${current_version}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
 # {{{ function check_php_pecl_version()
@@ -4034,19 +3963,11 @@ function check_php_pecl_version()
     local ext=$1;
     local current_version=$2;
 
-    local new_version=`curl http://pecl.php.net/package/${ext} 2>/dev/null|sed -n "/^.\{1,\} href=\"\/get\/${ext}-\([0-9._]\{1,\}\).tgz\"[^>]\{0,\}>.\{0,\}$/{
-         s//\1/p
-         q
-         }"`;
+    local new_version=`curl http://pecl.php.net/package/${ext} 2>/dev/null|sed -n "s/^.\{1,\} href=\"\/get\/${ext}-\([0-9._]\{1,\}\).tgz\"[^>]\{0,\}>.\{0,\}$/\1/p"|sort -rV|head -1`;
 
     if [ -z "$new_version" -o -z "$current_version" ];then
         echo -e "chekc php pecl ${ext} version \033[0;31mfaild\033[0m." >&2
         return 1;
-    fi
-
-    if [ "$new_version" = "$current_version" ];then
-        echo -e "PHP extension ${ext} version is \033[0;32mthe latest.\033[0m"
-        return
     fi
 
     if [ "$current_version" = "php7" ];then
@@ -4072,55 +3993,29 @@ function check_php_pecl_version()
         fi
     fi
 
-    local tmp_new=$new_version;
-    local tmp_old=$current_version
-
-    local new_num=`echo $new_version |tr -cd . |wc -c`;
-    local old_num=`echo $current_version | tr -cd . |wc -c`;
-
-
-    if [ "$old_num" -gt "$new_num" ];then
-        local difference=$(($old_num - $new_num))
-        while [ "$difference" -gt "0" ]
-        do
-            $tmp_new="${tmp_new}.0"
-            (($difference--))
-        done
-    elif [ "$new_num" -gt "$old_num" ];then
-        local difference=$(($new_num - $old_num))
-        while [ "$difference" -gt "0" ]
-        do
-            $tmp_old="${tmp_old}.0"
-            (($difference--))
-        done
-    fi
-
-    is_new_version $tmp_new $tmp_old
+    is_new_version $current_version $new_version
     if [ "$?" = "0" ];then
-        echo -e "PHP extension ${ext} current version: \033[0;33m${current_version}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+        echo -e "PHP extension ${ext} version is \033[0;32mthe latest.\033[0m"
         return 0;
     elif [ "$?" = "11" ] ; then
         return;
     fi
 
-    echo -e "PHP extension ${ext} version is \033[0;32mthe latest.\033[0m"
+    echo -e "PHP extension ${ext} current version: \033[0;33m${current_version}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
 # {{{ function check_sourceforge_soft_version()
 function check_sourceforge_soft_version()
 {
     local soft=$1
-    local new_version=`curl https://sourceforge.net/projects/${soft}/files/${soft}2/ 2>/dev/null|sed -n "/^.\{1,\}Download \{1,\}${soft}-\([0-9.]\{1,\}\).tar\..\{1,\}$/{
-         s//\1/p
-         q
-        }"`;
+    local current_version=$2
+    local new_version=`curl https://sourceforge.net/projects/${soft}/files/${soft}2/ 2>/dev/null|sed -n "s/^.\{1,\}Download \{1,\}${soft}-\([0-9.]\{1,\}\).tar\..\{1,\}$/\1/p"|sort -rV|head -1`;
      if [ -z "$new_version" ];then
          echo -e "探测${soft}的新版本\033[0;31m失败\033[0m" >&2
          return 1;
      fi
 
-     local version=`echo ${soft}_VERSION|tr '[a-z]' '[A-Z]'`
-     version_compare ${!version} $new_version
+     version_compare ${new_version} $current_version
      if [ "$?" !=0 ];then
          echo -e "${soft} current version: \033[0;33m${!version}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
      fi
@@ -4131,48 +4026,33 @@ function check_sourceforge_soft_version()
 # {{{ function version_compare() 11出错误 0 相同 1 前高于后 2 前低于后
 function version_compare()
 {
-    local new_version=$1;
-    local old_version=$2;
+    local first_version=$1;
+    local second_version=$2;
 
-    if [ -z "$new_version" -o -z "$old_version" ]; then
-        echo "parameter error. new_version: ${new_version} old_version: ${old_version}" >&2
+    if [ -z "$first_version" -o -z "$second_version" ]; then
+        echo "parameter error. first_version: ${first_version} second_version: ${second_version}" >&2
         return 11;
     fi
 
-    echo $new_version | grep -q  '^[0-9.]\{1,\}$'
+    if [ "$first_version" = "$second_version" ];then
+        return 0;
+    fi
 
-    if [ "$?" != 0 ]; then
-        echo "The version number format does not support." >&2
+    local tmp_version=`echo "$first_version" "$second_version"|tr " " "\n"|sort -rV|head -1`;
+    if [ -z "$tmp_version" ]; then
+        echo "parameter error. first_version: ${first_version} second_version: ${second_version}" >&2
+        return 11;
+    fi
+    if [ "$tmp_version" = "$first_version" ];then
+        return 1;
+    elif [ "$tmp_version" = "$second_version" ];then
+        return 2;
+    else
+        echo "parameter error. first_version: ${first_version} second_version: ${second_version}" >&2
         return 11;
     fi
 
-    echo $old_version | grep -q  '^[0-9.]\{1,\}$'
-
-    if [ "$?" != 0 ]; then
-        echo "The version number format does not support." >&2
-        return 11;
-    fi
-
-    local new_version_vars=( ${new_version//./ } )
-    local old_version_vars=( ${old_version//./ } )
-
-    if [ "${#new_version_vars[*]}" -ne "${#old_version_vars[@]}" ]; then
-        echo "The version number format does not match. new_version: ${new_version} old_version: ${old_version}" >&2
-        return 11;
-    fi
-
-    local i=0;
-
-    for ((;i<=${#old_version_vars[@]};i++))
-    {
-        if [ "${old_version_vars[i]}"  -lt "${new_version_vars[i]}" ]; then
-            return 1;
-        elif [ "${old_version_vars[i]}"  -gt "${new_version_vars[i]}" ]; then
-            return 2;
-        fi
-    }
-
-    return 0;
+    return 2;
 }
 # }}}
 # {{{ function is_new_version() 返回值0，为是新版本, 11 出错
@@ -4187,43 +4067,59 @@ function is_new_version()
     fi
 
     if [ "$new_version" = "$old_version" ];then
+        return 0;
+    fi
+
+    local tmp_version=`echo "$new_version" "$old_version"|tr " " "\n"|sort -rV|head -1`;
+
+    if [ -z "$tmp_version" ]; then
+        echo "parameter error. new_version: ${new_version} old_version: ${old_version}" >&2
+        return 11;
+    fi
+
+    if [ "$tmp_version" = "$new_version" ];then
+        return 0;
+    elif [ "$tmp_version" = "$old_version" ];then
         return 1;
-    fi
-
-    echo $new_version | grep -q  '^[0-9.]\{1,\}$'
-
-    if [ "$?" != 0 ]; then
-        echo "The version number format does not support." >&2
+    else
+        echo "parameter error. new_version: ${new_version} old_version: ${old_version}" >&2
         return 11;
     fi
 
-    echo $old_version | grep -q  '^[0-9.]\{1,\}$'
-
-    if [ "$?" != 0 ]; then
-        echo "The version number format does not support." >&2
-        return 11;
-    fi
-
-    local new_version_vars=( ${new_version//./ } )
-    local old_version_vars=( ${old_version//./ } )
-
-    if [ "${#new_version_vars[*]}" -ne "${#old_version_vars[@]}" ]; then
-        echo "The version number format does not match. new_version: ${new_version} old_version: ${old_version}" >&2
-        return 11;
-    fi
-
-    local i=0;
-    for ((;i<${#old_version_vars[@]};i++))
-    {
-        if [ "${old_version_vars[i]}"  -lt "${new_version_vars[i]}" ]; then
-            return 0;
-        elif [ "${old_version_vars[i]}"  -gt "${new_version_vars[i]}" ]; then
-            echo "Warning: The version number error. new_version: ${new_version} old_version: ${old_version}" >&2
-            return 11;
-        fi
-    }
-
-    return 1;
+#    echo $new_version | grep -q  '^[0-9.]\{1,\}$'
+#
+#    if [ "$?" != 0 ]; then
+#        echo "The version number format does not support." >&2
+#        return 11;
+#    fi
+#
+#    echo $old_version | grep -q  '^[0-9.]\{1,\}$'
+#
+#    if [ "$?" != 0 ]; then
+#        echo "The version number format does not support." >&2
+#        return 11;
+#    fi
+#
+#    local new_version_vars=( ${new_version//./ } )
+#    local old_version_vars=( ${old_version//./ } )
+#
+#    if [ "${#new_version_vars[*]}" -ne "${#old_version_vars[@]}" ]; then
+#        echo "The version number format does not match. new_version: ${new_version} old_version: ${old_version}" >&2
+#        return 11;
+#    fi
+#
+#    local i=0;
+#    for ((;i<${#old_version_vars[@]};i++))
+#    {
+#        if [ "${old_version_vars[i]}"  -lt "${new_version_vars[i]}" ]; then
+#            return 0;
+#        elif [ "${old_version_vars[i]}"  -gt "${new_version_vars[i]}" ]; then
+#            echo "Warning: The version number error. new_version: ${new_version} old_version: ${old_version}" >&2
+#            return 11;
+#        fi
+#    }
+#
+#    return 1;
 }
 # }}}
 # {{{ function pkg_config_path_init()
