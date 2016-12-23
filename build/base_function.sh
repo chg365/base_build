@@ -1,6 +1,9 @@
 #!/bin/bash
 # laravel框架关键技术解析
 
+#IFS_old=$IFS
+#IFS=$'\n'
+
 function check_minimum_env_requirements()
 {
 # coreutils 7.0 sort
@@ -23,6 +26,28 @@ function check_minimum_env_requirements()
 # bison
 # yum install cyrus-sasl-devel # /usr/include/sasl/sasl.h
 }
+function sed_quote()
+{
+    local a=$1;
+    # 替换转义符
+    a=${a//\\/\\\\}
+    # 替换.
+    a=${a//./\\.}
+    # 替换分隔符/
+    a=${a//\//\\\/}
+    echo $a;
+#line=`sed -n "/^$(sed_quote $ext),/=" MIME_table.txt`
+}
+function sed_quote2()
+{
+    local a=$1;
+    # 替换转义符
+    a=${a//\\/\\\\}
+    # 替换分隔符/
+    a=${a//\//\\\/}
+    echo $a;
+}
+
 # {{{ function check_bison_version()
 function check_bison_version()
 {
@@ -342,7 +367,12 @@ function wget_base_library()
     wget_lib $JPEG_FILE_NAME          "http://www.ijg.org/files/$JPEG_FILE_NAME"
     wget_lib $LIBJPEG_FILE_NAME       "https://sourceforge.net/projects/libjpeg-turbo/files/$LIBJPEG_VERSION/$LIBJPEG_FILE_NAME/download"
 
-    wget_lib $OPENJPEG_FILE_NAME      "https://github.com/uclouvain/openjpeg/archive/version.${OPENJPEG_VERSION/%.0/}.tar.gz"
+    local tmp="v";
+    version_compare $OPENJPEG_VERSION "2.1.1"
+    if [ "$?" = "2" ];then
+        tmp="version.";
+    fi
+    wget_lib $OPENJPEG_FILE_NAME      "https://github.com/uclouvain/openjpeg/archive/${tmp}${OPENJPEG_VERSION/%.0/}.tar.gz"
     wget_lib $FREETYPE_FILE_NAME      "https://sourceforge.net/projects/freetype/files/freetype${FREETYPE_VERSION%%.*}/$FREETYPE_VERSION/$FREETYPE_FILE_NAME/download"
     wget_lib $EXPAT_FILE_NAME         "https://sourceforge.net/projects/expat/files/expat/$EXPAT_VERSION/$EXPAT_FILE_NAME/download"
     wget_lib $FONTCONFIG_FILE_NAME    "https://www.freedesktop.org/software/fontconfig/release/$FONTCONFIG_FILE_NAME"
@@ -354,7 +384,14 @@ function wget_base_library()
     wget_lib $LIBXPM_FILE_NAME        "http://xorg.freedesktop.org/releases/individual/lib/$LIBXPM_FILE_NAME"
     # wget_lib $LIBGD_FILE_NAME       "https://bitbucket.org/libgd/gd-libgd/downloads/$LIBGD_FILE_NAME"
     wget_lib $LIBGD_FILE_NAME         "http://fossies.org/linux/www/$LIBGD_FILE_NAME"
-    wget_lib $IMAGEMAGICK_FILE_NAME  "https://sourceforge.net/projects/imagemagick/files/${IMAGEMAGICK_VERSION%-*}-sources/$IMAGEMAGICK_FILE_NAME/download"
+
+#https://sourceforge.net/projects/imagemagick/files/im7-src/ImageMagick-7.0.3-6.tar.xz/download^C
+#     [root@8f52570e0aa0 build]# https://sourceforge.net/projects/imagemagick/files/old-sources/7.x/7.0/ImageMagick-7.0.2-10.tar.gz/download^C
+#     [root@8f52570e0aa0 build]# https://sourceforge.net/projects/imagemagick/files/im6-src/ImageMagick-6.9.6-4.tar.gz/download^C
+#     [root@8f52570e0aa0 build]# https://github.com/ImageMagick/ImageMagick/archive/7.0.3-7.tar.gz
+
+    wget_lib $IMAGEMAGICK_FILE_NAME  "https://github.com/ImageMagick/ImageMagick/archive/${IMAGEMAGICK_VERSION}.tar.gz"
+#wget_lib $IMAGEMAGICK_FILE_NAME  "https://sourceforge.net/projects/imagemagick/files/${IMAGEMAGICK_VERSION%-*}-sources/$IMAGEMAGICK_FILE_NAME/download"
     # wget_lib $IMAGEMAGICK_FILE_NAME   "http://www.imagemagick.org/download/$IMAGEMAGICK_FILE_NAME"
     wget_lib $GMP_FILE_NAME           "ftp://ftp.gmplib.org/pub/gmp/$GMP_FILE_NAME"
     wget_lib $IMAP_FILE_NAME          "ftp://ftp.cac.washington.edu/imap/$IMAP_FILE_NAME"
@@ -1682,6 +1719,13 @@ function compile_tidy()
     TIDY_CONFIGURE="
     cmake ../.. -DCMAKE_INSTALL_PREFIX=$TIDY_BASE
     "
+    # 5.2.0 language_es.h:1: 错误：程序中有游离的 ‘\357’
+    # src/language_en_gb.h
+    # src/language_es.h
+    # src/language_zh_cn.h
+    # src/language_fr.h
+    #for i in `find src/ -type f`; do { grep -q $'^\xef\xbb\xbf' $i; if [ "$?" = "0" ];then echo sed -i '1s/^\xef\xbb\xbf//' $i; fi; } done
+
 
     compile "tidy" "$TIDY_FILE_NAME" "tidy-html5-$TIDY_VERSION/build/cmake" "$TIDY_BASE" "TIDY_CONFIGURE"
     if [ "$OS_NAME" = "Darwin" ];then
@@ -3530,13 +3574,20 @@ configure_libevent_command()
 # {{{ configure_php_swoole_command()
 configure_php_swoole_command()
 {
-    #编译时如果没有pcre，使用时会有意想不到的结果 $memory_table->count() > 0，但是foreach 结果为空
+    local kernel_release=$(uname -r);
+    kernel_release=${kernel_release%%-*}
+    # 编译时如果没有pcre，使用时会有意想不到的结果 $memory_table->count() > 0，但是foreach 结果为空
     CPPFLAGS="$( get_cppflags $OPENSSL_BASE/include $PCRE_BASE/include)" LDFLAGS="$(get_ldflags $OPENSSL_BASE/lib $PCRE_BASE/lib )" \
     ./configure --with-php-config=$PHP_BASE/bin/php-config \
                 --enable-sockets \
                 --enable-openssl \
+                --with-openssl=$OPENSSL_BASE \
                 --with-swoole \
-                --enable-swoole
+                --enable-swoole \
+                --enable-coroutine \
+                --enable-thread \
+                --enable-ringbuffer \
+                $( [ "$kernel_release" -gt "2.6.32" ] && echo "--enable-hugepage" || echo "" )
 }
 # }}}
 # {{{ configure_php_amqp_command()
@@ -3568,6 +3619,44 @@ configure_php_maxminddb_command()
 # }}}
 # }}}
 
+# {{{ function check_soft_updates()
+function check_soft_updates()
+{
+check_version openssl
+check_version icu
+check_version zlib
+check_version libzip
+check_version gmp
+check_version php
+check_version mysql
+check_version imagemagick
+check_version pkgconfig
+
+# github
+check_version re2c
+check_version tidy
+check_version sphinx
+check_version pecl_sphinx
+check_version openjpeg
+check_version fontforge
+check_version pdf2htmlEX
+check_pecl_memcached_version
+check_pecl_qrencode_version
+check_version smarty
+check_version rabbitmq
+check_version zeromq
+check_pecl_zmq_version 
+check_version libmaxminddb
+check_version maxmind_db_reader_php
+check_version web_service_common_php
+check_version geoip2_php
+check_version geoipupdate
+check_version electron
+check_version phantomjs
+check_version laravel
+check_version laravel_framework
+}
+# }}}
 # {{{ function compile_rabbitmq()
 function compile_rabbitmq()
 {
@@ -3642,37 +3731,76 @@ function check_version()
     $func_name
 }
 # }}}
-# {{{ function check_soft_updates()
-function check_soft_updates()
+# {{{ function check_openssl_version()
+function check_openssl_version()
 {
-check_version php
-check_version mysql
-check_version imagemagick
-check_version pkgconfig
+    local new_version=`curl https://www.openssl.org/source/ 2>/dev/null|sed -n 's/^.\{1,\}>openssl-\([0-9a-zA-Z.]\{2,\}\).tar.gz.\{1,\}/\1/p'|sort -rV|head -1`
+    if [ -z "$new_version" ];then
+        echo -e "探测openssl新版本\033[0;31m失败\033[0m" >&2
+        return 1;
+    fi
 
-# github
-check_version re2c
-check_version tidy
-check_version sphinx
-check_version pecl_sphinx
-check_version openjpeg
-check_version fontforge
-check_version pdf2htmlEX
-check_pecl_memcached_version
-check_pecl_qrencode_version
-check_version smarty
-check_version rabbitmq
-check_version zeromq
-check_pecl_zmq_version 
-check_version libmaxminddb
-check_version maxmind_db_reader_php
-check_version web_service_common_php
-check_version geoip2_php
-check_version geoipupdate
-check_version electron
-check_version phantomjs
-check_version laravel
-check_version laravel_framework
+    is_new_version $OPENSSL_VERSION $new_version
+    if [ "$?" = "0" ];then
+        echo -e "openssl version is \033[0;32mthe latest.\033[0m"
+        return 0;
+    fi
+
+    echo -e "openssl current version: \033[0;33m${OPENSSL_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+}
+# }}}
+# {{{ function check_icu_version()
+function check_icu_version()
+{
+    local new_version=`curl https://fossies.org/linux/misc/ 2>/dev/null|sed -n 's/^.\{1,\}>icu4c-\([0-9a-zA-Z._]\{2,\}\)-src.tgz<.\{1,\}/\1/p'|sort -rV|head -1`
+    if [ -z "$new_version" ];then
+        echo -e "探测icu新版本\033[0;31m失败\033[0m" >&2
+        return 1;
+    fi
+
+    is_new_version $ICU_VERSION ${new_version//_/.}
+    if [ "$?" = "0" ];then
+        echo -e "icu version is \033[0;32mthe latest.\033[0m"
+        return 0;
+    fi
+
+    echo -e "icu current version: \033[0;33m${ICU_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+}
+# }}}
+# {{{ function check_zlib_version()
+function check_zlib_version()
+{
+    local new_version=`curl http://zlib.net 2>/dev/null|sed -n 's/^.\{0,\}\<zlib-\([0-9a-zA-Z._]\{2,\}\).tar.gz\>.\{0,\}/\1/p'|sort -rV|head -1`
+    if [ -z "$new_version" ];then
+        echo -e "探测zlib新版本\033[0;31m失败\033[0m" >&2
+        return 1;
+    fi
+
+    is_new_version $ZLIB_VERSION ${new_version//_/.}
+    if [ "$?" = "0" ];then
+        echo -e "zlib version is \033[0;32mthe latest.\033[0m"
+        return 0;
+    fi
+
+    echo -e "zlib current version: \033[0;33m${ZLIB_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+}
+# }}}
+# {{{ function check_libzip_version()
+function check_libzip_version()
+{
+    local new_version=`curl https://nih.at/libzip/ 2>/dev/null|sed -n 's/^.\{0,\}\<libzip-\([0-9a-zA-Z._]\{2,\}\).tar.gz\>.\{0,\}/\1/p'|sort -rV|head -1`
+    if [ -z "$new_version" ];then
+        echo -e "探测libzip新版本\033[0;31m失败\033[0m" >&2
+        return 1;
+    fi
+
+    is_new_version $LIBZIP_VERSION ${new_version//_/.}
+    if [ "$?" = "0" ];then
+        echo -e "libzip version is \033[0;32mthe latest.\033[0m"
+        return 0;
+    fi
+
+    echo -e "libzip current version: \033[0;33m${LIBZIP_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
 # {{{ function check_php_version()
@@ -3691,6 +3819,24 @@ function check_php_version()
     fi
 
     echo -e "php current version: \033[0;33m${PHP_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+}
+# }}}
+# {{{ function check_gmp_version()
+function check_gmp_version()
+{
+    local new_version=`curl ftp://ftp.gmplib.org/pub/gmp/ 2>/dev/null|sed -n 's/^.\{1,\}gmp-\([0-9.]\{1,\}\)\.tar\.xz.\{1,\}$/\1/p'|sort -rV|head -1`
+    if [ -z "$new_version" ];then
+        echo -e "探测gmp新版本\033[0;31m失败\033[0m" >&2
+        return 1;
+    fi
+
+    is_new_version $GMP_VERSION $new_version
+    if [ "$?" = "0" ];then
+        echo -e "gmp version is \033[0;32mthe latest.\033[0m"
+        return 0;
+    fi
+
+    echo -e "gmp current version: \033[0;33m${GMP_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
 # {{{ function check_mysql_version()
@@ -4221,4 +4367,26 @@ function repair_dynamic_shared_library()
     done
 }
 # }}}
+
+
+
+#wget --content-disposition --no-check-certificate https://github.com/vrtadmin/clamav-devel/archive/clamav-0.99.2.tar.gz
+#tar zxf clamav-devel-clamav-0.99.2.tar.gz
+#cd clamav-devel-clamav-0.99.2
+#./configure --prefix=/usr/local/chg/base/opt/clamav --with-openssl=$OPENSSL_BASE --with-pcre=$PCRE_BASE --with-zlib=$ZLIB_BASE --with-libbz2-prefix=/usr/local/chg/base/contrib --with-iconv --with-libcurl=$CURL_BASE
+#./configure --prefix=/usr/local/chg/base/opt/clamav --with-openssl=$OPENSSL_BASE --with-pcre=$PCRE_BASE --with-zlib=$ZLIB_BASE --with-libbz2-prefix=/usr/local/chg/base/contrib --with-iconv --with-libcurl=$CURL_BASE --with-xml=$LIBXML2_BASE
+#make
+#make install
+#cd ..
+#rm -rf clamav-devel-clamav-0.99.2
+
+#http://www.clamav.net/documents/installing-clamav
+
+#https://linux.cn/article-5156-1.html
+#https://github.com/argos66/php-clamav
+#http://php-clamav.sourceforge.net/
+#https://github.com/FileZ/php-clamd
+
+#https://github.com/jonjomckay/quahog
+#https://github.com/sunspikes/clamav-validator/blob/master/src/ClamavValidator/ClamavValidatorServiceProvider.php
 

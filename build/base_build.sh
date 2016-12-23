@@ -263,3 +263,5 @@ ldd /usr/local/chg/base/opt/php/lib/php/extensions/no-debug-zts-20151012/geoip.s
 
 
 http://www.rabbitmq.com/releases/rabbitmq-server/v3.6.5/rabbitmq-server-3.6.5.tar.xz
+wget --content-disposition --no-check-certificate https://github.com/phpDocumentor/phpDocumentor2/archive/v2.9.0.tar.gz
+
