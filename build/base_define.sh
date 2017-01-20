@@ -112,8 +112,8 @@ RE2C_VERSION="0.16" # http://re2c.org/about/about.html#version
 
 PCRE_VERSION="8.39"
 #PCRE_VERSION="10.20" # pcre2 编译apache时报错
-OPENSSL_VERSION="1.1.0c"
-ZLIB_VERSION="1.2.8" # www.zlib.net
+OPENSSL_VERSION="1.0.2j" #1.1.0大版本升级后，有问题啊
+ZLIB_VERSION="1.2.11" # www.zlib.net
 CURL_VERSION="7.49.1"
 ICU_VERSION="58.2" # http://site.icu-project.org/
 LIBZIP_VERSION="1.1.3" # http://www.nih.at/libzip/index.html
@@ -135,7 +135,7 @@ SPHINX_VERSION="2.2.11"
 PHP_SPHINX_VERSION="php7"
 
 LIBGD_VERSION="2.1.1" # http://libgd.github.io/
-IMAGEMAGICK_VERSION="7.0.4-0" # http://www.imagemagick.org/download/
+IMAGEMAGICK_VERSION="7.0.4-4" # http://www.imagemagick.org/download/
 JPEG_VERSION="9b" # 8d # http://www.ijg.org/files/
 LIBPNG_VERSION="1.6.23"
 NASM_VERSION="2.12.01"
@@ -171,7 +171,7 @@ RABBITMQ_C_VERSION="0.8.0"
 PHP_ZMQ_VERSION="php7" #1.1.3
 PHP_LIBSODIUM_VERSION="1.0.0"
 
-SQLITE_VERSION="3130000"
+SQLITE_VERSION="3160200"
 POSTGRESQL_VERSION="9.4.4"
 
 APR_VERSION="1.5.2"
@@ -181,12 +181,12 @@ APACHE_VERSION="2.4.16"
 MYSQL_VERSION="5.7.17"
 BOOST_VERSION="1_59_0" # 1_61_0
 NGINX_VERSION="1.8.0"
-PHP_VERSION="7.1.0"
+PHP_VERSION="7.1.1"
 
 MEMCACHED_VERSION="1.4.29"
 PHP_MEMCACHED_VERSION="php7"
 EVENT_VERSION="2.1.0"
-DIO_VERSION="0.0.7" # http://pecl.php.net/package/dio
+DIO_VERSION="0.0.9" # http://pecl.php.net/package/dio
 PHP_LIBEVENT_VERSION="0.1.0" # http://pecl.php.net/package/libevent
 APCU_VERSION="5.1.5"
 APCU_BC_VERSION="1.0.3"
@@ -198,18 +198,18 @@ PECL_HTTP_VERSION="3.0.1"
 AMQP_VERSION="1.7.1"
 MAILPARSE_VERSION="3.0.1"
 PHP_REDIS_VERSION="3.0.0"
-PHP_MONGODB_VERSION="1.1.8"
+PHP_MONGODB_VERSION="1.2.3"
 SOLR_VERSION="2.4.0"
 IMAGICK_VERSION="3.4.3RC1" # http://pecl.php.net/package/imagick
 PTHREADS_VERSION="3.1.6" # http://pecl.php.net/package/pthreads
-SWOOLE_VERSION="1.8.7" # http://pecl.php.net/package/swoole
+SWOOLE_VERSION="2.0.5" # http://pecl.php.net/package/swoole
 #QRENCODE_VERSION="0.0.3"
 QRENCODE_VERSION="0.1.0"
 
 ZEND_VERSION="2.4.9" # http://framework.zend.com/downloads/latest
 SMARTY_VERSION="3.1.31" # www.smarty.net
 LARAVEL_VERSION="5.3.16"
-LARAVEL_FRAMEWORK_VERSION="5.3.28"
+LARAVEL_FRAMEWORK_VERSION="5.3.29"
 
 CKEDITOR_VERSION="4.5.6" #  www.ckeditor.com
 JQUERY_VERSION="1.11.3.min" # http://jquery.com/
@@ -219,11 +219,11 @@ SWFUPLOAD_VERSION="2.2.0.1"
 
 
 LIBMAXMINDDB_VERSION="1.2.0"
-MAXMIND_DB_READER_PHP_VERSION="1.1.2"
+MAXMIND_DB_READER_PHP_VERSION="1.1.3"
 WEB_SERVICE_COMMON_PHP_VERSION="0.3.1"
 GEOIP2_PHP_VERSION="2.4.4"
-GEOIPUPDATE_VERSION="2.2.2"
-ELECTRON_VERSION="1.4.13"
+GEOIPUPDATE_VERSION="2.3.1"
+ELECTRON_VERSION="1.4.15"
 PHANTOMJS_VERSION="2.1.1"
 
 # }}}
