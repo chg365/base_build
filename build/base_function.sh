@@ -28,6 +28,7 @@ function check_minimum_env_requirements()
 }
 function sed_quote()
 {
+# mac sed 不支持\< \>
     local a=$1;
     # 替换转义符
     a=${a//\\/\\\\}
@@ -3745,7 +3746,7 @@ function check_version()
 # {{{ function check_openssl_version()
 function check_openssl_version()
 {
-    local new_version=`curl https://www.openssl.org/source/ 2>/dev/null|sed -n 's/^.\{1,\}>openssl-\([0-9a-zA-Z.]\{2,\}\).tar.gz.\{1,\}/\1/p'|sort -rV|head -1`
+    local new_version=`curl -k https://www.openssl.org/source/ 2>/dev/null|sed -n 's/^.\{1,\}>openssl-\([0-9a-zA-Z.]\{2,\}\).tar.gz.\{1,\}/\1/p'|sort -rV|head -1`
     if [ -z "$new_version" ];then
         echo -e "探测openssl新版本\033[0;31m失败\033[0m" >&2
         return 1;
@@ -3763,7 +3764,7 @@ function check_openssl_version()
 # {{{ function check_icu_version()
 function check_icu_version()
 {
-    local new_version=`curl https://fossies.org/linux/misc/ 2>/dev/null|sed -n 's/^.\{1,\}>icu4c-\([0-9a-zA-Z._]\{2,\}\)-src.tgz<.\{1,\}/\1/p'|sort -rV|head -1`
+    local new_version=`curl -k https://fossies.org/linux/misc/ 2>/dev/null|sed -n 's/^.\{1,\}>icu4c-\([0-9a-zA-Z._]\{2,\}\)-src.tgz<.\{1,\}/\1/p'|sort -rV|head -1`
     if [ -z "$new_version" ];then
         echo -e "探测icu新版本\033[0;31m失败\033[0m" >&2
         return 1;
@@ -3781,7 +3782,7 @@ function check_icu_version()
 # {{{ function check_zlib_version()
 function check_zlib_version()
 {
-    local new_version=`curl http://zlib.net 2>/dev/null|sed -n 's/^.\{0,\}\<zlib-\([0-9a-zA-Z._]\{2,\}\).tar.gz\>.\{0,\}/\1/p'|sort -rV|head -1`
+    local new_version=`curl -k http://zlib.net 2>/dev/null|sed -n 's/^.\{0,\}"zlib-\([0-9a-zA-Z._]\{2,\}\).tar.gz".\{0,\}/\1/p'|sort -rV|head -1`
     if [ -z "$new_version" ];then
         echo -e "探测zlib新版本\033[0;31m失败\033[0m" >&2
         return 1;
@@ -3799,7 +3800,7 @@ function check_zlib_version()
 # {{{ function check_libzip_version()
 function check_libzip_version()
 {
-    local new_version=`curl https://nih.at/libzip/ 2>/dev/null|sed -n 's/^.\{0,\}\<libzip-\([0-9a-zA-Z._]\{2,\}\).tar.gz\>.\{0,\}/\1/p'|sort -rV|head -1`
+    local new_version=`curl -k https://nih.at/libzip/ 2>/dev/null|sed -n 's/^.\{0,\}"libzip-\([0-9a-zA-Z._]\{2,\}\).tar.gz".\{0,\}/\1/p'|sort -rV|head -1`
     if [ -z "$new_version" ];then
         echo -e "探测libzip新版本\033[0;31m失败\033[0m" >&2
         return 1;
@@ -3890,7 +3891,7 @@ function check_imagemagick_version()
 # {{{ function check_pkgconfig_version()
 function check_pkgconfig_version()
 {
-    local new_version=`curl https://pkg-config.freedesktop.org/releases/ 2>/dev/null |sed -n 's/^.\{1,\} href="pkg-config-\([0-9.]\{1,\}\).tar.gz">.\{1,\}$/\1/p'|sort -rV|head -1`
+    local new_version=`curl -k https://pkg-config.freedesktop.org/releases/ 2>/dev/null |sed -n 's/^.\{1,\} href="pkg-config-\([0-9.]\{1,\}\).tar.gz">.\{1,\}$/\1/p'|sort -rV|head -1`
     if [ -z "$new_version" ];then
         echo -e "探测pkgconfig新版本\033[0;31m失败\033[0m" >&2
         return 1;
@@ -4073,7 +4074,7 @@ function check_swoole_version()
 function check_sqlite_version()
 {
     # check_github_soft_version sqlite $SQLITE_VERSION "https://github.com/mackyle/sqlite/releases" "version-\([0-9.]\{5,\}\)\.tar\.gz" 1
-    local new_version=`curl https://www.sqlite.org/download.html 2>/dev/null |sed -n 's/^.\{1,\}\/sqlite-autoconf-\([0-9.]\{1,\}\).tar.gz.\{1,\}$/\1/p'|sort -rV|head -1`
+    local new_version=`curl -k https://www.sqlite.org/download.html 2>/dev/null |sed -n 's/^.\{1,\}\/sqlite-autoconf-\([0-9.]\{1,\}\).tar.gz.\{1,\}$/\1/p'|sort -rV|head -1`
     if [ -z "$new_version" ];then
         echo -e "探测sqlite新版本\033[0;31m失败\033[0m" >&2
         return 1;
@@ -4116,7 +4117,7 @@ function check_github_soft_version()
 
     pattern="s/^.\{1,\} href=\"[^\\\"]\{1,\}${soft}[^\\\"]\{0,\}\/archive\/$pattern\"[^>]\{0,\}>.\{0,\}$/\\${num}/p";
 
-    local new_version=`curl $url 2>/dev/null |sed -n "$pattern" |sort -rV|head -1`
+    local new_version=`curl -k $url 2>/dev/null |sed -n "$pattern" |sort -rV|head -1`
 
     if [ -z "$new_version" ];then
         echo -e "Check ${soft} version \033[0;31mfaild\033[0m." >&2
@@ -4217,7 +4218,7 @@ function check_sourceforge_soft_version()
 {
     local soft=$1
     local current_version=$2
-    local new_version=`curl https://sourceforge.net/projects/${soft}/files/${soft}2/ 2>/dev/null|sed -n "s/^.\{1,\}Download \{1,\}${soft}-\([0-9.]\{1,\}\).tar\..\{1,\}$/\1/p"|sort -rV|head -1`;
+    local new_version=`curl -k https://sourceforge.net/projects/${soft}/files/${soft}2/ 2>/dev/null|sed -n "s/^.\{1,\}Download \{1,\}${soft}-\([0-9.]\{1,\}\).tar\..\{1,\}$/\1/p"|sort -rV|head -1`;
      if [ -z "$new_version" ];then
          echo -e "探测${soft}的新版本\033[0;31m失败\033[0m" >&2
          return 1;
