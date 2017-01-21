@@ -121,9 +121,10 @@ compile_libgd
 compile_php
 compile_memcached
 compile_sphinx
+compile_sqlite
 compile_php_extension_imagick
-#compile_php_extension_dio
-compile_php_extension_pthreads
+compile_php_extension_dio
+#compile_php_extension_pthreads
 compile_php_extension_qrencode
 if [ "$OS_NAME" = "Darwin" ];then
 compile_php_extension_zeromq

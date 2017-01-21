@@ -340,7 +340,7 @@ function wget_base_library()
     # wget_lib $JSON_FILE_NAME          "https://s3.amazonaws.com/json-c_releases/releases/$JSON_FILE_NAME"
     # http://sourceforge.net/projects/mcrypt/files/MCrypt/2.6.8/mcrypt-2.6.8.tar.gz/download
     wget_lib $LIBMCRYPT_FILE_NAME     "http://sourceforge.net/projects/mcrypt/files/Libmcrypt/$LIBMCRYPT_VERSION/$LIBMCRYPT_FILE_NAME/download"
-    wget_lib $SQLITE_FILE_NAME        "http://www.sqlite.org/2016/$SQLITE_FILE_NAME"
+    wget_lib $SQLITE_FILE_NAME        "http://www.sqlite.org/2017/$SQLITE_FILE_NAME"
     wget_lib $CURL_FILE_NAME          "http://curl.haxx.se/download/$CURL_FILE_NAME"
     # http://downloads.mysql.com/archives/mysql-${MYSQL_VERSION%.*}/$MYSQL_FILE_NAME
     # http://mysql.oss.eznetsols.org/Downloads/MySQL-${MYSQL_VERSION%.*}/$MYSQL_FILE_NAME
@@ -1893,7 +1893,7 @@ function compile_sqlite()
     fi
 
     SQLITE_CONFIGURE="
-    ./configure --prefix=$SQLITE_BASE
+    ./configure --prefix=$SQLITE_BASE --enable-json1 --enable-session --enable-fts5
     "
 
     compile "sqlite" "$SQLITE_FILE_NAME" "sqlite-autoconf-$SQLITE_VERSION" "$SQLITE_BASE" "SQLITE_CONFIGURE"
@@ -2540,6 +2540,7 @@ function compile_php()
                 --with-png-dir=$LIBPNG_BASE \
                 --with-xpm-dir=$LIBXPM_BASE \
                 --with-zlib-dir=$ZLIB_BASE \
+                $( [ `echo "$PHP_VERSION 7.1.0"|tr " " "\n"|sort -rV|head -1` = "$PHP_VERSION" ] && echo "--disable-zend-signals" ||echo " ") \
                 --enable-opcache
     "
 
@@ -3576,18 +3577,22 @@ configure_php_swoole_command()
 {
     local kernel_release=$(uname -r);
     kernel_release=${kernel_release%%-*}
+
+    local is_2=$( [ `echo "$SWOOLE_VERSION 2.0.0"|tr " " "\n"|sort -rV|head -1` = "$SWOOLE_VERSION" ] && echo "1" || echo "0")
+
     # 编译时如果没有pcre，使用时会有意想不到的结果 $memory_table->count() > 0，但是foreach 结果为空
     CPPFLAGS="$( get_cppflags $OPENSSL_BASE/include $PCRE_BASE/include)" LDFLAGS="$(get_ldflags $OPENSSL_BASE/lib $PCRE_BASE/lib )" \
     ./configure --with-php-config=$PHP_BASE/bin/php-config \
                 --enable-sockets \
                 --enable-openssl \
-                --with-openssl=$OPENSSL_BASE \
+                $( [ `echo "$SWOOLE_VERSION 1.9.0"|tr " " "\n"|sort -rV|head -1` = "$SWOOLE_VERSION" ] && echo "--with-openssl$([ `echo "$SWOOLE_VERSION 2.0.0"|tr " " "\n"|sort -V|head -1` != "2.0.0" ] && echo  "-dir" || echo "")=$OPENSSL_BASE" || echo " " ) \
                 --with-swoole \
                 --enable-swoole \
+                $( [ "$is_2" = "1" ] && echo "
                 --enable-coroutine \
                 --enable-thread \
-                --enable-ringbuffer \
-                $( [ "$kernel_release" -gt "2.6.32" ] && echo "--enable-hugepage" || echo "" )
+                --enable-ringbuffer" || echo " ") \
+                $( [ `echo "$kernel_release 2.6.33" | tr " " "\n"|sort -rV|head -1 ` = "$kernel_release" ] && echo "--enable-hugepage" || echo "" )
 }
 # }}}
 # {{{ configure_php_amqp_command()
@@ -3622,6 +3627,8 @@ configure_php_maxminddb_command()
 # {{{ function check_soft_updates()
 function check_soft_updates()
 {
+check_sqlite_version
+check_swoole_version
 check_version openssl
 check_version icu
 check_version zlib
@@ -3640,12 +3647,16 @@ check_version pecl_sphinx
 check_version openjpeg
 check_version fontforge
 check_version pdf2htmlEX
+
+check_pecl_dio_version
 check_pecl_memcached_version
 check_pecl_qrencode_version
+check_pecl_zmq_version 
+check_pecl_mongodb_version
+
 check_version smarty
 check_version rabbitmq
 check_version zeromq
-check_pecl_zmq_version 
 check_version libmaxminddb
 check_version maxmind_db_reader_php
 check_version web_service_common_php
@@ -4014,6 +4025,13 @@ function check_zeromq_version()
     check_github_soft_version zeromq $ZEROMQ_VERSION "$url"
 }
 # }}}
+# {{{ function check_pecl_dio_version()
+function check_pecl_dio_version()
+{
+#check_github_soft_version pecl-system-dio $DIO_VERSION "https://github.com/php/pecl-system-dio/releases"
+    check_php_pecl_version dio $DIO_VERSION
+}
+# }}}
 # {{{ function check_pecl_memcached_version()
 function check_pecl_memcached_version()
 {
@@ -4027,6 +4045,12 @@ function check_pecl_qrencode_version()
     check_github_soft_version qrencode $QRENCODE_VERSION "https://github.com/chg365/qrencode/releases"
 }
 # }}}
+# {{{ function check_pecl_mongodb_version()
+function check_pecl_mongodb_version()
+{
+    check_php_pecl_version mongodb $PHP_MONGODB_VERSION
+}
+# }}}
 # {{{ function check_pecl_zmq_version()
 function check_pecl_zmq_version()
 {
@@ -4037,6 +4061,31 @@ function check_pecl_zmq_version()
 function check_sphinx_version()
 {
     check_github_soft_version sphinx $SPHINX_VERSION "https://github.com/sphinxsearch/sphinx/releases"
+}
+# }}}
+# {{{ function check_swoole_version()
+function check_swoole_version()
+{
+    check_github_soft_version swoole $SWOOLE_VERSION "https://github.com/swoole/swoole-src/releases" "v\([0-9.]\{5,\}\)\(-stable\)\{0,1\}\.tar\.gz" 1
+}
+# }}}
+# {{{ function check_sqlite_version()
+function check_sqlite_version()
+{
+    # check_github_soft_version sqlite $SQLITE_VERSION "https://github.com/mackyle/sqlite/releases" "version-\([0-9.]\{5,\}\)\.tar\.gz" 1
+    local new_version=`curl https://www.sqlite.org/download.html 2>/dev/null |sed -n 's/^.\{1,\}\/sqlite-autoconf-\([0-9.]\{1,\}\).tar.gz.\{1,\}$/\1/p'|sort -rV|head -1`
+    if [ -z "$new_version" ];then
+        echo -e "探测sqlite新版本\033[0;31m失败\033[0m" >&2
+        return 1;
+    fi
+
+    is_new_version $SQLITE_VERSION $new_version
+    if [ "$?" = "0" ];then
+        echo -e "sqlite version is \033[0;32mthe latest.\033[0m"
+        return 0;
+    fi
+
+    echo -e "sqlite current version: \033[0;33m${SQLITE_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
 # {{{ function check_pecl_sphinx_version()
@@ -4052,9 +4101,22 @@ function check_github_soft_version()
     local soft=$1;
     local current_version=$2;
     local url=$3;
+    local pattern="$4";
+    local num="$5"
 
-                                                                                                                                   # release\|beta
-    local new_version=`curl $url 2>/dev/null |sed -n "s/^.\{1,\} href=\"[^\"]\{1,\}${soft}[^\"]\{0,\}\/archive\/\(RELEASE_\)\{0,1\}v\{0,1\}\([0-9._]\{1,\}\)\(-\(release\)\)\{0,1\}.tar.gz\"[^>]\{0,\}>.\{0,\}$/\2/p"|sort -rV|head -1`
+    if [ "$pattern" = "" ];then
+                                                               # release\|beta
+        pattern="\(RELEASE_\)\{0,1\}v\{0,1\}\([0-9._]\{1,\}\)\(-\(release\)\)\{0,1\}.tar.gz"
+        num=2
+    fi
+
+    if [ "$num" = "" -o `echo "$num" |sed -n '/^[0-9]$/p'` != "$num" ];then
+        num=2;
+    fi
+
+    pattern="s/^.\{1,\} href=\"[^\\\"]\{1,\}${soft}[^\\\"]\{0,\}\/archive\/$pattern\"[^>]\{0,\}>.\{0,\}$/\\${num}/p";
+
+    local new_version=`curl $url 2>/dev/null |sed -n "$pattern" |sort -rV|head -1`
 
     if [ -z "$new_version" ];then
         echo -e "Check ${soft} version \033[0;31mfaild\033[0m." >&2
@@ -4318,7 +4380,7 @@ function export_path()
     export PATH="$COMPILE_BASE/bin:$CONTRIB_BASE/bin:$PATH"
 }
 # }}}
-# {{{ function repair_dynamic_shared_library() moc下解决Library not loaded 问题
+# {{{ function repair_dynamic_shared_library() mac下解决Library not loaded 问题
 function repair_dynamic_shared_library()
 {
     if [ "$OS_NAME" != "Darwin" ];then
@@ -4389,4 +4451,12 @@ function repair_dynamic_shared_library()
 
 #https://github.com/jonjomckay/quahog
 #https://github.com/sunspikes/clamav-validator/blob/master/src/ClamavValidator/ClamavValidatorServiceProvider.php
+
+# wget --content-disposition --no-check-certificate https://github.com/hprose/hprose-php/archive/v2.0.26.tar.gz
+# wget --content-disposition --no-check-certificate https://github.com/hprose/hprose-swoole/archive/v2.0.11.tar.gz
+#[chg@mail8 ~]$ ls hprose-php-2.0.26/src/
+#functions.php  Hprose  Hprose.php  Throwable.php  TypeError.php
+
+#[chg@mail8 ~]$ ls hprose-swoole-2.0.11/src/Hprose/Swoole/
+#Client.php  Http  Server.php  Socket  Timer.php  WebSocket
 
