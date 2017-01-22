@@ -1,5 +1,10 @@
 #!/bin/bash
 
+autoconf_version=`autoconf --version|head -1|awk '{ print $NF; }'`
+if [ `echo "$autoconf_version 2.63"|tr " " "\n"|sort -rV|head -1` = "2.63" ] ; then
+    echo "Autoconf version 2.64 or higher is required" >&2
+    exit;
+fi
 export LANG=C
 export LC_ALL=C
  
@@ -112,9 +117,10 @@ fi
 ################################################################################
 export LC_CTYPE=C 
 export LANG=C
-check_soft_updates
-exit;
+#check_soft_updates
+#exit;
 pkg_config_path_init
+compile_libunwind
 compile_zeromq
 compile_zlib
 compile_libgd
@@ -126,9 +132,9 @@ compile_php_extension_imagick
 compile_php_extension_dio
 #compile_php_extension_pthreads
 compile_php_extension_qrencode
-if [ "$OS_NAME" = "Darwin" ];then
+#if [ "$OS_NAME" = "Darwin" ];then
 compile_php_extension_zeromq
-fi
+#fi
 compile_php_extension_intl
 compile_php_extension_apcu
 compile_php_extension_apcu_bc

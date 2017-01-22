@@ -437,9 +437,9 @@ function wget_base_library()
     wget_lib $CKEDITOR_FILE_NAME      "http://download.cksource.com/CKEditor/CKEditor/CKEditor%20$CKEDITOR_VERSION/$CKEDITOR_FILE_NAME"
     wget_lib $JQUERY_FILE_NAME        "http://code.jquery.com/$JQUERY_FILE_NAME"
     wget_lib $RABBITMQ_C_FILE_NAME    "https://github.com/alanxz/rabbitmq-c/archive/v${RABBITMQ_C_VERSION}.tar.gz"
-    version=${ZEROMQ_VERSION%.*};
-    # wget_lib $ZEROMQ_FILE_NAME        "https://github.com/zeromq/zeromq${version/./-}/releases/download/v${ZEROMQ_VERSION}/$ZEROMQ_FILE_NAME"
-    wget_lib $ZEROMQ_FILE_NAME        "https://github.com/zeromq/${ZEROMQ_FILE_NAME%-*}/archive/v${ZEROMQ_VERSION}.tar.gz"
+
+    wget_lib $ZEROMQ_FILE_NAME        "https://github.com/zeromq/libzmq/releases/download/v${ZEROMQ_VERSION}/$ZEROMQ_FILE_NAME"
+    wget_lib $LIBUNWIND_FILE_NAME     "http://download.savannah.gnu.org/releases/libunwind/$LIBUNWIND_FILE_NAME"
     wget_lib $LIBSODIUM_FILE_NAME     "https://download.libsodium.org/libsodium/releases/$LIBSODIUM_FILE_NAME"
     wget_lib $PHP_ZMQ_FILE_NAME       "https://github.com/mkoppanen/php-zmq/archive/${PHP_ZMQ_VERSION}.tar.gz"
     # wget_lib $SWFUPLOAD_FILE_NAME    "http://swfupload.googlecode.com/files/SWFUpload%20v$SWFUPLOAD_VERSION%20Core.zip"
@@ -1459,6 +1459,20 @@ function is_installed_zeromq()
     return;
 }
 # }}}
+# {{{ function is_installed_libunwind()
+function is_installed_libunwind()
+{
+    local FILENAME="$LIBUNWIND_BASE/lib/pkgconfig/libunwind.pc"
+    if [ ! -f "$FILENAME" ];then
+        return 1;
+    fi
+    local version=`pkg-config --modversion $FILENAME`
+    if [ "${version}" != "$LIBUNWIND_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
 # {{{ function is_installed_rabbitmq-c()
 function is_installed_rabbitmq-c()
 {
@@ -2447,15 +2461,32 @@ function compile_zeromq()
         return;
     fi
 
+    compile_libunwind
     # compile_libsodium
 
     ZEROMQ_CONFIGURE="
-    configure_zeromq_command
+        ./configure --prefix=$ZEROMQ_BASE
     "
-    # ./autogen.sh&&./configure --prefix=$ZEROMQ_BASE
-    # --with-militant --with-libsodium --with-pgm  --with-norm
 
-    compile "zeromq" "$ZEROMQ_FILE_NAME" "${ZEROMQ_FILE_NAME%-*}-$ZEROMQ_VERSION" "$ZEROMQ_BASE" "ZEROMQ_CONFIGURE"
+    compile "zeromq" "$ZEROMQ_FILE_NAME" "zeromq-$ZEROMQ_VERSION" "$ZEROMQ_BASE" "ZEROMQ_CONFIGURE"
+}
+# }}}
+# {{{ function compile_libunwind()
+function compile_libunwind()
+{
+    is_installed libunwind "$LIBUNWIND_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    LIBUNWIND_CONFIGURE="
+    ./configure --prefix=$LIBUNWIND_BASE \
+                --enable-ptrace \
+                --enable-block-signals \
+                --enable-conservative-checks \
+                --enable-minidebuginfo
+    "
+    compile "libunwind" "$LIBUNWIND_FILE_NAME" "libunwind-$ZEROMQ_VERSION" "$LIBUNWIND_BASE" "LIBUNWIND_CONFIGURE"
 }
 # }}}
 # {{{ function compile_rabbitmq-c()
@@ -3042,13 +3073,11 @@ function compile_php_extension_zeromq()
 
     compile_zeromq
 
-#wget http://pecl.php.net/get/zmq-1.1.3.tgz
-#    tar zxf zmq-1.1.3.tgz
-#    cd zmq-1.1.3
-
     PHP_EXTENSION_ZEROMQ_CONFIGURE="
-    ./configure --with-php-config=$PHP_BASE/bin/php-config --with-zmq=/usr/local/chg/base/opt/zeromq --enable-zmq-pthreads
+    ./configure --with-php-config=$PHP_BASE/bin/php-config \
+                --with-zmq=$ZEROMQ_BASE
     "
+                #--enable-zmq-pthreads
                 # --with-czmq=
 
     compile "php_extension_zeromq" "$PHP_ZMQ_FILE_NAME" "php-zmq-$PHP_ZMQ_VERSION" "zmq.so" "PHP_EXTENSION_ZEROMQ_CONFIGURE"
@@ -3558,14 +3587,6 @@ configure_libmemcached_command()
 
 }
 # }}}
-# {{{ configure_zeromq_command()
-configure_zeromq_command()
-{
-    ./autogen.sh \
-    && \
-    ./configure --prefix=$ZEROMQ_BASE
-}
-# }}}
 # {{{ configure_libevent_command()
 configure_libevent_command()
 {
@@ -3628,8 +3649,12 @@ configure_php_maxminddb_command()
 # {{{ function check_soft_updates()
 function check_soft_updates()
 {
-check_sqlite_version
-check_swoole_version
+check_version libunwind
+check_version zeromq
+check_pecl_zmq_version 
+exit;
+check_version sqlite
+check_version swoole
 check_version openssl
 check_version icu
 check_version zlib
@@ -3652,12 +3677,10 @@ check_version pdf2htmlEX
 check_pecl_dio_version
 check_pecl_memcached_version
 check_pecl_qrencode_version
-check_pecl_zmq_version 
 check_pecl_mongodb_version
 
 check_version smarty
 check_version rabbitmq
-check_version zeromq
 check_version libmaxminddb
 check_version maxmind_db_reader_php
 check_version web_service_common_php
@@ -3795,6 +3818,24 @@ function check_zlib_version()
     fi
 
     echo -e "zlib current version: \033[0;33m${ZLIB_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+}
+# }}}
+# {{{ function check_libunwind_version()
+function check_libunwind_version()
+{
+    local new_version=`curl -k http://download.savannah.gnu.org/releases/libunwind/ 2>/dev/null|sed -n 's/^.\{0,\}"libunwind-\([0-9a-zA-Z._]\{2,\}\).tar.gz".\{0,\}/\1/p'|sort -rV|head -1`
+    if [ -z "$new_version" ];then
+        echo -e "探测libunwind新版本\033[0;31m失败\033[0m" >&2
+        return 1;
+    fi
+
+    is_new_version $LIBUNWIND_VERSION ${new_version//_/.}
+    if [ "$?" = "0" ];then
+        echo -e "libunwind version is \033[0;32mthe latest.\033[0m"
+        return 0;
+    fi
+
+    echo -e "libunwind current version: \033[0;33m${LIBUNWIND_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
 # {{{ function check_libzip_version()
@@ -4005,25 +4046,7 @@ function check_laravel_framework_version()
 # {{{ function check_zeromq_version()
 function check_zeromq_version()
 {
-    local major=`echo $ZEROMQ_VERSION | cut -d . -f 1`;
-    local minor=`echo $ZEROMQ_VERSION | cut -d . -f 2`;
-    local revision=`echo $ZEROMQ_VERSION | cut -d . -f 3`;
-    local url="https://github.com/zeromq/${ZEROMQ_FILE_NAME%-*}/releases"
-    ((minor++))
-    local minor_url="https://github.com/zeromq/zeromq${major}-${minor}/releases"
-    ((major++))
-    local major_url="https://github.com/zeromq/zeromq${major}-0/releases"
-
-    local http_code=`curl -o /dev/null -s -w %{http_code} ${minor_url}`
-    if [ "$http_code" = "200" ];then
-        url=$minor_url
-    fi
-
-    http_code=`curl -o /dev/null -s -w %{http_code} ${major_url}`
-    if [ "$http_code" = "200" ];then
-        url=$major_url
-    fi
-    check_github_soft_version zeromq $ZEROMQ_VERSION "$url"
+    check_github_soft_version zeromq $ZEROMQ_VERSION "https://github.com/zeromq/libzmq/releases"
 }
 # }}}
 # {{{ function check_pecl_dio_version()
@@ -4124,7 +4147,7 @@ function check_github_soft_version()
         return 1;
     fi
 
-    if [ "$current_version" = "php7" ];then
+    if [ "$current_version" = "php7" -o "$current_version" = "master" ];then
         if [ "$soft" = "pecl-search_engine-sphinx" ];then
             if [ "$new_version" = "1_3_3" ];then
                 echo -e "${soft} version is \033[0;32mthe latest.\033[0m"
