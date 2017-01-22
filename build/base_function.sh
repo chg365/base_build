@@ -2486,7 +2486,8 @@ function compile_libunwind()
                 --enable-conservative-checks \
                 --enable-minidebuginfo
     "
-    compile "libunwind" "$LIBUNWIND_FILE_NAME" "libunwind-$ZEROMQ_VERSION" "$LIBUNWIND_BASE" "LIBUNWIND_CONFIGURE"
+    compile "libunwind" "$LIBUNWIND_FILE_NAME" "libunwind-$LIBUNWIND_VERSION" "$LIBUNWIND_BASE" "LIBUNWIND_CONFIGURE"
+    sed -i.bak '80s/UNW_INFO_FORMAT_IP_OFFSET,/UNW_INFO_FORMAT_IP_OFFSET/' $LIBUNWIND_BASE/include/libunwind-dynamic.h
 }
 # }}}
 # {{{ function compile_rabbitmq-c()

@@ -132,9 +132,7 @@ compile_php_extension_imagick
 compile_php_extension_dio
 #compile_php_extension_pthreads
 compile_php_extension_qrencode
-#if [ "$OS_NAME" = "Darwin" ];then
 compile_php_extension_zeromq
-#fi
 compile_php_extension_intl
 compile_php_extension_apcu
 compile_php_extension_apcu_bc
