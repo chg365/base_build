@@ -1050,8 +1050,8 @@ function is_installed_macros()
     return;
 }
 # }}}
-# {{{ function is_installed_xcb-proto()
-function is_installed_xcb-proto()
+# {{{ function is_installed_xcb_proto()
+function is_installed_xcb_proto()
 {
     local FILENAME="$XCB_PROTO_BASE/lib/pkgconfig/xcb-proto.pc"
     if [ ! -f "$FILENAME" ];then
@@ -1064,8 +1064,8 @@ function is_installed_xcb-proto()
     return;
 }
 # }}}
-# {{{ function is_installed_libpthread-stubs()
-function is_installed_libpthread-stubs()
+# {{{ function is_installed_libpthread_stubs()
+function is_installed_libpthread_stubs()
 {
     local FILENAME="$LIBPTHREAD_STUBS_BASE/lib/pkgconfig/pthread-stubs.pc"
     if [ ! -f "$FILENAME" ];then
@@ -1292,8 +1292,8 @@ function is_installed_apr()
     return;
 }
 # }}}
-# {{{ function is_installed_apr-util()
-function is_installed_apr-util()
+# {{{ function is_installed_apr_util()
+function is_installed_apr_util()
 {
     local FILENAME="$APR_UTIL_BASE/lib/pkgconfig/apr-util-1.pc"
     if [ ! -f "$FILENAME" ];then
@@ -1473,8 +1473,8 @@ function is_installed_libunwind()
     return;
 }
 # }}}
-# {{{ function is_installed_rabbitmq-c()
-function is_installed_rabbitmq-c()
+# {{{ function is_installed_rabbitmq_c()
+function is_installed_rabbitmq_c()
 {
     local tmp_str=""
     if echo "$HOST_TYPE"|grep -q x86_64 ; then
@@ -1988,10 +1988,10 @@ function compile_macros()
     compile "util-macros" "$MACROS_FILE_NAME" "util-macros-$MACROS_VERSION" "$MACROS_BASE" "MACROS_CONFIGURE"
 }
 # }}}
-# {{{ function compile_xcb-proto()
-function compile_xcb-proto()
+# {{{ function compile_xcb_proto()
+function compile_xcb_proto()
 {
-    is_installed xcb-proto "$XCB_PROTO_BASE"
+    is_installed xcb_proto "$XCB_PROTO_BASE"
     if [ "$?" = "0" ];then
         return;
     fi
@@ -2003,10 +2003,10 @@ function compile_xcb-proto()
     compile "xcb-proto" "$XCB_PROTO_FILE_NAME" "xcb-proto-$XCB_PROTO_VERSION" "$XCB_PROTO_BASE" "XCB_PROTO_CONFIGURE"
 }
 # }}}
-# {{{ function compile_libpthread-stubs()
-function compile_libpthread-stubs()
+# {{{ function compile_libpthread_stubs()
+function compile_libpthread_stubs()
 {
-    is_installed libpthread-stubs "$LIBPTHREAD_STUBS_BASE"
+    is_installed libpthread_stubs "$LIBPTHREAD_STUBS_BASE"
     if [ "$?" = "0" ];then
         return;
     fi
@@ -2041,7 +2041,7 @@ function compile_libxcb()
         return;
     fi
 
-    compile_libpthread-stubs
+    compile_libpthread_stubs
 
     LIBXCB_CONFIGURE="
     ./configure --prefix=$LIBXCB_BASE
@@ -2134,14 +2134,14 @@ function compile_libX11()
     fi
 
     compile_macros
-    compile_xcb-proto
+    compile_xcb_proto
     compile_libXau
     compile_libxcb
     compile_kbproto
     compile_inputproto
     compile_xextproto
     compile_xtrans
-    compile_libpthread-stubs
+    compile_libpthread_stubs
     compile_xf86bigfontproto
 
     LIBX11_CONFIGURE="
@@ -2274,10 +2274,10 @@ function compile_apr()
     compile "apache-apr" "$APR_FILE_NAME" "apr-$APR_VERSION" "$APR_BASE" "APR_CONFIGURE"
 }
 # }}}
-# {{{ function compile_apr-util()
-function compile_apr-util()
+# {{{ function compile_apr_util()
+function compile_apr_util()
 {
-    is_installed apr-util "$APR_UTIL_BASE"
+    is_installed apr_util "$APR_UTIL_BASE"
     if [ "$?" = "0" ];then
         return;
     fi
@@ -2323,7 +2323,7 @@ function compile_apache()
     compile_pcre
     compile_openssl
     compile_apr
-    compile_apr-util
+    compile_apr_util
 
     APACHE_CONFIGURE="
     ./configure --prefix=$APACHE_BASE \
@@ -2490,10 +2490,10 @@ function compile_libunwind()
     sed -i.bak '80s/UNW_INFO_FORMAT_IP_OFFSET,/UNW_INFO_FORMAT_IP_OFFSET/' $LIBUNWIND_BASE/include/libunwind-dynamic.h
 }
 # }}}
-# {{{ function compile_rabbitmq-c()
-function compile_rabbitmq-c()
+# {{{ function compile_rabbitmq_c()
+function compile_rabbitmq_c()
 {
-    is_installed rabbitmq-c "$RABBITMQ_C_BASE"
+    is_installed rabbitmq_c "$RABBITMQ_C_BASE"
     if [ "$?" = "0" ];then
         return;
     fi
@@ -2803,7 +2803,7 @@ function compile_php_extension_amqp()
         return;
     fi
 
-    compile_rabbitmq-c
+    compile_rabbitmq_c
 
     PHP_EXTENSION_AMQP_CONFIGURE="
     configure_php_amqp_command
