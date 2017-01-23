@@ -117,8 +117,8 @@ fi
 ################################################################################
 export LC_CTYPE=C 
 export LANG=C
-repair_dynamic_shared_library $ICU_BASE/lib "libicu*dylib"
-exit;
+#repair_dynamic_shared_library $ICU_BASE/lib "libicu*dylib"
+#exit;
 #check_soft_updates
 #exit;
 pkg_config_path_init
@@ -130,7 +130,6 @@ compile_php
 compile_memcached
 compile_sphinx
 compile_sqlite
-#compile_php_extension_imagick
 compile_php_extension_dio
 #compile_php_extension_pthreads
 compile_php_extension_qrencode
@@ -155,6 +154,7 @@ compile_php_extension_swoole
 compile_php_extension_memcached
 compile_php_extension_tidy
 compile_php_extension_sphinx
+compile_php_extension_imagick
 compile_mysql
 compile_nginx
 # geoip2

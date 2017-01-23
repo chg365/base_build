@@ -137,7 +137,7 @@ SPHINX_VERSION="2.2.11"
 PHP_SPHINX_VERSION="php7"
 
 LIBGD_VERSION="2.1.1" # http://libgd.github.io/
-IMAGEMAGICK_VERSION="7.0.4-4" # http://www.imagemagick.org/download/
+IMAGEMAGICK_VERSION="7.0.4-5" # http://www.imagemagick.org/download/
 JPEG_VERSION="9b" # 8d # http://www.ijg.org/files/
 LIBPNG_VERSION="1.6.23"
 NASM_VERSION="2.12.01"
@@ -203,7 +203,7 @@ MAILPARSE_VERSION="3.0.1"
 PHP_REDIS_VERSION="3.0.0"
 PHP_MONGODB_VERSION="1.2.3"
 SOLR_VERSION="2.4.0"
-IMAGICK_VERSION="3.4.3RC1" # http://pecl.php.net/package/imagick
+IMAGICK_VERSION="3.4.3RC2" # http://pecl.php.net/package/imagick
 PTHREADS_VERSION="3.1.6" # http://pecl.php.net/package/pthreads
 SWOOLE_VERSION="2.0.5" # http://pecl.php.net/package/swoole
 #QRENCODE_VERSION="0.0.3"

@@ -3650,47 +3650,48 @@ configure_php_maxminddb_command()
 # {{{ function check_soft_updates()
 function check_soft_updates()
 {
-check_version libunwind
-check_version zeromq
-check_pecl_zmq_version 
-exit;
-check_version sqlite
-check_version swoole
-check_version openssl
-check_version icu
-check_version zlib
-check_version libzip
-check_version gmp
-check_version php
-check_version mysql
-check_version imagemagick
-check_version pkgconfig
+    check_pecl_imagick_version
+        exit;
+    check_version libunwind
+    check_version zeromq
+    check_version sqlite
+    check_version swoole
+    check_version openssl
+    check_version icu
+    check_version zlib
+    check_version libzip
+    check_version gmp
+    check_version php
+    check_version mysql
+    check_version imagemagick
+    check_version pkgconfig
 
-# github
-check_version re2c
-check_version tidy
-check_version sphinx
-check_version pecl_sphinx
-check_version openjpeg
-check_version fontforge
-check_version pdf2htmlEX
+    # github
+    check_version re2c
+    check_version tidy
+    check_version sphinx
+    check_version pecl_sphinx
+    check_version openjpeg
+    check_version fontforge
+    check_version pdf2htmlEX
 
-check_pecl_dio_version
-check_pecl_memcached_version
-check_pecl_qrencode_version
-check_pecl_mongodb_version
+    check_pecl_dio_version
+    check_pecl_memcached_version
+    check_pecl_qrencode_version
+    check_pecl_mongodb_version
+    check_pecl_zmq_version
 
-check_version smarty
-check_version rabbitmq
-check_version libmaxminddb
-check_version maxmind_db_reader_php
-check_version web_service_common_php
-check_version geoip2_php
-check_version geoipupdate
-check_version electron
-check_version phantomjs
-check_version laravel
-check_version laravel_framework
+    check_version smarty
+    check_version rabbitmq
+    check_version libmaxminddb
+    check_version maxmind_db_reader_php
+    check_version web_service_common_php
+    check_version geoip2_php
+    check_version geoipupdate
+    check_version electron
+    check_version phantomjs
+    check_version laravel
+    check_version laravel_framework
 }
 # }}}
 # {{{ function compile_rabbitmq()
@@ -3747,9 +3748,9 @@ cd ..
 /bin/rm -rf php-rabbitmq-$RABBITMQ_VERSION
 
 
-other ....
- --with-wbxml=$WBXML_BASE
- --enable-http --with-http-curl-requests=$CURL_BASE --with-http-curl-libevent=$LIBEVENT_BASE --with-http-zlib-compression=$ZLIB_BASE --with-http-magic-mime=$MAGIC_BASE
+#other ....
+# --with-wbxml=$WBXML_BASE
+# --enable-http --with-http-curl-requests=$CURL_BASE --with-http-curl-libevent=$LIBEVENT_BASE --with-http-zlib-compression=$ZLIB_BASE --with-http-magic-mime=$MAGIC_BASE
 
 }
 # }}}
@@ -3896,7 +3897,7 @@ function check_gmp_version()
 # {{{ function check_mysql_version()
 function check_mysql_version()
 {
-    local new_version=`curl http://dev.mysql.com/downloads/mysql/ 2>/dev/null |sed -n 's/<h1> \{0,\}MySQL \{1,\}Community \{1,\}Server \{0,\}\(.\{1,\}\) \{0,\}<\/h1>/\1/p'|sort -rV|head -1`;
+    local new_version=`curl -k https://dev.mysql.com/downloads/mysql/ 2>/dev/null |sed -n 's/<h1> \{0,\}MySQL \{1,\}Community \{1,\}Server \{0,\}\(.\{1,\}\) \{0,\}<\/h1>/\1/p'|sort -rV|head -1`;
     new_version=${new_version// /}
     if [ -z "$new_version" ];then
         echo -e "探测mysql新版本\033[0;31m失败\033[0m" >&2
@@ -3948,6 +3949,7 @@ function check_pkgconfig_version()
     echo -e "pkgconfig current version: \033[0;33m${PKGCONFIG_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
+
 # {{{ function check_re2c_version()
 function check_re2c_version()
 {
@@ -4053,15 +4055,22 @@ function check_zeromq_version()
 # {{{ function check_pecl_dio_version()
 function check_pecl_dio_version()
 {
-#check_github_soft_version pecl-system-dio $DIO_VERSION "https://github.com/php/pecl-system-dio/releases"
+    #check_github_soft_version pecl-system-dio $DIO_VERSION "https://github.com/php/pecl-system-dio/releases"
     check_php_pecl_version dio $DIO_VERSION
 }
 # }}}
 # {{{ function check_pecl_memcached_version()
 function check_pecl_memcached_version()
 {
-#check_github_soft_version php-memcached $PHP_MEMCACHED_VERSION "https://github.com/php-memcached-dev/php-memcached/releases"
+    #check_github_soft_version php-memcached $PHP_MEMCACHED_VERSION "https://github.com/php-memcached-dev/php-memcached/releases"
     check_php_pecl_version memcached $PHP_MEMCACHED_VERSION
+}
+# }}}
+# {{{ function check_pecl_imagick_version()
+function check_pecl_imagick_version()
+{
+    #check_github_soft_version php-imagick $IMAGICK_VERSION "https://github.com/mkoppanen/imagick/releases" "\([0-9.]\{5,\}\(RC\)\{0,1\}[0-9]\{1,\}\)\.tar\.gz" 1
+    check_php_pecl_version imagick $IMAGICK_VERSION
 }
 # }}}
 # {{{ function check_pecl_qrencode_version()
@@ -4196,7 +4205,7 @@ function check_php_pecl_version()
     local ext=$1;
     local current_version=$2;
 
-    local new_version=`curl http://pecl.php.net/package/${ext} 2>/dev/null|sed -n "s/^.\{1,\} href=\"\/get\/${ext}-\([0-9._]\{1,\}\).tgz\"[^>]\{0,\}>.\{0,\}$/\1/p"|sort -rV|head -1`;
+    local new_version=`curl -k http://pecl.php.net/package/${ext} 2>/dev/null|sed -n "s/^.\{1,\} href=\"\/get\/${ext}-\([0-9._]\{1,\}\(\(RC\)\{0,1\}[0-9]\{1,\}\)\{0,1\}\).tgz\"[^>]\{0,\}>.\{0,\}$/\1/p"|sort -rV|head -1`;
 
     if [ -z "$new_version" -o -z "$current_version" ];then
         echo -e "chekc php pecl ${ext} version \033[0;31mfaild\033[0m." >&2
