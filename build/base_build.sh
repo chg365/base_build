@@ -117,8 +117,6 @@ fi
 ################################################################################
 export LC_CTYPE=C 
 export LANG=C
-#repair_dynamic_shared_library $ICU_BASE/lib "libicu*dylib"
-#exit;
 #check_soft_updates
 #exit;
 pkg_config_path_init

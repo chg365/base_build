@@ -4566,6 +4566,10 @@ function repair_dynamic_shared_library()
     for i in `find ${dir1} $( [ "$filepattern" != "" ] && echo "-name $filepattern" || echo "-type f")`;
     do
     {
+        # 跳过软链接
+        if [ -L $i ]; then
+            continue;
+        fi
         local filename="${i##*/}"
         for j in `otool -L $i|awk '{print $1; }' |grep -v '^/'`;
         do
