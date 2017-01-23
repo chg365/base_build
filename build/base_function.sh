@@ -399,6 +399,7 @@ function wget_base_library()
     wget_lib $KERBEROS_FILE_NAME      "http://web.mit.edu/kerberos/dist/krb5/${KERBEROS_VERSION%.*}/$KERBEROS_FILE_NAME"
     wget_lib $LIBMEMCACHED_FILE_NAME  "https://launchpad.net/libmemcached/${LIBMEMCACHED_VERSION%.*}/$LIBMEMCACHED_VERSION/+download/$LIBMEMCACHED_FILE_NAME"
     wget_lib $MEMCACHED_FILE_NAME     "http://memcached.org/files/${MEMCACHED_FILE_NAME}"
+    wget_lib $REDIS_FILE_NAME         "http://download.redis.io/releases/${REDIS_FILE_NAME}"
     #  https://github.com/downloads/libevent/libevent/$LIBEVENT_FILE_NAME
     # wget_lib $LIBEVENT_FILE_NAME      "https://sourceforge.net/projects/levent/files//libevent-${LIBEVENT_VERSION%.*}/$LIBEVENT_FILE_NAME"
     wget_lib $LIBEVENT_FILE_NAME      "https://sourceforge.net/projects/levent/files/release-${LIBEVENT_VERSION}-stable/$LIBEVENT_FILE_NAME/download"
@@ -683,6 +684,62 @@ function init_nginx_conf()
     sed -i.bak.$$ "s/^\(fastcgi_param \{1,\}SERVER_SOFTWARE \{1,\}\)nginx\/\$nginx_version;$/\1eyou\/1.0;/" $NGINX_CONFIG_DIR/fastcgi.conf;
 }
 # }}}
+# function change_redis_conf() {{{
+function change_redis_conf()
+{
+    local redis_conf=$REDIS_CONFIG_DIR/redis.conf;
+    local num=`sed -n "/$1/=" $redis_conf`;
+    if [ "$num" = "" ];then
+        echo "从${redis_conf}文件中查找pattern($1)失败";
+        exit 1;
+    fi
+
+    sed -i.bak.$$ "${num[0]}s/$1/$2/" $redis_conf
+    if [ $? != "0" ];then
+        echo "在${redis_conf}文件中执行替换失败. pattern($1) ($2)";
+        exit 1;
+    fi
+}
+# }}}
+# function init_redis_conf() {{{
+function init_redis_conf()
+{
+# 启动redis服务
+# ./bin/redis-server redis.conf
+# 关闭服务：
+# ./bin/redis-cli -p 6379 shutdown
+
+    # 后台运行
+    local pattern='^daemonize no$';
+    change_redis_conf "$pattern" "daemonize yes"
+
+    # 客户端闲置多长时间后断开连接，默认为0关闭此功能
+    local pattern='^timeout 0$';
+    change_redis_conf "$pattern" "timeout 300"
+
+    # 设置redis日志级别，默认级别：notice
+    local pattern='^loglevel notice$';
+    change_redis_conf "$pattern" "loglevel verbose"
+
+    # 设置日志文件的输出方式
+    local pattern='^logfile ""$';
+    change_redis_conf "$pattern" "logfile $(sed_quote2 $LOG_DIR/redis/redis.log)"
+
+    # pid
+    local pattern='^pidfile .\{0,\}$';
+    change_redis_conf "$pattern" "pidfile $(sed_quote2 $BASE_DIR/run/redis.pid)"
+
+    # dir ./
+    local pattern='^dir .\{0,\}$';
+    change_redis_conf "$pattern" "dir $(sed_quote2 $BASE_DIR/data/redis)"
+    # http://www.linuxidc.com/Linux/2015-01/111364.htm
+
+#    list-max-ziplist-entries 512
+#    list-max-ziplist-value 64
+#    tcp-keepalive 0 #tcp-keepalive 300
+
+}
+# }}}
 # }}}
 # {{{ is_installed functions
 # {{{ function is_installed()
@@ -730,6 +787,19 @@ function is_installed_memcached()
     fi
     local version=`$MEMCACHED_BASE/bin/memcached -V |awk '{ print $NF; }'`
     if [ "$version" != "$MEMCACHED_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
+# {{{ function is_installed_redis()
+function is_installed_redis()
+{
+    if [ ! -f "$REDIS_BASE/bin/redis-cli" ];then
+        return 1;
+    fi
+    local version=`${REDIS_BASE}/bin/redis-cli --version |awk '{ print $2; }'`
+    if [ "$version" != "$REDIS_VERSION" ];then
         return 1;
     fi
     return;
@@ -1865,6 +1935,46 @@ function compile_memcached()
     compile "memcached" "$MEMCACHED_FILE_NAME" "memcached-$MEMCACHED_VERSION" "$MEMCACHED_BASE" "MEMCACHED_CONFIGURE"
 }
 # }}}
+# {{{ function compile_redis()
+function compile_redis()
+{
+    is_installed redis "$REDIS_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    REDIS_CONFIGURE="
+        configure_redis_command
+    "
+    compile "redis" "$REDIS_FILE_NAME" "redis-$REDIS_VERSION" "$REDIS_BASE" "REDIS_CONFIGURE" "after_redis_make_install"
+}
+# }}}
+# {{{ function configure_redis_command()
+function configure_redis_command()
+{
+    sed -n "s/$(sed_quote2 'PREFIX?=/usr/local')/$(sed_quote2 PREFIX?=$REDIS_BASE)/p" src/Makefile
+    # 没有configure
+    # 本来要make PREFIX=... install,这里改了Makefile里的PREFIX，就不需要了
+}
+# }}}
+# {{{ function after_redis_make_install()
+function after_redis_make_install()
+{
+    mkdir -p $REDIS_CONFIG_DIR
+    if [ "$?" != "0" ];then
+        echo "mkdir error. commamnd: mkdir -p $REDIS_CONFIG_DIR" >&2
+        return 1;
+    fi
+
+    cp redis.conf $REDIS_CONFIG_DIR/
+    if [ "$?" != "0" ];then
+        echo "copy file error. commamnd: cp redis.conf $REDIS_CONFIG_DIR/" >&2
+        return 1;
+    fi
+
+    init_redis_conf
+}
+# }}}
 # {{{ function compile_expat()
 function compile_expat()
 {
@@ -2840,7 +2950,8 @@ function compile_php_extension_redis()
     fi
 
     PHP_EXTENSION_REDIS_CONFIGURE="
-    ./configure --with-php-config=$PHP_BASE/bin/php-config --enable-redis
+    ./configure --with-php-config=$PHP_BASE/bin/php-config \
+                --enable-redis
     "
                 # --enable-redis-igbinary
 
@@ -3650,8 +3761,7 @@ configure_php_maxminddb_command()
 # {{{ function check_soft_updates()
 function check_soft_updates()
 {
-    check_pecl_imagick_version
-        exit;
+    check_version redis
     check_version libunwind
     check_version zeromq
     check_version sqlite
@@ -3680,6 +3790,8 @@ function check_soft_updates()
     check_pecl_qrencode_version
     check_pecl_mongodb_version
     check_pecl_zmq_version
+    check_pecl_redis_version
+    check_pecl_imagick_version
 
     check_version smarty
     check_version rabbitmq
@@ -3784,6 +3896,24 @@ function check_openssl_version()
     fi
 
     echo -e "openssl current version: \033[0;33m${OPENSSL_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+}
+# }}}
+# {{{ function check_redis_version()
+function check_redis_version()
+{
+    local new_version=`curl -k https://redis.io/ 2>/dev/null|sed -n 's/^.\{1,\}>redis-\([0-9a-zA-Z.]\{2,\}\).tar.gz.\{1,\}/\1/p'|sort -rV|head -1`
+    if [ -z "$new_version" ];then
+        echo -e "探测redis新版本\033[0;31m失败\033[0m" >&2
+        return 1;
+    fi
+
+    is_new_version $REDIS_VERSION $new_version
+    if [ "$?" = "0" ];then
+        echo -e "redis version is \033[0;32mthe latest.\033[0m"
+        return 0;
+    fi
+
+    echo -e "redis current version: \033[0;33m${REDIS_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
 # {{{ function check_icu_version()
@@ -4071,6 +4201,13 @@ function check_pecl_imagick_version()
 {
     #check_github_soft_version php-imagick $IMAGICK_VERSION "https://github.com/mkoppanen/imagick/releases" "\([0-9.]\{5,\}\(RC\)\{0,1\}[0-9]\{1,\}\)\.tar\.gz" 1
     check_php_pecl_version imagick $IMAGICK_VERSION
+}
+# }}}
+# {{{ function check_pecl_redis_version()
+function check_pecl_redis_version()
+{
+    #check_github_soft_version phpredis $PHP_REDIS_VERSION "https://github.com/phpredis/phpredis/releases" "\([0-9.]\{5,\}\(RC\)\{0,1\}[0-9]\{1,\}\)\.tar\.gz" 1
+    check_php_pecl_version redis $PHP_REDIS_VERSION
 }
 # }}}
 # {{{ function check_pecl_qrencode_version()
