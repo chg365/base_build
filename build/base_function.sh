@@ -679,11 +679,11 @@ function init_nginx_conf()
     mkdir -p $NGINX_CONFIG_DIR
     cp $curr_dir/nginx/nginx.conf $NGINX_CONFIG_DIR/nginx.conf
 
-    WEB_ROOT_DIR
-    PROJECT_NAME
-    LOG_DIR
-    RUN_DIR
-    nobody
+#WEB_ROOT_DIR
+#    PROJECT_NAME
+#    LOG_DIR
+#    RUN_DIR
+#    nobody
 
     # fastcgi_param  SERVER_SOFTWARE
     sed -i.bak.$$ "s/^\(fastcgi_param \{1,\}SERVER_SOFTWARE \{1,\}\)nginx\/\$nginx_version;$/\1${project_name%% *}\/1.0;/" $NGINX_CONFIG_DIR/fastcgi.conf;
@@ -3906,7 +3906,7 @@ function check_openssl_version()
 # {{{ function check_redis_version()
 function check_redis_version()
 {
-    local new_version=`curl -k https://redis.io/ 2>/dev/null|sed -n 's/^.\{1,\}>redis-\([0-9a-zA-Z.]\{2,\}\).tar.gz.\{1,\}/\1/p'|sort -rV|head -1`
+    local new_version=`curl -k https://redis.io/ 2>/dev/null|sed -n 's/^.\{1,\}redis-\([0-9a-zA-Z.]\{2,\}\).tar.gz.\{1,\}/\1/p'|sort -rV|head -1`
     if [ -z "$new_version" ];then
         echo -e "探测redis新版本\033[0;31m失败\033[0m" >&2
         return 1;
@@ -4641,13 +4641,13 @@ function repair_dynamic_shared_library()
 #Client.php  Http  Server.php  Socket  Timer.php  WebSocket
 
 
-$CONTRIB_DIR/bin/mmdblookup --file $BASE_DIR/etc/geoip2/GeoLite2-Country.mmdb --ip 112.225.35.70
-$CONTRIB_DIR/bin/mmdblookup -f $BASE_DIR/etc/geoip2/GeoLite2-City.mmdb -i 118.194.236.35 city "zh-CN"
-$CONTRIB_DIR/bin/mmdblookup -f $BASE_DIR/etc/geoip2/GeoLite2-City.mmdb -i 112.124.127.64
-$CONTRIB_DIR/bin/mmdblookup -f $BASE_DIR/etc/geoip2/GeoLite2-City.mmdb -i 112.124.127.64 city names zh-CN
+#$CONTRIB_DIR/bin/mmdblookup --file $BASE_DIR/etc/geoip2/GeoLite2-Country.mmdb --ip 112.225.35.70
+#$CONTRIB_DIR/bin/mmdblookup -f $BASE_DIR/etc/geoip2/GeoLite2-City.mmdb -i 118.194.236.35 city "zh-CN"
+#$CONTRIB_DIR/bin/mmdblookup -f $BASE_DIR/etc/geoip2/GeoLite2-City.mmdb -i 112.124.127.64
+#$CONTRIB_DIR/bin/mmdblookup -f $BASE_DIR/etc/geoip2/GeoLite2-City.mmdb -i 112.124.127.64 city names zh-CN
 
 
 #IP数据库自动更新, 需要在crontab中设置
 #$GEOIPUPDATE_BASE/bin/geoipupdate -h
-$GEOIPUPDATE_BASE/bin/geoipupdate -f $BASE_DIR/etc/GeoIP2_update.conf -d /tmp/ &
+#$GEOIPUPDATE_BASE/bin/geoipupdate -f $BASE_DIR/etc/GeoIP2_update.conf -d /tmp/ &
 
