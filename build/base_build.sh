@@ -117,11 +117,11 @@ fi
 ################################################################################
 export LC_CTYPE=C 
 export LANG=C
-check_soft_updates
-exit;
+#check_soft_updates
+#exit;
 pkg_config_path_init
 compile_redis
-compile_libunwind
+#compile_libunwind
 compile_zeromq
 compile_zlib
 compile_libgd

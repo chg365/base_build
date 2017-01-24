@@ -2546,7 +2546,7 @@ function compile_ImageMagick()
     fi
 
     IMAGEMAGICK_CONFIGURE="
-    ./configure --prefix=$IMAGEMAGICK_BASE --enable-opencl
+    ./configure --prefix=$IMAGEMAGICK_BASE $( [ \"$OS_NAME\" != \"Darwin\" ] && echo \"--enable-opencl\" )
     "
                 #--with-libstdc=/usr/local/Cellar/gcc/5.2.0
 
@@ -2576,7 +2576,9 @@ function compile_zeromq()
         return;
     fi
 
-    compile_libunwind
+    if [ "$OS_NAME" != "Darwin" ]; then
+        compile_libunwind
+    fi
     # compile_libsodium
 
     ZEROMQ_CONFIGURE="
