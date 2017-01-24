@@ -678,10 +678,15 @@ function init_nginx_conf()
 {
     mkdir -p $NGINX_CONFIG_DIR
     cp $curr_dir/nginx/nginx.conf $NGINX_CONFIG_DIR/nginx.conf
-    # sed -i.bak.$$ "s/\<MYSQL_BASE_DIR\>/$( echo $MYSQL_BASE|sed 's/\//\\\//g' )/" $NGINX_CONFIG_DIR/nginx.conf;
+
+    WEB_ROOT_DIR
+    PROJECT_NAME
+    LOG_DIR
+    RUN_DIR
+    nobody
 
     # fastcgi_param  SERVER_SOFTWARE
-    sed -i.bak.$$ "s/^\(fastcgi_param \{1,\}SERVER_SOFTWARE \{1,\}\)nginx\/\$nginx_version;$/\1eyou\/1.0;/" $NGINX_CONFIG_DIR/fastcgi.conf;
+    sed -i.bak.$$ "s/^\(fastcgi_param \{1,\}SERVER_SOFTWARE \{1,\}\)nginx\/\$nginx_version;$/\1${project_name%% *}\/1.0;/" $NGINX_CONFIG_DIR/fastcgi.conf;
 }
 # }}}
 # function change_redis_conf() {{{
@@ -718,8 +723,8 @@ function init_redis_conf()
     change_redis_conf "$pattern" "timeout 300"
 
     # 设置redis日志级别，默认级别：notice
-    local pattern='^loglevel notice$';
-    change_redis_conf "$pattern" "loglevel verbose"
+#local pattern='^loglevel notice$';
+#change_redis_conf "$pattern" "loglevel verbose"
 
     # 设置日志文件的输出方式
     local pattern='^logfile ""$';
@@ -1952,7 +1957,7 @@ function compile_redis()
 # {{{ function configure_redis_command()
 function configure_redis_command()
 {
-    sed -n "s/$(sed_quote2 'PREFIX?=/usr/local')/$(sed_quote2 PREFIX?=$REDIS_BASE)/p" src/Makefile
+    sed -i.bak "s/$(sed_quote2 'PREFIX?=/usr/local')/$(sed_quote2 PREFIX?=$REDIS_BASE)/" src/Makefile
     # 没有configure
     # 本来要make PREFIX=... install,这里改了Makefile里的PREFIX，就不需要了
 }
@@ -4634,4 +4639,15 @@ function repair_dynamic_shared_library()
 
 #[chg@mail8 ~]$ ls hprose-swoole-2.0.11/src/Hprose/Swoole/
 #Client.php  Http  Server.php  Socket  Timer.php  WebSocket
+
+
+$CONTRIB_DIR/bin/mmdblookup --file $BASE_DIR/etc/geoip2/GeoLite2-Country.mmdb --ip 112.225.35.70
+$CONTRIB_DIR/bin/mmdblookup -f $BASE_DIR/etc/geoip2/GeoLite2-City.mmdb -i 118.194.236.35 city "zh-CN"
+$CONTRIB_DIR/bin/mmdblookup -f $BASE_DIR/etc/geoip2/GeoLite2-City.mmdb -i 112.124.127.64
+$CONTRIB_DIR/bin/mmdblookup -f $BASE_DIR/etc/geoip2/GeoLite2-City.mmdb -i 112.124.127.64 city names zh-CN
+
+
+#IP数据库自动更新, 需要在crontab中设置
+#$GEOIPUPDATE_BASE/bin/geoipupdate -h
+$GEOIPUPDATE_BASE/bin/geoipupdate -f $BASE_DIR/etc/GeoIP2_update.conf -d /tmp/ &
 
