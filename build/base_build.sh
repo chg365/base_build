@@ -119,6 +119,7 @@ export LC_CTYPE=C
 export LANG=C
 #check_soft_updates
 #exit;
+compile_ImageMagick
 pkg_config_path_init
 compile_redis
 #compile_libunwind

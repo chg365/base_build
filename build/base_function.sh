@@ -369,8 +369,8 @@ function wget_base_library()
     wget_lib $LIBJPEG_FILE_NAME       "https://sourceforge.net/projects/libjpeg-turbo/files/$LIBJPEG_VERSION/$LIBJPEG_FILE_NAME/download"
 
     local tmp="v";
-    version_compare $OPENJPEG_VERSION "2.1.1"
-    if [ "$?" = "2" ];then
+    is_new_version $OPENJPEG_VERSION "2.1.1"
+    if [ "$?" = "1" ];then
         tmp="version.";
     fi
     wget_lib $OPENJPEG_FILE_NAME      "https://github.com/uclouvain/openjpeg/archive/${tmp}${OPENJPEG_VERSION/%.0/}.tar.gz"
@@ -1957,9 +1957,32 @@ function compile_redis()
 # {{{ function configure_redis_command()
 function configure_redis_command()
 {
-    sed -i.bak "s/$(sed_quote2 'PREFIX?=/usr/local')/$(sed_quote2 PREFIX?=$REDIS_BASE)/" src/Makefile
     # 没有configure
     # 本来要make PREFIX=... install,这里改了Makefile里的PREFIX，就不需要了
+    sed -i.bak "s/$(sed_quote2 'PREFIX?=/usr/local')/$(sed_quote2 PREFIX?=$REDIS_BASE)/" src/Makefile
+
+    # 3.2.7版本要编译报错 undefined reference to `clock_gettime'
+    if [ "$REDIS_VERSION" = "3.2.7" ] ; then
+        if [ "$OS_NAME" = "Linux" ] ; then
+            local tmp_str=""
+            if echo "$HOST_TYPE"|grep -q x86_64 ; then
+                tmp_str="64"
+            fi
+            local file_name=/usr/lib${tmp_str}/librt.so
+            if [ ! -f "$file_name" ]; then
+                echo "$file_name file not exists" >&2
+            fi
+            # 查找是否加入了librt.so
+            sed -n '/^ifeq (\$(MALLOC),jemalloc)$/,/^endif$/p' src/Makefile|grep -q librt.so
+            if [ "$?" = "1" ] ;then
+                local tab=$'\011'
+                sed -i.bak "/^ifeq (\$(MALLOC),jemalloc)$/,/^endif$/{/^endif$/{i \
+                    ${tab}FINAL_LIBS+= $file_name
+                };}" src/Makefile
+
+            fi
+        fi
+    fi
 }
 # }}}
 # {{{ function after_redis_make_install()
@@ -1974,6 +1997,12 @@ function after_redis_make_install()
     cp redis.conf $REDIS_CONFIG_DIR/
     if [ "$?" != "0" ];then
         echo "copy file error. commamnd: cp redis.conf $REDIS_CONFIG_DIR/" >&2
+        return 1;
+    fi
+
+    cp sentinel.conf $REDIS_CONFIG_DIR/
+    if [ "$?" != "0" ];then
+        echo "copy file error. commamnd: cp sentinel.conf $REDIS_CONFIG_DIR/" >&2
         return 1;
     fi
 
@@ -2546,7 +2575,7 @@ function compile_ImageMagick()
     fi
 
     IMAGEMAGICK_CONFIGURE="
-    ./configure --prefix=$IMAGEMAGICK_BASE $( [ \"$OS_NAME\" != \"Darwin\" ] && echo \"--enable-opencl\" )
+    ./configure --prefix=$IMAGEMAGICK_BASE $( [ \"$OS_NAME\" != \"Darwin\" ] && echo '--enable-opencl' )
     "
                 #--with-libstdc=/usr/local/Cellar/gcc/5.2.0
 
@@ -3890,7 +3919,18 @@ function check_version()
 # {{{ function check_openssl_version()
 function check_openssl_version()
 {
-    local new_version=`curl -k https://www.openssl.org/source/ 2>/dev/null|sed -n 's/^.\{1,\}>openssl-\([0-9a-zA-Z.]\{2,\}\).tar.gz.\{1,\}/\1/p'|sort -rV|head -1`
+    local tmp=""
+    if [ "$#" = "0" ]; then
+        check_openssl_version 1
+    fi
+
+    #只查找当前小版本
+    if [ "$1" = "1" ]; then
+        local tmp=${OPENSSL_VERSION%.*}
+    fi
+
+    local versions=`curl -k https://www.openssl.org/source/ 2>/dev/null|sed -n "s/^.\{1,\}>openssl-\($tmp[0-9a-zA-Z.]\{2,\}\).tar.gz.\{1,\}/\1/p"|sort -rV`
+    local new_version=`echo "$versions"|head -1`
     if [ -z "$new_version" ];then
         echo -e "探测openssl新版本\033[0;31m失败\033[0m" >&2
         return 1;
@@ -3908,10 +3948,20 @@ function check_openssl_version()
 # {{{ function check_redis_version()
 function check_redis_version()
 {
-    local new_version=`curl -k https://redis.io/ 2>/dev/null|sed -n 's/^.\{1,\}redis-\([0-9a-zA-Z.]\{2,\}\).tar.gz.\{1,\}/\1/p'|sort -rV|head -1`
+    local versions=`curl -k https://redis.io/ 2>/dev/null|sed -n 's/^.\{1,\}redis-\([0-9a-zA-Z.]\{2,\}\).tar.gz.\{1,\}/\1/p'|sort -rV`
+    local new_version=`echo "$versions"|head -1`;
     if [ -z "$new_version" ];then
         echo -e "探测redis新版本\033[0;31m失败\033[0m" >&2
         return 1;
+    fi
+
+    echo "$new_version" |grep -iq 'RC'
+    if [ "$?" = "0" ]; then
+        local tmp_version1=`echo "$versions"|grep -iv 'RC' |head -1`;
+        local tmp_version2=`echo "$new_version"|sed -n 's/^\([0-9._-]\{1,\}\)\(RC\|rc\).\{1,\}$/\1/p'`;
+        if [ "$tmp_version1" = "$tmp_version2" ];then
+            new_version=$tmp_version2;
+        fi
     fi
 
     is_new_version $REDIS_VERSION $new_version
@@ -3980,10 +4030,20 @@ function check_libunwind_version()
 # {{{ function check_libzip_version()
 function check_libzip_version()
 {
-    local new_version=`curl -k https://nih.at/libzip/ 2>/dev/null|sed -n 's/^.\{0,\}"libzip-\([0-9a-zA-Z._]\{2,\}\).tar.gz".\{0,\}/\1/p'|sort -rV|head -1`
+    local versions=`curl -k https://nih.at/libzip/ 2>/dev/null|sed -n 's/^.\{0,\}"libzip-\([0-9a-zA-Z._]\{2,\}\).tar.gz".\{0,\}/\1/p'|sort -rV`
+    local new_version=`echo "$versions"|head -1`;
     if [ -z "$new_version" ];then
         echo -e "探测libzip新版本\033[0;31m失败\033[0m" >&2
         return 1;
+    fi
+
+    echo "$new_version" |grep -iq 'RC'
+    if [ "$?" = "0" ]; then
+        local tmp_version1=`echo "$versions"|grep -iv 'RC' |head -1`;
+        local tmp_version2=`echo "$new_version"|sed -n 's/^\([0-9._-]\{1,\}\)\(RC\|rc\).\{1,\}$/\1/p'`;
+        if [ "$tmp_version1" = "$tmp_version2" ];then
+            new_version=$tmp_version2;
+        fi
     fi
 
     is_new_version $LIBZIP_VERSION ${new_version//_/.}
@@ -3998,10 +4058,20 @@ function check_libzip_version()
 # {{{ function check_php_version()
 function check_php_version()
 {
-    local new_version=`curl http://php.net/downloads.php 2>/dev/null|sed -n 's/^.\{1,\}php-\([0-9.]\{1,\}\)\.tar\.xz.\{1,\}$/\1/p'|sort -rV|head -1`
+    local versions=`curl http://php.net/downloads.php 2>/dev/null|sed -n 's/^.\{1,\}php-\([0-9.]\{1,\}\)\.tar\.xz.\{1,\}$/\1/p'|sort -rV`
+    local new_version=`echo "$versions"|head -1`;
     if [ -z "$new_version" ];then
         echo -e "探测php新版本\033[0;31m失败\033[0m" >&2
         return 1;
+    fi
+
+    echo "$new_version" |grep -iq 'RC'
+    if [ "$?" = "0" ]; then
+        local tmp_version1=`echo "$versions"|grep -iv 'RC' |head -1`;
+        local tmp_version2=`echo "$new_version"|sed -n 's/^\([0-9._-]\{1,\}\)\(RC\|rc\).\{1,\}$/\1/p'`;
+        if [ "$tmp_version1" = "$tmp_version2" ];then
+            new_version=$tmp_version2;
+        fi
     fi
 
     is_new_version $PHP_VERSION $new_version
@@ -4053,10 +4123,20 @@ function check_mysql_version()
 # {{{ function check_imagemagick_version()
 function check_imagemagick_version()
 {
-    local new_version=`curl http://www.imagemagick.org/download/releases/ 2>/dev/null|sed -n 's/^.\{1,\} href="ImageMagick-\([0-9.-]\{1,\}\).tar.gz">.\{1,\}$/\1/p'|sort -rV|head -1`
+    local versions=`curl http://www.imagemagick.org/download/releases/ 2>/dev/null|sed -n 's/^.\{1,\} href="ImageMagick-\([0-9.-]\{1,\}\).tar.gz">.\{1,\}$/\1/p'|sort -rV`
+    local new_version=`echo "$versions"|head -1`;
     if [ -z "$new_version" ];then
         echo -e "探测imagemagick新版本\033[0;31m失败\033[0m" >&2
         return 1;
+    fi
+
+    echo "$new_version" |grep -iq 'RC'
+    if [ "$?" = "0" ]; then
+        local tmp_version1=`echo "$versions"|grep -iv 'RC' |head -1`;
+        local tmp_version2=`echo "$new_version"|sed -n 's/^\([0-9._-]\{1,\}\)\(RC\|rc\).\{1,\}$/\1/p'`;
+        if [ "$tmp_version1" = "$tmp_version2" ];then
+            new_version=$tmp_version2;
+        fi
     fi
 
     is_new_version ${IMAGEMAGICK_VERSION} ${new_version}
@@ -4294,11 +4374,21 @@ function check_github_soft_version()
 
     pattern="s/^.\{1,\} href=\"[^\\\"]\{1,\}${soft}[^\\\"]\{0,\}\/archive\/$pattern\"[^>]\{0,\}>.\{0,\}$/\\${num}/p";
 
-    local new_version=`curl -k $url 2>/dev/null |sed -n "$pattern" |sort -rV|head -1`
+    local versions=`curl -k $url 2>/dev/null |sed -n "$pattern" |sort -rV`
+    local new_version=`echo "$versions"|head -1`;
 
     if [ -z "$new_version" ];then
         echo -e "Check ${soft} version \033[0;31mfaild\033[0m." >&2
         return 1;
+    fi
+
+    echo "$new_version" |grep -iq 'RC'
+    if [ "$?" = "0" ]; then
+        local tmp_version1=`echo "$versions"|grep -iv 'RC' |head -1`;
+        local tmp_version2=`echo "$new_version"|sed -n 's/^\([0-9._-]\{1,\}\)\(RC\|rc\).\{1,\}$/\1/p'`;
+        if [ "$tmp_version1" = "$tmp_version2" ];then
+            new_version=$tmp_version2;
+        fi
     fi
 
     if [ "$current_version" = "php7" -o "$current_version" = "master" ];then
@@ -4349,11 +4439,21 @@ function check_php_pecl_version()
     local ext=$1;
     local current_version=$2;
 
-    local new_version=`curl -k http://pecl.php.net/package/${ext} 2>/dev/null|sed -n "s/^.\{1,\} href=\"\/get\/${ext}-\([0-9._]\{1,\}\(\(RC\)\{0,1\}[0-9]\{1,\}\)\{0,1\}\).tgz\"[^>]\{0,\}>.\{0,\}$/\1/p"|sort -rV|head -1`;
+    local versions=`curl -k http://pecl.php.net/package/${ext} 2>/dev/null|sed -n "s/^.\{1,\} href=\"\/get\/${ext}-\([0-9._]\{1,\}\(\(RC\)\{0,1\}[0-9]\{1,\}\)\{0,1\}\).tgz\"[^>]\{0,\}>.\{0,\}$/\1/p"|sort -rV`;
+    local new_version=`echo "$versions"|head -1`;
 
     if [ -z "$new_version" -o -z "$current_version" ];then
         echo -e "chekc php pecl ${ext} version \033[0;31mfaild\033[0m." >&2
         return 1;
+    fi
+
+    echo "$new_version" |grep -iq 'RC'
+    if [ "$?" = "0" ]; then
+        local tmp_version1=`echo "$versions"|grep -iv 'RC' |head -1`;
+        local tmp_version2=`echo "$new_version"|sed -n 's/^\([0-9._-]\{1,\}\)\(RC\|rc\).\{1,\}$/\1/p'`;
+        if [ "$tmp_version1" = "$tmp_version2" ];then
+            new_version=$tmp_version2;
+        fi
     fi
 
     if [ "$current_version" = "php7" ];then
@@ -4401,12 +4501,15 @@ function check_sourceforge_soft_version()
          return 1;
      fi
 
-     version_compare ${new_version} $current_version
-     if [ "$?" !=0 ];then
-         echo -e "${soft} current version: \033[0;33m${!version}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+     is_new_version $current_version $new_version
+     if [ "$?" = "0" ];then
+         echo -e "${soft} version is \033[0;32mthe latest.\033[0m"
+         return 0;
+     elif [ "$?" = "11" ] ; then
+         return;
      fi
 
-     echo -e "${soft} version is \033[0;32mthe latest.\033[0m"
+     echo -e "${soft} current version: \033[0;33m${current_version}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
 # {{{ function version_compare() 11出错误 0 相同 1 前高于后 2 前低于后
@@ -4454,6 +4557,24 @@ function is_new_version()
 
     if [ "$new_version" = "$old_version" ];then
         return 0;
+    fi
+
+    echo "$old_version" |grep -iq 'RC'
+    local old_has_rc="$?"
+    echo "$new_version" |grep -iq 'RC'
+    local new_has_rc="$?"
+    if [ "$old_has_rc" = "0" ]; then
+        if [ "$new_has_rc" != "0" ]; then
+            local tmp_version_old=`echo "$old_version"|sed -n 's/^\([0-9._-]\{1,\}\)\(RC\|rc\).\{1,\}$/\1/p'`;
+            if [ "$tmp_version_old" = "$new_version" ];then
+                return 0;
+            fi
+        fi
+    elif [ "$new_has_rc" = "0" ]; then
+        local tmp_version_new=`echo "$new_version"|sed -n 's/^\([0-9._-]\{1,\}\)\(RC\|rc\).\{1,\}$/\1/p'`;
+        if [ "$tmp_version_new" = "$old_version" ];then
+            return 1;
+        fi
     fi
 
     local tmp_version=`echo "$new_version" "$old_version"|tr " " "\n"|sort -rV|head -1`;
