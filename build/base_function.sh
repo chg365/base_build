@@ -28,7 +28,7 @@ function check_minimum_env_requirements()
 }
 function sed_quote()
 {
-# mac sed 不支持\< \>
+# mac sed 不支持\< \> |
     local a=$1;
     # 替换转义符
     a=${a//\\/\\\\}
@@ -432,6 +432,7 @@ function wget_base_library()
     wget_lib $QRENCODE_FILE_NAME      "https://github.com/chg365/qrencode/archive/${QRENCODE_VERSION}.tar.gz"
 
     wget_lib $LARAVEL_FILE_NAME       "https://github.com/laravel/laravel/archive/v${LARAVEL_VERSION}.tar.gz"
+    wget_lib $HIREDIS_FILE_NAME       "https://github.com/redis/hiredis/archive/v${HIREDIS_VERSION}.tar.gz"
     wget_lib $LARAVEL_FRAMEWORK_FILE_NAME "https://github.com/laravel/framework/archive/v${LARAVEL_FRAMEWORK_VERSION}.tar.gz"
     wget_lib $ZEND_FILE_NAME          "https://packages.zendframework.com/releases/ZendFramework-$ZEND_VERSION/$ZEND_FILE_NAME"
     wget_lib $SMARTY_FILE_NAME        "https://github.com/smarty-php/smarty/archive/v$SMARTY_VERSION.tar.gz"
@@ -1534,6 +1535,20 @@ function is_installed_zeromq()
     return;
 }
 # }}}
+# {{{ function is_installed_hiredis()
+function is_installed_hiredis()
+{
+    local FILENAME="$HIREDIS_BASE/lib/pkgconfig/hiredis.pc"
+    if [ ! -f "$FILENAME" ];then
+        return 1;
+    fi
+    local version=`pkg-config --modversion $FILENAME`
+    if [ "${version}" != "$HIREDIS_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
 # {{{ function is_installed_libunwind()
 function is_installed_libunwind()
 {
@@ -1952,6 +1967,14 @@ function compile_redis()
         configure_redis_command
     "
     compile "redis" "$REDIS_FILE_NAME" "redis-$REDIS_VERSION" "$REDIS_BASE" "REDIS_CONFIGURE" "after_redis_make_install"
+}
+# }}}
+# {{{ function configure_hiredis_command()
+function configure_hiredis_command()
+{
+    # 没有configure
+    # 本来要make PREFIX=... install,这里改了Makefile里的PREFIX，就不需要了
+    sed -i.bak "s/$(sed_quote2 'PREFIX?=/usr/local')/$(sed_quote2 PREFIX?=$HIREDIS_BASE)/" Makefile
 }
 # }}}
 # {{{ function configure_redis_command()
@@ -2617,6 +2640,24 @@ function compile_zeromq()
     compile "zeromq" "$ZEROMQ_FILE_NAME" "zeromq-$ZEROMQ_VERSION" "$ZEROMQ_BASE" "ZEROMQ_CONFIGURE"
 }
 # }}}
+# {{{ function compile_hiredis()
+function compile_hiredis()
+{
+    is_installed hiredis "$HIREDIS_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    HIREDIS_CONFIGURE="
+        configure_hiredis_command
+    "
+
+    compile "hiredis" "$HIREDIS_FILE_NAME" "hiredis-$HIREDIS_VERSION" "$HIREDIS_BASE" "HIREDIS_CONFIGURE"
+    if [ "$OS_NAME" = "Darwin" ];then
+        repair_dynamic_shared_library $HIREDIS_BASE/lib "libhiredis*dylib"
+    fi
+}
+# }}}
 # {{{ function compile_libunwind()
 function compile_libunwind()
 {
@@ -3097,6 +3138,7 @@ function compile_php_extension_swoole()
 
     compile_openssl
     compile_pcre
+    compile_hiredis
 
     PHP_EXTENSION_SWOOLE_CONFIGURE="
     configure_php_swoole_command
@@ -3760,9 +3802,12 @@ configure_php_swoole_command()
                 --enable-swoole \
                 $( [ "$is_2" = "1" ] && echo "
                 --enable-coroutine \
+                --enable-async-redis \
                 --enable-thread \
                 --enable-ringbuffer" || echo " ") \
                 $( [ `echo "$kernel_release 2.6.33" | tr " " "\n"|sort -rV|head -1 ` = "$kernel_release" ] && echo "--enable-hugepage" || echo "" )
+                #--enable-http2 \
+                #-enable-jemalloc \
 }
 # }}}
 # {{{ configure_php_amqp_command()
@@ -3797,6 +3842,7 @@ configure_php_maxminddb_command()
 # {{{ function check_soft_updates()
 function check_soft_updates()
 {
+    check_version hiredis
     check_version redis
     check_version libunwind
     check_version zeromq
@@ -3958,7 +4004,7 @@ function check_redis_version()
     echo "$new_version" |grep -iq 'RC'
     if [ "$?" = "0" ]; then
         local tmp_version1=`echo "$versions"|grep -iv 'RC' |head -1`;
-        local tmp_version2=`echo "$new_version"|sed -n 's/^\([0-9._-]\{1,\}\)\(RC\|rc\).\{1,\}$/\1/p'`;
+        local tmp_version2=`echo "$new_version"|sed -n 's/^\([0-9._-]\{1,\}\)\([Rr][Cc]\).\{1,\}$/\1/p'`;
         if [ "$tmp_version1" = "$tmp_version2" ];then
             new_version=$tmp_version2;
         fi
@@ -4040,7 +4086,7 @@ function check_libzip_version()
     echo "$new_version" |grep -iq 'RC'
     if [ "$?" = "0" ]; then
         local tmp_version1=`echo "$versions"|grep -iv 'RC' |head -1`;
-        local tmp_version2=`echo "$new_version"|sed -n 's/^\([0-9._-]\{1,\}\)\(RC\|rc\).\{1,\}$/\1/p'`;
+        local tmp_version2=`echo "$new_version"|sed -n 's/^\([0-9._-]\{1,\}\)\([Rr][Cc]\).\{1,\}$/\1/p'`;
         if [ "$tmp_version1" = "$tmp_version2" ];then
             new_version=$tmp_version2;
         fi
@@ -4068,7 +4114,7 @@ function check_php_version()
     echo "$new_version" |grep -iq 'RC'
     if [ "$?" = "0" ]; then
         local tmp_version1=`echo "$versions"|grep -iv 'RC' |head -1`;
-        local tmp_version2=`echo "$new_version"|sed -n 's/^\([0-9._-]\{1,\}\)\(RC\|rc\).\{1,\}$/\1/p'`;
+        local tmp_version2=`echo "$new_version"|sed -n 's/^\([0-9._-]\{1,\}\)\([Rr][Cc]\).\{1,\}$/\1/p'`;
         if [ "$tmp_version1" = "$tmp_version2" ];then
             new_version=$tmp_version2;
         fi
@@ -4133,7 +4179,7 @@ function check_imagemagick_version()
     echo "$new_version" |grep -iq 'RC'
     if [ "$?" = "0" ]; then
         local tmp_version1=`echo "$versions"|grep -iv 'RC' |head -1`;
-        local tmp_version2=`echo "$new_version"|sed -n 's/^\([0-9._-]\{1,\}\)\(RC\|rc\).\{1,\}$/\1/p'`;
+        local tmp_version2=`echo "$new_version"|sed -n 's/^\([0-9._-]\{1,\}\)\([Rr][Cc]\).\{1,\}$/\1/p'`;
         if [ "$tmp_version1" = "$tmp_version2" ];then
             new_version=$tmp_version2;
         fi
@@ -4269,6 +4315,12 @@ function check_zeromq_version()
     check_github_soft_version zeromq $ZEROMQ_VERSION "https://github.com/zeromq/libzmq/releases"
 }
 # }}}
+# {{{ function check_hiredis_version()
+function check_hiredis_version()
+{
+    check_github_soft_version hiredis $HIREDIS_VERSION "https://github.com/redis/hiredis/releases"
+}
+# }}}
 # {{{ function check_pecl_dio_version()
 function check_pecl_dio_version()
 {
@@ -4385,7 +4437,7 @@ function check_github_soft_version()
     echo "$new_version" |grep -iq 'RC'
     if [ "$?" = "0" ]; then
         local tmp_version1=`echo "$versions"|grep -iv 'RC' |head -1`;
-        local tmp_version2=`echo "$new_version"|sed -n 's/^\([0-9._-]\{1,\}\)\(RC\|rc\).\{1,\}$/\1/p'`;
+        local tmp_version2=`echo "$new_version"|sed -n 's/^\([0-9._-]\{1,\}\)\([Rr][Cc]\).\{1,\}$/\1/p'`;
         if [ "$tmp_version1" = "$tmp_version2" ];then
             new_version=$tmp_version2;
         fi
@@ -4450,7 +4502,7 @@ function check_php_pecl_version()
     echo "$new_version" |grep -iq 'RC'
     if [ "$?" = "0" ]; then
         local tmp_version1=`echo "$versions"|grep -iv 'RC' |head -1`;
-        local tmp_version2=`echo "$new_version"|sed -n 's/^\([0-9._-]\{1,\}\)\(RC\|rc\).\{1,\}$/\1/p'`;
+        local tmp_version2=`echo "$new_version"|sed -n 's/^\([0-9._-]\{1,\}\)\([Rr][Cc]\).\{1,\}$/\1/p'`;
         if [ "$tmp_version1" = "$tmp_version2" ];then
             new_version=$tmp_version2;
         fi
@@ -4565,13 +4617,13 @@ function is_new_version()
     local new_has_rc="$?"
     if [ "$old_has_rc" = "0" ]; then
         if [ "$new_has_rc" != "0" ]; then
-            local tmp_version_old=`echo "$old_version"|sed -n 's/^\([0-9._-]\{1,\}\)\(RC\|rc\).\{1,\}$/\1/p'`;
+            local tmp_version_old=`echo "$old_version"|sed -n 's/^\([0-9._-]\{1,\}\)\([Rr][Cc]\).\{1,\}$/\1/p'`;
             if [ "$tmp_version_old" = "$new_version" ];then
                 return 0;
             fi
         fi
     elif [ "$new_has_rc" = "0" ]; then
-        local tmp_version_new=`echo "$new_version"|sed -n 's/^\([0-9._-]\{1,\}\)\(RC\|rc\).\{1,\}$/\1/p'`;
+        local tmp_version_new=`echo "$new_version"|sed -n 's/^\([0-9._-]\{1,\}\)\([Rr][Cc]\).\{1,\}$/\1/p'`;
         if [ "$tmp_version_new" = "$old_version" ];then
             return 1;
         fi
