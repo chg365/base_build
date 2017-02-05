@@ -2597,10 +2597,16 @@ function compile_ImageMagick()
         return;
     fi
 
+    compile_zlib
+    compile_jpeg
+    compile_libpng
+    compile_freetype
+    compile_fontconfig
+    compile_libX11
+
     IMAGEMAGICK_CONFIGURE="
-    ./configure --prefix=$IMAGEMAGICK_BASE $( [ \"$OS_NAME\" != \"Darwin\" ] && echo '--enable-opencl' )
+    configure_ImageMagick_command
     "
-                #--with-libstdc=/usr/local/Cellar/gcc/5.2.0
 
     compile "ImageMagick" "$IMAGEMAGICK_FILE_NAME" "ImageMagick-$IMAGEMAGICK_VERSION" "$IMAGEMAGICK_BASE" "IMAGEMAGICK_CONFIGURE"
 }
@@ -3782,6 +3788,18 @@ configure_libevent_command()
 {
     CPPFLAGS="$(get_cppflags $OPENSSL_BASE/include)" LDFLAGS="$(get_ldflags $OPENSSL_BASE/lib)" \
     ./configure --prefix=$LIBEVENT_BASE
+}
+# }}}
+# {{{ configure_ImageMagick_command()
+configure_ImageMagick_command()
+{
+    # ld: symbol(s) not found for architecture x86_64
+    # 用下面的CPPFLAGS LDFLAGS 或 --without-png
+    CPPFLAGS="$(get_cppflags ${ZLIB_BASE}/include ${LIBPNG_BASE}/include ${FREETYPE_BASE}/include ${FONTCONFIG_BASE}/include ${JPEG_BASE}/include $([ "$OS_NAME" = 'Darwin' ] && echo " $LIBX11_BASE/include") )" \
+    LDFLAGS="$(get_ldflags ${ZLIB_BASE}/lib ${LIBPNG_BASE}/lib ${FREETYPE_BASE}/lib ${FONTCONFIG_BASE}/lib ${JPEG_BASE}/lib $([ "$OS_NAME" = 'Darwin' ] && echo " $LIBX11_BASE/lib") )" \
+    ./configure --prefix=$IMAGEMAGICK_BASE \
+                $( [ \"$OS_NAME\" != \"Darwin\" ] && echo '--enable-opencl' )
+                #--without-png \
 }
 # }}}
 # {{{ configure_php_swoole_command()
