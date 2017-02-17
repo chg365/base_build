@@ -6,7 +6,7 @@ project_abbreviation="chg_base"
 #HOSTTYPE=x86_64
 #OSTYPE=linux-gnu
 OS_NAME=`uname -s`;   # Linux
-HOST_TYPE=`uname -i`; # x86_64
+HOST_TYPE=`uname -m`; # x86_64
 
 BASE_DIR=/usr/local/${project_abbreviation//_//}
 COMPILE_BASE=$(dirname $BASE_DIR)/compile
