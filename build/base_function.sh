@@ -2935,7 +2935,7 @@ function compile_php_extension_phalcon()
     else
         local tmp_str="32"
     fi
-    local tmp_dir="cphalcon-${PHALCON_VERSION}/php${PHP_VERSION%%.*}/${tmp_str}bits"
+    local tmp_dir="cphalcon-${PHALCON_VERSION}/build/php${PHP_VERSION%%.*}/${tmp_str}bits"
 
 
     PHP_EXTENSION_PHALCON_CONFIGURE="
