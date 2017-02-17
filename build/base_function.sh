@@ -422,8 +422,7 @@ function wget_base_library()
     wget_lib $PHP_MONGODB_FILE_NAME   "http://pecl.php.net/get/$PHP_MONGODB_FILE_NAME"
     wget_lib $SOLR_FILE_NAME          "http://pecl.php.net/get/$SOLR_FILE_NAME"
 
-    # wget_lib $PHP_MEMCACHED_FILE_NAME "http://pecl.php.net/get/$PHP_MEMCACHED_FILE_NAME"
-    wget_lib $PHP_MEMCACHED_FILE_NAME "https://github.com/php-memcached-dev/php-memcached/archive/${PHP_MEMCACHED_VERSION}.tar.gz"
+    wget_lib $PHP_MEMCACHED_FILE_NAME "http://pecl.php.net/get/$PHP_MEMCACHED_FILE_NAME"
     wget_lib $EVENT_FILE_NAME         "http://pecl.php.net/get/$EVENT_FILE_NAME"
     wget_lib $DIO_FILE_NAME           "http://pecl.php.net/get/$DIO_FILE_NAME"
     wget_lib $PHP_LIBEVENT_FILE_NAME  "http://pecl.php.net/get/$PHP_LIBEVENT_FILE_NAME"
@@ -3111,7 +3110,7 @@ function compile_php_extension_memcached()
                 # --disable-memcached-sasl
                 # --enable-memcached-msgpack
 
-    compile "php_extension_memcached" "$PHP_MEMCACHED_FILE_NAME" "php-memcached-$PHP_MEMCACHED_VERSION" "memcached.so" "PHP_EXTENSION_MEMCACHED_CONFIGURE"
+    compile "php_extension_memcached" "$PHP_MEMCACHED_FILE_NAME" "memcached-$PHP_MEMCACHED_VERSION" "memcached.so" "PHP_EXTENSION_MEMCACHED_CONFIGURE"
 
     /bin/rm -rf package.xml
 }
@@ -4040,6 +4039,7 @@ function check_redis_version()
 # {{{ function check_icu_version()
 function check_icu_version()
 {
+    # http://site.icu-project.org/download
     local new_version=`curl -k https://fossies.org/linux/misc/ 2>/dev/null|sed -n 's/^.\{1,\}>icu4c-\([0-9a-zA-Z._]\{2,\}\)-src.tgz<.\{1,\}/\1/p'|sort -rV|head -1`
     if [ -z "$new_version" ];then
         echo -e "探测icu新版本\033[0;31m失败\033[0m" >&2
