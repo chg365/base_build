@@ -412,6 +412,7 @@ function wget_base_library()
     wget_lib $APCU_FILE_NAME          "http://pecl.php.net/get/$APCU_FILE_NAME"
     wget_lib $APCU_BC_FILE_NAME       "http://pecl.php.net/get/$APCU_BC_FILE_NAME"
     wget_lib $YAF_FILE_NAME           "http://pecl.php.net/get/$YAF_FILE_NAME"
+    wget_lib $PHALCON_FILE_NAME       "https://github.com/phalcon/cphalcon/archive/v${PHALCON_VERSION}.tar.gz"
     wget_lib $XDEBUG_FILE_NAME        "http://pecl.php.net/get/$XDEBUG_FILE_NAME"
     wget_lib $RAPHF_FILE_NAME         "http://pecl.php.net/get/$RAPHF_FILE_NAME"
     wget_lib $PROPRO_FILE_NAME        "http://pecl.php.net/get/$PROPRO_FILE_NAME"
@@ -2917,6 +2918,36 @@ function compile_php_extension_yaf()
     /bin/rm -rf package.xml
 }
 # }}}
+# {{{ function compile_php_extension_phalcon()
+function compile_php_extension_phalcon()
+{
+    is_installed_php_extension phalcon
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    compile_php
+
+    #PHP_VERSION=`$PHP_BASE/bin/php-config --version`
+
+    if echo "$HOST_TYPE"|grep -q x86_64 ; then
+        local tmp_str="64"
+    else
+        local tmp_str="32"
+    fi
+    local tmp_dir="cphalcon-${PHALCON_VERSION}/php${PHP_VERSION%%.*}/${tmp_str}bits"
+
+
+    PHP_EXTENSION_PHALCON_CONFIGURE="
+    ./configure --with-php-config=$PHP_BASE/bin/php-config \
+                --enable-phalcon
+    "
+
+    compile "php_extension_phalcon" "$PHALCON_FILE_NAME" "$tmp_dir" "phalcon.so" "PHP_EXTENSION_PHALCON_CONFIGURE"
+
+    /bin/rm -rf package.xml
+}
+# }}}
 # {{{ function compile_php_extension_xdebug()
 function compile_php_extension_xdebug()
 {
@@ -3891,6 +3922,8 @@ function check_soft_updates()
     check_pecl_zmq_version
     check_pecl_redis_version
     check_pecl_imagick_version
+    check_pecl_phalcon_version
+    check_pecl_yaf_version
 
     check_version smarty
     check_version rabbitmq
@@ -4373,6 +4406,12 @@ function check_pecl_qrencode_version()
     check_github_soft_version qrencode $QRENCODE_VERSION "https://github.com/chg365/qrencode/releases"
 }
 # }}}
+# {{{ function check_pecl_yaf_version()
+function check_pecl_yaf_version()
+{
+    check_php_pecl_version yaf $YAF_VERSION
+}
+# }}}
 # {{{ function check_pecl_mongodb_version()
 function check_pecl_mongodb_version()
 {
@@ -4383,6 +4422,12 @@ function check_pecl_mongodb_version()
 function check_pecl_zmq_version()
 {
     check_github_soft_version php-zmq $PHP_ZMQ_VERSION "https://github.com/mkoppanen/php-zmq/releases"
+}
+# }}}
+# {{{ function check_pecl_phalcon_version()
+function check_pecl_phalcon_version()
+{
+    check_github_soft_version phalcon $PHALCON_VERSION "https://github.com/phalcon/cphalcon/releases"
 }
 # }}}
 # {{{ function check_sphinx_version()
