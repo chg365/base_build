@@ -185,7 +185,13 @@ function wget_lib()
     fi
 
     wget --content-disposition --no-check-certificate $FILE_URL
-    is_finished_wget "$?/$FILE_NAME"
+    local wget_flag="$?"
+    if [ "$wget_flag" = "8" ];then
+        wget --no-check-certificate $FILE_URL
+        local wget_flag="$?"
+    fi
+    is_finished_wget "$wget_flag/$FILE_NAME"
+
 }
 # }}}
 # function wget_lib_boost() {{{
