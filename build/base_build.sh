@@ -131,7 +131,7 @@ compile_memcached
 compile_sphinx
 compile_sqlite
 compile_php_extension_dio
-#compile_php_extension_pthreads
+compile_php_extension_pthreads
 compile_php_extension_qrencode
 compile_php_extension_zeromq
 compile_php_extension_intl
@@ -141,7 +141,7 @@ compile_php_extension_event
 #compile_php_extension_libevent
 compile_php_extension_libsodium
 compile_php_extension_yaf
-#compile_php_extension_phalcon #不支持7.1
+compile_php_extension_phalcon #不支持7.1
 compile_php_extension_xdebug
 compile_php_extension_raphf
 compile_php_extension_propro
