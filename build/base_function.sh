@@ -25,6 +25,9 @@ function check_minimum_env_requirements()
 # bzip2
 # bison
 # yum install cyrus-sasl-devel # /usr/include/sasl/sasl.h
+# yum install libestr
+# yum install libtool-ltdl-devel
+# yum install texinfo
 }
 function sed_quote()
 {
@@ -344,7 +347,7 @@ function wget_base_library()
     wget_lib $GETTEXT_FILE_NAME       "http://ftp.gnu.org/gnu/gettext/$GETTEXT_FILE_NAME"
     wget_lib $LIBICONV_FILE_NAME      "http://ftp.gnu.org/gnu/libiconv/$LIBICONV_FILE_NAME"
     wget_lib $LIBXML2_FILE_NAME       "ftp://xmlsoft.org/libxml2/$LIBXML2_FILE_NAME"
-    # wget_lib $JSON_FILE_NAME          "https://s3.amazonaws.com/json-c_releases/releases/$JSON_FILE_NAME"
+    wget_lib $JSON_FILE_NAME          "https://s3.amazonaws.com/json-c_releases/releases/$JSON_FILE_NAME"
     # http://sourceforge.net/projects/mcrypt/files/MCrypt/2.6.8/mcrypt-2.6.8.tar.gz/download
     wget_lib $LIBMCRYPT_FILE_NAME     "http://sourceforge.net/projects/mcrypt/files/Libmcrypt/$LIBMCRYPT_VERSION/$LIBMCRYPT_FILE_NAME/download"
     wget_lib $SQLITE_FILE_NAME        "http://www.sqlite.org/2017/$SQLITE_FILE_NAME"
@@ -359,16 +362,26 @@ function wget_base_library()
     wget_lib $PTHREADS_FILE_NAME      "http://pecl.php.net/get/$PTHREADS_FILE_NAME"
     wget_lib $SWOOLE_FILE_NAME        "http://pecl.php.net/get/$SWOOLE_FILE_NAME"
     wget_lib $LIBXSLT_FILE_NAME       "ftp://xmlsoft.org/libxslt/$LIBXSLT_FILE_NAME"
-    wget_lib $TIDY_FILE_NAME          "https://github.com/htacg/tidy-html5/archive/${TIDY_VERSION}.tar.gz"
-    wget_lib $SPHINX_FILE_NAME        "https://github.com/sphinxsearch/sphinx/archive/${SPHINX_VERSION}-release.tar.gz"
-    wget_lib $PHP_SPHINX_FILE_NAME    "https://github.com/php/pecl-search_engine-sphinx/archive/${PHP_SPHINX_VERSION}.tar.gz"
+    wget_lib $TIDY_FILE_NAME          "https://github.com/htacg/tidy-html5/archive/${TIDY_FILE_NAME##*-}"
+    wget_lib $SPHINX_FILE_NAME        "https://github.com/sphinxsearch/sphinx/archive/${SPHINX_FILE_NAME#*-}"
+    wget_lib $PHP_SPHINX_FILE_NAME    "https://github.com/php/pecl-search_engine-sphinx/archive/${PHP_SPHINX_FILE_NAME##*-}"
+    wget_lib $RSYSLOG_FILE_NAME       "http://www.rsyslog.com/files/download/rsyslog/${RSYSLOG_FILE_NAME}"
+    wget_lib $LIBESTR_FILE_NAME       "http://libestr.adiscon.com/files/download/${LIBESTR_FILE_NAME}"
 
     # wget_lib $LIBPNG_FILE_NAME     "https://sourceforge.net/projects/libpng/files/libpng$(echo ${LIBPNG_VERSION%\.*}|sed 's/\.//g')/$LIBPNG_VERSION/$LIBPNG_FILE_NAME/download"
     local version=${LIBPNG_VERSION%.*};
     wget_lib $LIBPNG_FILE_NAME        "https://sourceforge.net/projects/libpng/files/libpng${version/./}/$LIBPNG_VERSION/$LIBPNG_FILE_NAME/download"
 
+    wget_lib $GLIB_FILE_NAME          "https://github.com/GNOME/glib/archive/${GLIB_FILE_NAME##*-}"
+    wget_lib $LIBFFI_FILE_NAME        "https://github.com/libffi/libffi/archive/v${LIBFFI_FILE_NAME##*-}"
     wget_lib $PIXMAN_FILE_NAME        "http://cairographics.org/releases/$PIXMAN_FILE_NAME"
     wget_lib $CAIRO_FILE_NAME         "http://cairographics.org/releases/$CAIRO_FILE_NAME"
+
+    local version=${UTIL_LINUX_VERSION%.*};
+    if [ "${version%.*}" = "${version}" ] ;then
+        local version=${UTIL_LINUX_VERSION}
+    fi
+    wget_lib $UTIL_LINUX_FILE_NAME    "https://www.kernel.org/pub/linux/utils/util-linux/v${version}/${UTIL_LINUX_FILE_NAME}"
 
     wget_lib $NASM_FILE_NAME          "http://www.nasm.us/pub/nasm/releasebuilds/$NASM_VERSION/$NASM_FILE_NAME"
     wget_lib $JPEG_FILE_NAME          "http://www.ijg.org/files/$JPEG_FILE_NAME"
@@ -379,27 +392,20 @@ function wget_base_library()
     if [ "$?" = "1" ];then
         tmp="version.";
     fi
-    wget_lib $OPENJPEG_FILE_NAME      "https://github.com/uclouvain/openjpeg/archive/${tmp}${OPENJPEG_VERSION/%.0/}.tar.gz"
+    wget_lib $OPENJPEG_FILE_NAME      "https://github.com/uclouvain/openjpeg/archive/${tmp}${OPENJPEG_FILE_NAME#*-}"
     wget_lib $FREETYPE_FILE_NAME      "https://sourceforge.net/projects/freetype/files/freetype${FREETYPE_VERSION%%.*}/$FREETYPE_VERSION/$FREETYPE_FILE_NAME/download"
+    wget_lib $HARFBUZZ_FILE_NAME      "http://www.freedesktop.org/software/harfbuzz/release/$HARFBUZZ_FILE_NAME"
     wget_lib $EXPAT_FILE_NAME         "https://sourceforge.net/projects/expat/files/expat/$EXPAT_VERSION/$EXPAT_FILE_NAME/download"
     wget_lib $FONTCONFIG_FILE_NAME    "https://www.freedesktop.org/software/fontconfig/release/$FONTCONFIG_FILE_NAME"
     wget_lib $POPPLER_FILE_NAME       "https://poppler.freedesktop.org/$POPPLER_FILE_NAME"
-    wget_lib $FONTFORGE_FILE_NAME     "https://github.com/fontforge/fontforge/archive/${FONTFORGE_VERSION}.tar.gz"
-    wget_lib $PDF2HTMLEX_FILE_NAME    "https://github.com/coolwanglu/pdf2htmlEX/archive/v$PDF2HTMLEX_VERSION.tar.gz"
+    wget_lib $FONTFORGE_FILE_NAME     "https://github.com/fontforge/fontforge/archive/${FONTFORGE_FILE_NAME#*-}"
+    wget_lib $PDF2HTMLEX_FILE_NAME    "https://github.com/coolwanglu/pdf2htmlEX/archive/v${PDF2HTMLEX_FILE_NAME#*-}"
     wget_lib $PANGO_FILE_NAME         "http://ftp.gnome.org/pub/GNOME/sources/pango/${PANGO_VERSION%.*}/$PANGO_FILE_NAME"
     # wget_lib https://www.freedesktop.org/software/harfbuzz/release/harfbuzz-1.2.7.tar.bz2
     wget_lib $LIBXPM_FILE_NAME        "http://xorg.freedesktop.org/releases/individual/lib/$LIBXPM_FILE_NAME"
     # wget_lib $LIBGD_FILE_NAME       "https://bitbucket.org/libgd/gd-libgd/downloads/$LIBGD_FILE_NAME"
     wget_lib $LIBGD_FILE_NAME         "http://fossies.org/linux/www/$LIBGD_FILE_NAME"
-
-#https://sourceforge.net/projects/imagemagick/files/im7-src/ImageMagick-7.0.3-6.tar.xz/download^C
-#     [root@8f52570e0aa0 build]# https://sourceforge.net/projects/imagemagick/files/old-sources/7.x/7.0/ImageMagick-7.0.2-10.tar.gz/download^C
-#     [root@8f52570e0aa0 build]# https://sourceforge.net/projects/imagemagick/files/im6-src/ImageMagick-6.9.6-4.tar.gz/download^C
-#     [root@8f52570e0aa0 build]# https://github.com/ImageMagick/ImageMagick/archive/7.0.3-7.tar.gz
-
-    wget_lib $IMAGEMAGICK_FILE_NAME  "https://github.com/ImageMagick/ImageMagick/archive/${IMAGEMAGICK_VERSION}.tar.gz"
-#wget_lib $IMAGEMAGICK_FILE_NAME  "https://sourceforge.net/projects/imagemagick/files/${IMAGEMAGICK_VERSION%-*}-sources/$IMAGEMAGICK_FILE_NAME/download"
-    # wget_lib $IMAGEMAGICK_FILE_NAME   "http://www.imagemagick.org/download/$IMAGEMAGICK_FILE_NAME"
+    wget_lib $IMAGEMAGICK_FILE_NAME  "https://github.com/ImageMagick/ImageMagick/archive/${IMAGEMAGICK_FILE_NAME#*-}"
     wget_lib $GMP_FILE_NAME           "ftp://ftp.gmplib.org/pub/gmp/$GMP_FILE_NAME"
     wget_lib $IMAP_FILE_NAME          "ftp://ftp.cac.washington.edu/imap/$IMAP_FILE_NAME"
     wget_lib $KERBEROS_FILE_NAME      "http://web.mit.edu/kerberos/dist/krb5/${KERBEROS_VERSION%.*}/$KERBEROS_FILE_NAME"
@@ -418,7 +424,7 @@ function wget_base_library()
     wget_lib $APCU_FILE_NAME          "http://pecl.php.net/get/$APCU_FILE_NAME"
     wget_lib $APCU_BC_FILE_NAME       "http://pecl.php.net/get/$APCU_BC_FILE_NAME"
     wget_lib $YAF_FILE_NAME           "http://pecl.php.net/get/$YAF_FILE_NAME"
-    wget_lib $PHALCON_FILE_NAME       "https://github.com/phalcon/cphalcon/archive/v${PHALCON_VERSION}.tar.gz"
+    wget_lib $PHALCON_FILE_NAME       "https://github.com/phalcon/cphalcon/archive/v${PHALCON_FILE_NAME#*-}"
     wget_lib $XDEBUG_FILE_NAME        "http://pecl.php.net/get/$XDEBUG_FILE_NAME"
     wget_lib $RAPHF_FILE_NAME         "http://pecl.php.net/get/$RAPHF_FILE_NAME"
     wget_lib $PROPRO_FILE_NAME        "http://pecl.php.net/get/$PROPRO_FILE_NAME"
@@ -435,32 +441,33 @@ function wget_base_library()
     wget_lib $PHP_LIBEVENT_FILE_NAME  "http://pecl.php.net/get/$PHP_LIBEVENT_FILE_NAME"
     wget_lib $IMAGICK_FILE_NAME       "http://pecl.php.net/get/$IMAGICK_FILE_NAME"
     wget_lib $PHP_LIBSODIUM_FILE_NAME "http://pecl.php.net/get/$PHP_LIBSODIUM_FILE_NAME"
-    wget_lib $QRENCODE_FILE_NAME      "https://github.com/chg365/qrencode/archive/${QRENCODE_VERSION}.tar.gz"
+    wget_lib $QRENCODE_FILE_NAME      "https://github.com/chg365/qrencode/archive/${QRENCODE_FILE_NAME#*-}"
 
-    wget_lib $LARAVEL_FILE_NAME       "https://github.com/laravel/laravel/archive/v${LARAVEL_VERSION}.tar.gz"
-    wget_lib $HIREDIS_FILE_NAME       "https://github.com/redis/hiredis/archive/v${HIREDIS_VERSION}.tar.gz"
-    wget_lib $LARAVEL_FRAMEWORK_FILE_NAME "https://github.com/laravel/framework/archive/v${LARAVEL_FRAMEWORK_VERSION}.tar.gz"
+    wget_lib $LARAVEL_FILE_NAME       "https://github.com/laravel/laravel/archive/v${LARAVEL_FILE_NAME#*-}"
+    wget_lib $HIREDIS_FILE_NAME       "https://github.com/redis/hiredis/archive/v${HIREDIS_FILE_NAME#*-}"
+    wget_lib $LARAVEL_FRAMEWORK_FILE_NAME "https://github.com/laravel/framework/archive/v${LARAVEL_FRAMEWORK_FILE_NAME#*-}"
     wget_lib $ZEND_FILE_NAME          "https://packages.zendframework.com/releases/ZendFramework-$ZEND_VERSION/$ZEND_FILE_NAME"
-    wget_lib $SMARTY_FILE_NAME        "https://github.com/smarty-php/smarty/archive/v$SMARTY_VERSION.tar.gz"
+    wget_lib $SMARTY_FILE_NAME        "https://github.com/smarty-php/smarty/archive/v${SMARTY_FILE_NAME#*-}"
     wget_lib $CKEDITOR_FILE_NAME      "http://download.cksource.com/CKEditor/CKEditor/CKEditor%20$CKEDITOR_VERSION/$CKEDITOR_FILE_NAME"
     wget_lib $JQUERY_FILE_NAME        "http://code.jquery.com/$JQUERY_FILE_NAME"
-    wget_lib $RABBITMQ_C_FILE_NAME    "https://github.com/alanxz/rabbitmq-c/archive/v${RABBITMQ_C_VERSION}.tar.gz"
+    wget_lib $RABBITMQ_C_FILE_NAME    "https://github.com/alanxz/rabbitmq-c/archive/v${RABBITMQ_C_FILE_NAME##*-}"
 
     wget_lib $ZEROMQ_FILE_NAME        "https://github.com/zeromq/libzmq/releases/download/v${ZEROMQ_VERSION}/$ZEROMQ_FILE_NAME"
     wget_lib $LIBUNWIND_FILE_NAME     "http://download.savannah.gnu.org/releases/libunwind/$LIBUNWIND_FILE_NAME"
     wget_lib $LIBSODIUM_FILE_NAME     "https://download.libsodium.org/libsodium/releases/$LIBSODIUM_FILE_NAME"
-    wget_lib $PHP_ZMQ_FILE_NAME       "https://github.com/mkoppanen/php-zmq/archive/${PHP_ZMQ_VERSION}.tar.gz"
+    wget_lib $PHP_ZMQ_FILE_NAME       "https://github.com/mkoppanen/php-zmq/archive/${PHP_ZMQ_FILE_NAME##*-}"
     # wget_lib $SWFUPLOAD_FILE_NAME    "http://swfupload.googlecode.com/files/SWFUpload%20v$SWFUPLOAD_VERSION%20Core.zip"
     wget_lib $GEOLITE2_CITY_MMDB_FILE_NAME "http://geolite.maxmind.com/download/geoip/database/$GEOLITE2_CITY_MMDB_FILE_NAME"
     wget_lib $GEOLITE2_COUNTRY_MMDB_FILE_NAME "http://geolite.maxmind.com/download/geoip/database/$GEOLITE2_COUNTRY_MMDB_FILE_NAME"
     wget_lib $LIBMAXMINDDB_FILE_NAME  "https://github.com/maxmind/libmaxminddb/releases/download/${LIBMAXMINDDB_VERSION}/${LIBMAXMINDDB_FILE_NAME}"
-    wget_lib $MAXMIND_DB_READER_PHP_FILE_NAME "https://github.com/maxmind/MaxMind-DB-Reader-php/archive/v${MAXMIND_DB_READER_PHP_VERSION}.tar.gz"
-    wget_lib $WEB_SERVICE_COMMON_PHP_FILE_NAME "https://github.com/maxmind/web-service-common-php/archive/v${WEB_SERVICE_COMMON_PHP_VERSION}.tar.gz"
-    wget_lib $GEOIP2_PHP_FILE_NAME    "https://github.com/maxmind/GeoIP2-php/archive/v${GEOIP2_PHP_VERSION}.tar.gz"
+    wget_lib $MAXMIND_DB_READER_PHP_FILE_NAME "https://github.com/maxmind/MaxMind-DB-Reader-php/archive/v${MAXMIND_DB_READER_PHP_FILE_NAME##*-}"
+    wget_lib $WEB_SERVICE_COMMON_PHP_FILE_NAME "https://github.com/maxmind/web-service-common-php/archive/v${WEB_SERVICE_COMMON_PHP_FILE_NAME##*-}"
+    wget_lib $PKGCONFIG_FILE_NAME     "https://pkg-config.freedesktop.org/releases/$PKGCONFIG_FILE_NAME"
+    wget_lib $GEOIP2_PHP_FILE_NAME    "https://github.com/maxmind/GeoIP2-php/archive/v${GEOIP2_PHP_FILE_NAME##*-}"
     wget_lib $GEOIPUPDATE_FILE_NAME   "https://github.com/maxmind/geoipupdate/releases/download/v${GEOIPUPDATE_VERSION}/$GEOIPUPDATE_FILE_NAME"
-    wget_lib $ELECTRON_FILE_NAME      "https://github.com/electron/electron/archive/v${ELECTRON_VERSION}.tar.gz"
+    wget_lib $ELECTRON_FILE_NAME      "https://github.com/electron/electron/archive/v${ELECTRON_FILE_NAME#*-}"
 
-    wget_lib $PHANTOMJS_FILE_NAME     "https://github.com/ariya/phantomjs/archive/${PHANTOMJS_VERSION}.tar.gz"
+    wget_lib $PHANTOMJS_FILE_NAME     "https://github.com/ariya/phantomjs/archive/${PHANTOMJS_FILE_NAME#*-}"
 
 #    if [ "$OS_NAME" = 'Darwin' ];then
 
@@ -1049,6 +1056,20 @@ function is_installed_libpng()
     return;
 }
 # }}}
+# {{{ function is_installed_openjpeg()
+function is_installed_openjpeg()
+{
+    local FILENAME="$OPENJPEG_BASE/lib/pkgconfig/libopenjp2.pc"
+    if [ ! -f "$FILENAME" ];then
+        return 1;
+    fi
+    local version=`pkg-config --modversion $FILENAME`
+    if [ "$version" != "$OPENJPEG_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
 # {{{ function is_installed_sqlite()
 function is_installed_sqlite()
 {
@@ -1428,6 +1449,47 @@ function is_installed_nginx()
     return;
 }
 # }}}
+# {{{ function is_installed_rsyslog()
+function is_installed_rsyslog()
+{
+    if [ ! -f "$RSYSLOG_BASE/sbin/rsyslogd" ];then
+        return 1;
+    fi
+    local version=`$RSYSLOG_BASE/sbin/rsyslogd -v 2>&1|sed -n '1{s/^rsyslogd \([0-9.]\{5,\}\),.\{0,\}$/\1/p;}'`
+    if [ "$version" != "$RSYSLOG_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
+# {{{ function is_installed_libestr()
+function is_installed_libestr()
+{
+    local FILENAME="$LIBESTR_BASE/lib/pkgconfig/libestr.pc"
+    if [ ! -f "$FILENAME" ];then
+        return 1;
+    fi
+    local version=`pkg-config --modversion $FILENAME`
+    if [ "$version" != "$LIBESTR_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
+# {{{ function is_installed_json()
+function is_installed_json()
+{
+    local FILENAME="$JSON_BASE/lib/pkgconfig/json-c.pc"
+    if [ ! -f "$FILENAME" ];then
+        return 1;
+    fi
+    local version=`pkg-config --modversion $FILENAME`
+    if [ "$version" != "$JSON_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
 # {{{ function is_installed_libgd()
 function is_installed_libgd()
 {
@@ -1614,6 +1676,177 @@ function is_installed_geoipupdate()
     return;
 }
 # }}}
+# {{{ function is_installed_nasm()
+function is_installed_nasm()
+{
+    local FILENAME="$NASM_BASE/bin/nasm"
+    if [ ! -f "$FILENAME" ];then
+        return 1;
+    fi
+    local version=`$FILENAME -v|awk '{print $3;}'`
+    if [ "$version" != "$NASM_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
+# {{{ function is_installed_libjpeg()
+function is_installed_libjpeg()
+{
+    local FILENAME="$LIBJPEG_BASE/lib/pkgconfig/libjpeg.pc"
+    if [ ! -f "$FILENAME" ];then
+        return 1;
+    fi
+    local version=`pkg-config --modversion $FILENAME`
+    if [ "$version" != "$LIBJPEG_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
+# {{{ function is_installed_cairo()
+function is_installed_cairo()
+{
+    local FILENAME="$CAIRO_BASE/lib/pkgconfig/cairo.pc"
+    if [ ! -f "$FILENAME" ];then
+        return 1;
+    fi
+    local version=`pkg-config --modversion $FILENAME`
+    if [ "$version" != "$CAIRO_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
+# {{{ function is_installed_poppler()
+function is_installed_poppler()
+{
+    local FILENAME="$POPPLER_BASE/lib/pkgconfig/poppler.pc"
+    if [ ! -f "$FILENAME" ];then
+        return 1;
+    fi
+    local version=`pkg-config --modversion $FILENAME`
+    if [ "$version" != "$POPPLER_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
+# {{{ function is_installed_pixman()
+function is_installed_pixman()
+{
+    local FILENAME="$PIXMAN_BASE/lib/pkgconfig/pixman-1.pc"
+    if [ ! -f "$FILENAME" ];then
+        return 1;
+    fi
+    local version=`pkg-config --modversion $FILENAME`
+    if [ "$version" != "$PIXMAN_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
+# {{{ function is_installed_glib()
+function is_installed_glib()
+{
+    local FILENAME="$GLIB_BASE/lib/pkgconfig/glib-2.0.pc"
+    if [ ! -f "$FILENAME" ];then
+        return 1;
+    fi
+    local version=`pkg-config --modversion $FILENAME`
+    if [ "$version" != "$GLIB_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
+# {{{ function is_installed_libffi()
+function is_installed_libffi()
+{
+    local FILENAME="$LIBFFI_BASE/lib/pkgconfig/libffi.pc"
+    if [ ! -f "$FILENAME" ];then
+        return 1;
+    fi
+    local version=`pkg-config --modversion $FILENAME`
+    if [ "$version" != "$LIBFFI_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
+# {{{ function is_installed_util_linux()
+function is_installed_util_linux()
+{
+    local FILENAME="$UTIL_LINUX_BASE/lib/pkgconfig/mount.pc"
+    if [ ! -f "$FILENAME" ];then
+        return 1;
+    fi
+    local version=`pkg-config --modversion $FILENAME`
+    if [ "$version" != "$UTIL_LINUX_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
+# {{{ function is_installed_harfbuzz()
+function is_installed_harfbuzz()
+{
+    local FILENAME="$HARFBUZZ_BASE/lib/pkgconfig/harfbuzz.pc"
+    if [ ! -f "$FILENAME" ];then
+        return 1;
+    fi
+    local version=`pkg-config --modversion $FILENAME`
+    if [ "$version" != "$HARFBUZZ_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
+# {{{ function is_installed_pango()
+function is_installed_pango()
+{
+    local FILENAME="$PANGO_BASE/lib/pkgconfig/pango.pc"
+    if [ ! -f "$FILENAME" ];then
+        return 1;
+    fi
+    local version=`pkg-config --modversion $FILENAME`
+    if [ "$version" != "$PANGO_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
+# {{{ function is_installed_fontforge()
+function is_installed_fontforge()
+{
+    local FILENAME="$FONTFORGE_BASE/lib/pkgconfig/libfontforge.pc"
+    if [ ! -f "$FILENAME" ];then
+        return 1;
+    fi
+    local version=`pkg-config --modversion $FILENAME`
+    # 这个版本与包名称中的不一致，这里不比较了，只要安装了，就不更新
+#    if [ "$version" != "$FONTFORGE_VERSION" ];then
+#        return 1;
+#    fi
+    return;
+}
+# }}}
+# {{{ function is_installed_pdf2htmlEX()
+function is_installed_pdf2htmlEX()
+{
+    local FILENAME="$PDF2HTMLEX_BASE/bin/pdf2htmlEX"
+    if [ ! -f "$FILENAME" ];then
+        return 1;
+    fi
+    # 前面的优先级高
+    local version=`LD_LIBRARY_PATH="$POPPLER_BASE/lib:/usr/local/lib64:/usr/lib64" $PDF2HTMLEX_BASE/bin/pdf2htmlEX --version 2>&1|sed -n '1p' |awk '{print $NF;}'`
+
+    if [ "$version" != "$PDF2HTMLEX_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
 # }}}
 # {{{ compile functions
 # {{{ function compile_re2c()
@@ -1642,6 +1875,7 @@ function compile_pkgconfig()
 {
     is_installed pkgconfig "$PKGCONFIG_BASE"
     if [ "$?" = "0" ];then
+        export PKG_CONFIG="$PKGCONFIG_BASE/bin/pkg-config"
         return;
     fi
 
@@ -1651,6 +1885,8 @@ function compile_pkgconfig()
     #--with-internal-glib
 
     compile "pkg-config" "$PKGCONFIG_FILE_NAME" "pkg-config-$PKGCONFIG_VERSION" "$PKGCONFIG_BASE" "PKGCONFIG_CONFIGURE"
+
+    export PKG_CONFIG="$PKGCONFIG_BASE/bin/pkg-config"
 }
 # }}}
 # {{{ function compile_pcre()
@@ -1662,7 +1898,9 @@ function compile_pcre()
     fi
 
     PCRE_CONFIGURE="
-    ./configure --prefix=$PCRE_BASE
+    ./configure --prefix=$PCRE_BASE \
+                --enable-utf8 \
+                --enable-unicode-properties
     "
     # --enable-pcre16 --enable-pcre32 --enable-unicode-properties --enable-utf
 
@@ -1723,13 +1961,12 @@ function compile_zlib()
 # {{{ function compile_libzip()
 function compile_libzip()
 {
+    compile_zlib
+
     is_installed libzip "$LIBZIP_BASE"
     if [ "$?" = "0" ];then
         return;
     fi
-
-    compile_zlib
-
 
     LIBZIP_CONFIGURE="
     ./configure --prefix=$LIBZIP_BASE --with-zlib=$ZLIB_BASE
@@ -1776,13 +2013,13 @@ function compile_gettext()
 # {{{ function compile_libxml2()
 function compile_libxml2()
 {
+    compile_zlib
+    compile_libiconv
+
     is_installed libxml2 "$LIBXML2_BASE"
     if [ "$?" = "0" ];then
         return;
     fi
-
-    compile_zlib
-    compile_libiconv
 
     LIBXML2_CONFIGURE="
     ./configure --prefix=$LIBXML2_BASE \
@@ -1800,12 +2037,12 @@ function compile_libxml2()
 # {{{ function compile_libxslt()
 function compile_libxslt()
 {
+    compile_libxml2
+
     is_installed libxslt "$LIBXSLT_BASE"
     if [ "$?" = "0" ];then
         return;
     fi
-
-    compile_libxml2
 
     LIBXSLT_CONFIGURE="
     ./configure --prefix=$LIBXSLT_BASE \
@@ -1818,12 +2055,12 @@ function compile_libxslt()
 # {{{ function compile_tidy()
 function compile_tidy()
 {
+    compile_libxslt
+
     is_installed tidy "$TIDY_BASE"
     if [ "$?" = "0" ];then
         return;
     fi
-
-    compile_libxslt
 
     export PATH="$LIBXSLT_BASE/bin:$PATH"
 
@@ -1847,12 +2084,12 @@ function compile_tidy()
 # {{{ function compile_sphinx()
 function compile_sphinx()
 {
+    compile_mysql
+
     is_installed sphinx "$SPHINX_BASE"
     if [ "$?" = "0" ];then
         return;
     fi
-
-    compile_mysql
 
     SPHINX_CONFIGURE="
     ./configure --prefix=$SPHINX_BASE \
@@ -1886,12 +2123,11 @@ function compile_json()
         return;
     fi
 
-
     JSON_CONFIGURE="
     ./configure --prefix=$JSON_BASE
     "
 
-    compile "json-c" "$JSON_FILE_NAME" "json-c--$JSON_VERSION" "$JSON_BASE" "JSON_CONFIGURE"
+    compile "json-c" "$JSON_FILE_NAME" "json-c-$JSON_VERSION" "$JSON_BASE" "JSON_CONFIGURE"
 }
 # }}}
 # {{{ function compile_libmcrypt()
@@ -1912,12 +2148,12 @@ function compile_libmcrypt()
 # {{{ function compile_libevent()
 function compile_libevent()
 {
+    compile_openssl
+
     is_installed libevent "$LIBEVENT_BASE"
     if [ "$?" = "0" ];then
         return;
     fi
-
-    compile_openssl
 
     LIBEVENT_CONFIGURE="
     configure_libevent_command
@@ -1941,15 +2177,161 @@ function compile_jpeg()
     compile "jpeg" "$JPEG_FILE_NAME" "jpeg-$JPEG_VERSION" "$JPEG_BASE" "JPEG_CONFIGURE"
 }
 # }}}
-# {{{ function compile_memcached()
-function compile_memcached()
+# {{{ function compile_pdf2htmlEX()
+function compile_pdf2htmlEX()
 {
-    is_installed memcached "$MEMCACHED_BASE"
+    compile_poppler
+    compile_cairo
+    compile_fontforge
+
+    is_installed pdf2htmlEX "$PDF2HTMLEX_BASE"
     if [ "$?" = "0" ];then
         return;
     fi
 
+    PDF2HTMLEX_CONFIGURE="
+        configure_pdf2htmlEX_command
+    "
+
+    compile "pdf2htmlEX" "$PDF2HTMLEX_FILE_NAME" "pdf2htmlEX-$PDF2HTMLEX_VERSION" "$PDF2HTMLEX_BASE" "PDF2HTMLEX_CONFIGURE"
+}
+# }}}
+# {{{ function compile_poppler()
+function compile_poppler()
+{
+    compile_libpng
+    compile_libjpeg
+    compile_openjpeg
+    compile_cairo
+    compile_fontforge
+#    compile_curl
+#    compile_libcurl
+#    compile_libtiff
+#complie_nss
+
+    is_installed poppler "$POPPLER_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+#    Building poppler with support for:
+#    font configuration:  fontconfig
+#    splash output:       yes
+#    cairo output:        no (requires cairo >= 1.10.0)
+#    qt4 wrapper:         no
+#    qt5 wrapper:         no
+#    glib wrapper:        no (requires cairo output)
+#    introspection:     no
+#    cpp wrapper:         yes
+#    use gtk-doc:         no
+#    use libjpeg:         yes
+#    use libpng:          yes
+#    use libtiff:         no
+#    use zlib compress:   yes
+#    use zlib uncompress: no
+#    use nss:             no
+#    use libcurl:         no
+#    use libopenjpeg:     no
+#    use cms:             no
+#    command line utils:  yes
+
+
+    POPPLER_CONFIGURE="
+     ./configure --prefix=$POPPLER_BASE \
+                 --enable-xpdf-headers
+    "
+
+    compile "poppler" "$POPPLER_FILE_NAME" "poppler-$POPPLER_VERSION" "$POPPLER_BASE" "POPPLER_CONFIGURE"
+}
+# }}}
+# {{{ function compile_cairo()
+function compile_cairo()
+{
+    compile_libpng
+    compile_pixman
+    compile_glib
+    compile_fontconfig
+
+    is_installed cairo "$CAIRO_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    CAIRO_CONFIGURE="
+     ./configure --prefix=$CAIRO_BASE \
+                 --disable-dependency-tracking
+    "
+
+    compile "cairo" "$CAIRO_FILE_NAME" "cairo-$CAIRO_VERSION" "$CAIRO_BASE" "CAIRO_CONFIGURE"
+}
+# }}}
+# {{{ function compile_openjpeg()
+function compile_openjpeg()
+{
+    is_installed openjpeg "$OPENJPEG_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    OPENJPEG_CONFIGURE="
+     cmake ./ -DCMAKE_INSTALL_PREFIX=$OPENJPEG_BASE
+    "
+
+    compile "openjpeg" "$OPENJPEG_FILE_NAME" "openjpeg-$OPENJPEG_VERSION" "$OPENJPEG_BASE" "OPENJPEG_CONFIGURE"
+}
+# }}}
+# {{{ function compile_fontforge()
+function compile_fontforge()
+{
+    # yum install -y libtool-ltdl libtool-ltdl-devel
+    compile_pkgconfig
+    compile_freetype
+    compile_libiconv
+    compile_libpng
+    compile_pango
+    compile_cairo
+
+    is_installed fontforge "$FONTFORGE_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    FONTFORGE_CONFIGURE="
+        configure_fontforge_command
+    "
+
+    compile "fontforge" "$FONTFORGE_FILE_NAME" "fontforge-$FONTFORGE_VERSION" "$FONTFORGE_BASE" "FONTFORGE_CONFIGURE"
+}
+# }}}
+# {{{ function compile_pango()
+function compile_pango()
+{
+    compile_cairo
+    compile_glib
+    compile_freetype
+    compile_fontconfig
+
+    is_installed pango "$PANGO_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    PANGO_CONFIGURE="
+        ./configure --prefix=$PANGO_BASE
+    "
+
+    compile "pango" "$PANGO_FILE_NAME" "pango-$PANGO_VERSION" "$PANGO_BASE" "PANGO_CONFIGURE"
+}
+# }}}
+# {{{ function compile_memcached()
+function compile_memcached()
+{
     compile_libevent
+
+    is_installed memcached "$MEMCACHED_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
 
     MEMCACHED_CONFIGURE="
     ./configure --prefix=$MEMCACHED_BASE \
@@ -2056,12 +2438,12 @@ function compile_expat()
 # {{{ function compile_libpng()
 function compile_libpng()
 {
+    compile_zlib
+
     is_installed libpng "$LIBPNG_BASE"
     if [ "$?" = "0" ];then
         return;
     fi
-
-    compile_zlib
 
     LIBPNG_CONFIGURE="
     ./configure --prefix=$LIBPNG_BASE \
@@ -2090,13 +2472,13 @@ function compile_sqlite()
 # {{{ function compile_curl()
 function compile_curl()
 {
+    compile_zlib
+    compile_openssl
+
     is_installed curl "$CURL_BASE"
     if [ "$?" = "0" ];then
         return;
     fi
-
-    compile_zlib
-    compile_openssl
 
     CURL_CONFIGURE="
     ./configure --prefix=$CURL_BASE \
@@ -2111,13 +2493,18 @@ function compile_curl()
 # {{{ function compile_freetype()
 function compile_freetype()
 {
-    is_installed freetype "$FREETYPE_BASE"
-    if [ "$?" = "0" ];then
-        return;
+    # 强制安装时，传一个参数，不安装harfbuzz,
+    local is_force="$1"
+    if [ "$is_force" = "" ]; then
+    compile_harfbuzz
     fi
-
     compile_zlib
     compile_libpng
+
+    is_installed freetype "$FREETYPE_BASE"
+    if [ "$is_force" != "1" -a "$?" = "0" ];then
+        return;
+    fi
 
     FREETYPE_CONFIGURE="
     ./configure --prefix=$FREETYPE_BASE \
@@ -2127,6 +2514,94 @@ function compile_freetype()
     #--with-bzip2=yes
 
     compile "freetype" "$FREETYPE_FILE_NAME" "freetype-$FREETYPE_VERSION" "$FREETYPE_BASE" "FREETYPE_CONFIGURE"
+}
+# }}}
+# {{{ function compile_harfbuzz()
+function compile_harfbuzz()
+{
+    compile_glib
+    compile_icu
+
+    is_installed freetype "$FREETYPE_BASE"
+    if [ "$?" != "0" ];then
+        compile_freetype 1
+    fi
+
+    is_installed harfbuzz "$HARFBUZZ_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    HARFBUZZ_CONFIGURE="
+    ./configure --prefix=$HARFBUZZ_BASE
+    "
+
+    compile "harfbuzz" "$HARFBUZZ_FILE_NAME" "harfbuzz-$HARFBUZZ_VERSION" "$HARFBUZZ_BASE" "HARFBUZZ_CONFIGURE"
+
+    #安装完成后，强制重新装备freetype
+    compile_freetype 1
+}
+# }}}
+# {{{ function compile_glib()
+function compile_glib()
+{
+    compile_zlib
+    # 使用这个，报错 checking for Unicode support in PCRE... no , 只能使用内部自己的
+    #compile_pcre
+    compile_libiconv
+    compile_libffi
+
+    # 需要libmount,没有时，才编译
+    pkg-config --modversion mount >/dev/null 2>&1
+    if [ "$?" != "0" ]; then
+    compile_util_linux
+    fi
+
+    is_installed glib "$GLIB_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    GLIB_CONFIGURE="
+    ./autogen.sh --prefix=$GLIB_BASE \
+                 --with-pcre=internal
+    "
+                 #--with-pcre=system \
+                 #--with-threads=posix \
+                 #--with-gio-module-dir=  \
+                 #--with-libiconv=
+
+    compile "glib" "$GLIB_FILE_NAME" "glib-$GLIB_VERSION" "$GLIB_BASE" "GLIB_CONFIGURE"
+}
+# }}}
+# {{{ function compile_libffi()
+function compile_libffi()
+{
+    is_installed libffi "$LIBFFI_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    LIBFFI_CONFIGURE="
+        configure_libffi_command
+    "
+
+    compile "libffi" "$LIBFFI_FILE_NAME" "libffi-$LIBFFI_VERSION" "$LIBFFI_BASE" "LIBFFI_CONFIGURE"
+}
+# }}}
+# {{{ function compile_util_linux()
+function compile_util_linux()
+{
+    is_installed util_linux "$UTIL_LINUX_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    UTIL_LINUX_CONFIGURE="
+        ./configure --prefix=$UTIL_LINUX_BASE
+    "
+
+    compile "util-linux" "$UTIL_LINUX_FILE_NAME" "util-linux-$UTIL_LINUX_VERSION" "$UTIL_LINUX_BASE" "UTIL_LINUX_CONFIGURE"
 }
 # }}}
 # {{{ function compile_xproto()
@@ -2147,12 +2622,12 @@ function compile_xproto()
 # {{{ function compile_macros()
 function compile_macros()
 {
+    compile_xproto
+
     is_installed macros "$MACROS_BASE"
     if [ "$?" = "0" ];then
         return;
     fi
-
-    compile_xproto
 
     MACROS_CONFIGURE="
     ./configure --prefix=$MACROS_BASE
@@ -2209,12 +2684,12 @@ function compile_libXau()
 # {{{ function compile_libxcb()
 function compile_libxcb()
 {
+    compile_libpthread_stubs
+
     is_installed libxcb "$LIBXCB_BASE"
     if [ "$?" = "0" ];then
         return;
     fi
-
-    compile_libpthread_stubs
 
     LIBXCB_CONFIGURE="
     ./configure --prefix=$LIBXCB_BASE
@@ -2301,11 +2776,6 @@ function compile_xf86bigfontproto()
 # {{{ function compile_libX11()
 function compile_libX11()
 {
-    is_installed libX11 "$LIBX11_BASE"
-    if [ "$?" = "0" ];then
-        return;
-    fi
-
     compile_macros
     compile_xcb_proto
     compile_libXau
@@ -2316,6 +2786,11 @@ function compile_libX11()
     compile_xtrans
     compile_libpthread_stubs
     compile_xf86bigfontproto
+
+    is_installed libX11 "$LIBX11_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
 
     LIBX11_CONFIGURE="
     ./configure --prefix=$LIBX11_BASE --enable-ipv6 --enable-loadable-i18n
@@ -2330,16 +2805,16 @@ function compile_libX11()
 # {{{ function compile_libXpm()
 function compile_libXpm()
 {
+#    if [ "$OS_NAME" = 'Darwin' ];then
+        compile_xproto
+        compile_libX11
+#    fi
+
     is_installed libXpm "$LIBXPM_BASE"
     if [ "$?" = "0" ];then
         return;
     fi
 
-
-#    if [ "$OS_NAME" = 'Darwin' ];then
-        compile_xproto
-        compile_libX11
-#fi
     LIBXPM_CONFIGURE="
     ./configure --prefix=$LIBXPM_BASE
     "
@@ -2350,15 +2825,15 @@ function compile_libXpm()
 # {{{ function compile_fontconfig()
 function compile_fontconfig()
 {
-    is_installed fontconfig "$FONTCONFIG_BASE"
-    if [ "$?" = "0" ];then
-        return;
-    fi
-
     compile_expat
     compile_freetype
     compile_libiconv
     compile_libxml2
+
+    is_installed fontconfig "$FONTCONFIG_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
 
     FONTCONFIG_CONFIGURE="
     ./configure --prefix=$FONTCONFIG_BASE --enable-iconv --enable-libxml2 \
@@ -2450,14 +2925,14 @@ function compile_apr()
 # {{{ function compile_apr_util()
 function compile_apr_util()
 {
+    compile_openssl
+    compile_libiconv
+    compile_apr
+
     is_installed apr_util "$APR_UTIL_BASE"
     if [ "$?" = "0" ];then
         return;
     fi
-
-    compile_openssl
-    compile_libiconv
-    compile_apr
 
     APR_UTIL_CONFIGURE="
     ./configure --prefix=$APR_UTIL_BASE \
@@ -2488,15 +2963,15 @@ function compile_postgresql()
 # {{{ function compile_apache()
 function compile_apache()
 {
-    is_installed apache "$APACHE_BASE"
-    if [ "$?" = "0" ];then
-        return;
-    fi
-
     compile_pcre
     compile_openssl
     compile_apr
     compile_apr_util
+
+    is_installed apache "$APACHE_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
 
     APACHE_CONFIGURE="
     ./configure --prefix=$APACHE_BASE \
@@ -2563,20 +3038,60 @@ function compile_nginx()
     init_nginx_conf
 }
 # }}}
-# {{{ function compile_libgd()
-function compile_libgd()
+# {{{ function compile_rsyslog()
+function compile_rsyslog()
 {
-    is_installed libgd "$LIBGD_BASE"
+    compile_libestr
+    compile_json
+
+    is_installed rsyslog "$RSYSLOG_BASE"
     if [ "$?" = "0" ];then
         return;
     fi
 
+    RSYSLOG_CONFIGURE="
+    ./configure --prefix=$RSYSLOG_BASE \
+                --enable-mysql \
+                --enable-snmp \
+                --enable-elasticsearch \
+                --enable-mail
+                "
+
+    compile "rsyslog" "$RSYSLOG_FILE_NAME" "rsyslog-$RSYSLOG_VERSION" "$RSYSLOG_BASE" "RSYSLOG_CONFIGURE"
+
+    init_rsyslog_conf
+}
+# }}}
+# {{{ function compile_libestr()
+function compile_libestr()
+{
+    is_installed libestr "$LIBESTR_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    LIBESTR_CONFIGURE="
+    ./configure --prefix=$LIBESTR_BASE
+                "
+
+    compile "libestr" "$LIBESTR_FILE_NAME" "libestr-$LIBESTR_VERSION" "$LIBESTR_BASE" "LIBESTR_CONFIGURE"
+
+}
+# }}}
+# {{{ function compile_libgd()
+function compile_libgd()
+{
     compile_zlib
     compile_libpng
     compile_freetype
     compile_fontconfig
     compile_jpeg
     compile_libXpm
+
+    is_installed libgd "$LIBGD_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
 
     # CPPFLAGS="$(get_cppflags ${ZLIB_BASE}/include ${LIBPNG_BASE}/include ${LIBICONV_BASE}/include ${FREETYPE_BASE}/include ${FONTCONFIG_BASE}/include ${JPEG_BASE}/include $([ "$OS_NAME" = 'Darwin' ] && echo " $LIBX11_BASE/include") )" \
     # LDFLAGS="$(get_ldflags ${ZLIB_BASE}/lib ${LIBPNG_BASE}/lib ${LIBICONV_BASE}/lib ${FREETYPE_BASE}/lib ${FONTCONFIG_BASE}/lib ${JPEG_BASE}/lib $([ "$OS_NAME" = 'Darwin' ] && echo " $LIBX11_BASE/lib") )" \
@@ -2598,17 +3113,17 @@ function compile_libgd()
 # {{{ function compile_ImageMagick()
 function compile_ImageMagick()
 {
-    is_installed ImageMagick "$IMAGEMAGICK_BASE"
-    if [ "$?" = "0" ];then
-        return;
-    fi
-
     compile_zlib
     compile_jpeg
     compile_libpng
     compile_freetype
     compile_fontconfig
     compile_libX11
+
+    is_installed ImageMagick "$IMAGEMAGICK_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
 
     IMAGEMAGICK_CONFIGURE="
     configure_ImageMagick_command
@@ -2635,15 +3150,15 @@ function compile_libsodium()
 # {{{ function compile_zeromq()
 function compile_zeromq()
 {
-    is_installed zeromq "$ZEROMQ_BASE"
-    if [ "$?" = "0" ];then
-        return;
-    fi
-
     if [ "$OS_NAME" != "Darwin" ]; then
         compile_libunwind
     fi
     # compile_libsodium
+
+    is_installed zeromq "$ZEROMQ_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
 
     ZEROMQ_CONFIGURE="
         ./configure --prefix=$ZEROMQ_BASE
@@ -2709,12 +3224,6 @@ function compile_rabbitmq_c()
 # {{{ function compile_php()
 function compile_php()
 {
-    is_installed php "$PHP_BASE"
-    if [ "$?" = "0" ];then
-        PHP_EXTENSION_DIR="$( find $PHP_LIB_DIR -name "no-debug-*" )"
-        return;
-    fi
-
     compile_openssl
     compile_sqlite
     compile_zlib
@@ -2729,6 +3238,12 @@ function compile_php()
     compile_jpeg
     compile_libpng
     compile_libXpm
+
+    is_installed php "$PHP_BASE"
+    if [ "$?" = "0" ];then
+        PHP_EXTENSION_DIR="$( find $PHP_LIB_DIR -name "no-debug-*" )"
+        return;
+    fi
 
     # EXTRA_LIBS="-lresolv" \
     PHP_CONFIGURE="
@@ -2839,12 +3354,12 @@ function after_php_make_install()
 # {{{ function compile_php_extension_intl()
 function compile_php_extension_intl()
 {
+    compile_icu
+
     is_installed_php_extension intl
     if [ "$?" = "0" ];then
         return;
     fi
-
-    compile_icu
 
     PHP_EXTENSION_INTL_CONFIGURE="
     ./configure --with-php-config=$PHP_BASE/bin/php-config \
@@ -2859,12 +3374,12 @@ function compile_php_extension_intl()
 # {{{ function compile_php_extension_pdo_pgsql()
 function compile_php_extension_pdo_pgsql()
 {
+    compile_postgresql
+
     is_installed_php_extension pdo_pgsql
     if [ "$?" = "0" ];then
         return;
     fi
-
-    compile_postgresql
 
     PHP_EXTENSION_PDO_PGSQL_CONFIGURE="
     ./configure --with-php-config=$PHP_BASE/bin/php-config --with-pdo-pgsql=$POSTGRESQL_BASE
@@ -2893,12 +3408,12 @@ function compile_php_extension_apcu()
 # {{{ function compile_php_extension_apcu_bc()
 function compile_php_extension_apcu_bc()
 {
+    compile_php_extension_apcu
+
     is_installed_php_extension apc
     if [ "$?" = "0" ];then
         return;
     fi
-
-    compile_php_extension_apcu
 
     PHP_EXTENSION_APCU_BC_CONFIGURE="
     ./configure --with-php-config=$PHP_BASE/bin/php-config --enable-apc
@@ -2927,12 +3442,12 @@ function compile_php_extension_yaf()
 # {{{ function compile_php_extension_phalcon()
 function compile_php_extension_phalcon()
 {
+    compile_php
+
     is_installed_php_extension phalcon
     if [ "$?" = "0" ];then
         return;
     fi
-
-    compile_php
 
     #PHP_VERSION=`$PHP_BASE/bin/php-config --version`
 
@@ -3027,12 +3542,12 @@ function compile_php_extension_pecl_http()
 # {{{ function compile_php_extension_amqp()
 function compile_php_extension_amqp()
 {
+    compile_rabbitmq_c
+
     is_installed_php_extension amqp
     if [ "$?" = "0" ];then
         return;
     fi
-
-    compile_rabbitmq_c
 
     PHP_EXTENSION_AMQP_CONFIGURE="
     configure_php_amqp_command
@@ -3082,13 +3597,13 @@ function compile_php_extension_redis()
 # {{{ function compile_php_extension_mongodb()
 function compile_php_extension_mongodb()
 {
+    compile_openssl
+    compile_pcre
+
     is_installed_php_extension mongodb
     if [ "$?" = "0" ];then
         return;
     fi
-
-    compile_openssl
-    compile_pcre
 
     PHP_EXTENSION_MONGODB_CONFIGURE="
     ./configure --with-php-config=$PHP_BASE/bin/php-config --enable-mongodb --with-openssl-dir=$OPENSSL_BASE --with-pcre-dir=$PCRE_BASE
@@ -3103,13 +3618,13 @@ function compile_php_extension_mongodb()
 # {{{ function compile_php_extension_solr()
 function compile_php_extension_solr()
 {
+    compile_curl
+    compile_libxml2
+
     is_installed_php_extension solr
     if [ "$?" = "0" ];then
         return;
     fi
-
-    compile_curl
-    compile_libxml2
 
     PHP_EXTENSION_SOLR_CONFIGURE="
     ./configure --with-php-config=$PHP_BASE/bin/php-config \
@@ -3126,13 +3641,13 @@ function compile_php_extension_solr()
 # {{{ function compile_php_extension_memcached()
 function compile_php_extension_memcached()
 {
+    compile_zlib
+    compile_libmemcached
+
     is_installed_php_extension memcached
     if [ "$?" = "0" ];then
         return;
     fi
-
-    compile_zlib
-    compile_libmemcached
 
 # yum install cyrus-sasl-devel or --disable-memcached-sasl
     PHP_EXTENSION_MEMCACHED_CONFIGURE="
@@ -3173,14 +3688,14 @@ function compile_php_extension_pthreads()
 # {{{ function compile_php_extension_swoole()
 function compile_php_extension_swoole()
 {
+    compile_openssl
+    compile_pcre
+    compile_hiredis
+
     is_installed_php_extension swoole
     if [ "$?" = "0" ];then
         return;
     fi
-
-    compile_openssl
-    compile_pcre
-    compile_hiredis
 
     PHP_EXTENSION_SWOOLE_CONFIGURE="
     configure_php_swoole_command
@@ -3201,12 +3716,12 @@ function compile_php_extension_swoole()
 # {{{ function compile_php_extension_qrencode()
 function compile_php_extension_qrencode()
 {
+    compile_qrencode
+
     is_installed_php_extension qrencode
     if [ "$?" = "0" ];then
         return;
     fi
-
-    compile_qrencode
 
     PHP_EXTENSION_QRENCODE_CONFIGURE="
     ./configure --with-php-config=$PHP_BASE/bin/php-config --with-qrencode=$LIBQRENCODE_BASE
@@ -3238,13 +3753,13 @@ function compile_php_extension_dio()
 # {{{ function compile_php_extension_event()
 function compile_php_extension_event()
 {
+    compile_openssl
+    compile_libevent
+
     is_installed_php_extension event
     if [ "$?" = "0" ];then
         return;
     fi
-
-    compile_openssl
-    compile_libevent
 
     PHP_EXTENSION_EVENT_CONFIGURE="
     ./configure --with-php-config=$PHP_BASE/bin/php-config --with-event-libevent-dir=$LIBEVENT_BASE \
@@ -3260,12 +3775,12 @@ function compile_php_extension_event()
 # {{{ function compile_php_extension_libevent()
 function compile_php_extension_libevent()
 {
+    compile_libevent
+
     is_installed_php_extension libevent
     if [ "$?" = "0" ];then
         return;
     fi
-
-    compile_libevent
 
     PHP_EXTENSION_LIBEVENT_CONFIGURE="
     ./configure --with-php-config=$PHP_BASE/bin/php-config --with-libevent=$LIBEVENT_BASE
@@ -3279,12 +3794,12 @@ function compile_php_extension_libevent()
 # {{{ function compile_php_extension_imagick()
 function compile_php_extension_imagick()
 {
+    compile_ImageMagick
+
     is_installed_php_extension imagick
     if [ "$?" = "0" ];then
         return;
     fi
-
-    compile_ImageMagick
 
     PHP_EXTENSION_IMAGICK_CONFIGURE="
     ./configure --with-php-config=$PHP_BASE/bin/php-config --with-imagick=$IMAGEMAGICK_BASE
@@ -3298,12 +3813,12 @@ function compile_php_extension_imagick()
 # {{{ function compile_php_extension_zeromq()
 function compile_php_extension_zeromq()
 {
+    compile_zeromq
+
     is_installed_php_extension zmq
     if [ "$?" = "0" ];then
         return;
     fi
-
-    compile_zeromq
 
     PHP_EXTENSION_ZEROMQ_CONFIGURE="
     ./configure --with-php-config=$PHP_BASE/bin/php-config \
@@ -3318,12 +3833,12 @@ function compile_php_extension_zeromq()
 # {{{ function compile_php_extension_libsodium()
 function compile_php_extension_libsodium()
 {
+    compile_libsodium
+
     is_installed_php_extension libsodium
     if [ "$?" = "0" ];then
         return;
     fi
-
-    compile_libsodium
 
     PHP_EXTENSION_LIBSODIUM_CONFIGURE="
     ./configure --with-php-config=$PHP_BASE/bin/php-config --with-libsodium=$LIBSODIUM_BASE
@@ -3337,12 +3852,12 @@ function compile_php_extension_libsodium()
 # {{{ function compile_php_extension_tidy()
 function compile_php_extension_tidy()
 {
+    compile_tidy
+
     is_installed_php_extension tidy
     if [ "$?" = "0" ];then
         return;
     fi
-
-    compile_tidy
 
     PHP_EXTENSION_TIDY_CONFIGURE="
     configure_php_tidy_command
@@ -3359,12 +3874,12 @@ function compile_php_extension_tidy()
 # {{{ function compile_php_extension_sphinx()
 function compile_php_extension_sphinx()
 {
+    compile_sphinxclient
+
     is_installed_php_extension sphinx
     if [ "$?" = "0" ];then
         return;
     fi
-
-    compile_sphinxclient
 
     PHP_EXTENSION_SPHINX_CONFIGURE="
     ./configure --with-php-config=$PHP_BASE/bin/php-config --with-sphinx=$SPHINX_CLIENT_BASE
@@ -3378,6 +3893,7 @@ function compile_php_extension_sphinx()
 # {{{ function compile_mysql()
 function compile_mysql()
 {
+    compile_openssl
 
     is_installed mysql "$MYSQL_BASE"
     if [ "$?" = "0" ];then
@@ -3385,8 +3901,6 @@ function compile_mysql()
     fi
 
     echo_build_start mysql
-
-    compile_openssl
 
     decompress $MYSQL_FILE_NAME
     if [ "$?" != "0" ];then
@@ -3454,12 +3968,12 @@ function compile_mysql()
 # {{{ function compile_qrencode()
 function compile_qrencode()
 {
+    compile_libiconv
+
     is_installed qrencode "$LIBQRENCODE_BASE"
     if [ "$?" = "0" ];then
         return;
     fi
-
-    compile_libiconv
 
     QRENCODE_CONFIGURE="
     ./configure --prefix=$LIBQRENCODE_BASE \
@@ -3487,6 +4001,8 @@ function compile_nasm()
 # {{{ function compile_libjpeg()
 function compile_libjpeg()
 {
+    compile_nasm
+
     is_installed libjpeg "$LIBJPEG_BASE"
     if [ "$?" = "0" ];then
         return;
@@ -3532,12 +4048,12 @@ function compile_libmaxminddb()
 # {{{ function compile_php_extension_maxminddb()
 function compile_php_extension_maxminddb()
 {
+    compile_libmaxminddb
+
     is_installed_php_extension maxminddb
     if [ "$?" = "0" ];then
         return;
     fi
-
-    compile_libmaxminddb
 
     PHP_EXTENSION_MAXMINDDB_CONFIGURE="
     configure_php_maxminddb_command
@@ -3756,6 +4272,25 @@ function compile_jquery()
 }
 # }}}
 # {{{ configure command functions
+# {{{ configure_fontforge_command()
+configure_fontforge_command()
+{
+    ./bootstrap && \
+    LIBPNG_CFLAGS="$(get_cppflags $LIBPNG_BASE/include)" LIBPNG_LIBS="$(get_ldflags $LIBPNG_BASE/lib)" \
+     ./configure --prefix=$FONTFORGE_BASE \
+                 --disable-python-scripting \
+                 --disable-python-extension \
+                 --enable-extra-encodings \
+                 --without-x
+}
+# }}}
+# {{{ configure_libffi_command()
+configure_libffi_command()
+{
+    ./autogen.sh && \
+    ./configure --prefix=$LIBFFI_BASE
+}
+# }}}
 # {{{ configure_sphinxclient_command()
 configure_sphinxclient_command()
 {
@@ -3826,6 +4361,53 @@ configure_libevent_command()
     ./configure --prefix=$LIBEVENT_BASE
 }
 # }}}
+# {{{ configure_pdf2htmlEX_command()
+configure_pdf2htmlEX_command()
+{
+    local gcc=""
+    if [ "$OS_NAME" != "Darwin" ];then
+        local minimum_version="4.6.3"
+        local gcc1="/usr/bin/gcc"
+        if [ -z "$gcc" -a -f "$gcc1" ]; then
+            local gcc_version=`$gcc1 --version|sed -n '1p'|awk '{print $NF;}'`;
+            is_new_version $gcc_version "$minimum_version"
+            if [ "$?" = "0" ]; then
+                gcc=$gcc1;
+            fi
+        fi
+        gcc1="/usr/local/bin/gcc"
+        if [ -z "$gcc" -a -f "$gcc1" ]; then
+            local gcc_version=`$gcc1 --version|sed -n '1p'|awk '{print $NF;}'`;
+            is_new_version $gcc_version "$minimum_version"
+            if [ "$?" = "0" ]; then
+                gcc=$gcc1;
+            fi
+        fi
+        local gcc1=`which gcc`;
+        if [ -z "$gcc" -a -f "$gcc1" ]; then
+            local gcc_version=`$gcc1 --version|sed -n '1p'|awk '{print $NF;}'`;
+            is_new_version $gcc_version "$minimum_version"
+            if [ "$?" = "0" ]; then
+                gcc=$gcc1;
+            fi
+        fi
+        if [ -z "$gcc" ];then
+            echo "please update your compiler." >&2
+            return 1;
+        fi
+    fi
+
+    sed -i.bak "s/#include \"$(sed_quote poppler/GfxState.h)\"/#include \"$(sed_quote ${POPPLER_BASE}/include/poppler/GfxState.h)\"/" $POPPLER_BASE/include/poppler/splash/SplashBitmap.h
+
+    #指定编译器,因为编译器版本太低，重新编译了编译器
+
+     cmake ./ -DCMAKE_INSTALL_PREFIX=$PDF2HTMLEX_BASE \
+              $([ "$OS_NAME" != 'Darwin' ] && echo "
+              -DCMAKE_CXX_COMPILER=$(dirname $gcc)/g++ \
+              -DCMAKE_C_COMPILER=$gcc
+              ")
+}
+# }}}
 # {{{ configure_ImageMagick_command()
 configure_ImageMagick_command()
 {
@@ -3893,9 +4475,81 @@ configure_php_maxminddb_command()
 # }}}
 # }}}
 
+# {{{ function compile_rabbitmq()
+function compile_rabbitmq()
+{
+    compile_libiconv
+
+    echo "compile_rabbitmq 未完成" >&2
+    return 1;
+    is_installed rabbitmq
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    RABBITMQ_CONFIGURE="
+    ./configure --prefix=$LIBQRENCODE_BASE \
+                --with-libiconv-prefix=$LIBICONV_BASE
+    "
+
+    compile "rabbitmq" "$RABBITMQ_FILE_NAME" "rabbitmq-$RABBITMQ_VERSION" "$RABBITMQ_BASE" "RABBITMQ_CONFIGURE"
+}
+# }}}
+# {{{ function compile_php_extension_rabbitmq()
+function compile_php_extension_rabbitmq()
+{
+    compile_rabbitmq
+
+    echo "compile_php_extension_rabbitmq 未完成" >&2
+    return 1;
+    is_installed_php_extension rabbitmq
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    PHP_EXTENSION_rabbitmq_CONFIGURE="
+    ./configure --with-php-config=$PHP_BASE/bin/php-config --with-librabbitmq-dir=$RABBITMQ_C_BASE
+    "
+
+    compile "php_extension_rabbitmq" "$rabbitmq_FILE_NAME" "rabbitmq-$rabbitmq_VERSION" "rabbitmq.so" "PHP_EXTENSION_rabbitmq_CONFIGURE"
+
+    /bin/rm -rf package.xml
+#http://pecl.php.net/get/amqp-1.7.1.tgz
+echo_build_start rabbitmq
+tar zxf ""
+cd
+ $PHP_BASE/bin/phpize
+ ./configure --with-php-config=$PHP_BASE/bin/php-config --with-librabbitmq-dir=$RABBITMQ_C_BASE
+make_run "$?/PHP rabbitmq"
+if [ "$?" != "0" ];then
+    exit 1;
+fi
+cd ..
+
+/bin/rm -rf php-rabbitmq-$RABBITMQ_VERSION
+
+
+#other ....
+# --with-wbxml=$WBXML_BASE
+# --enable-http --with-http-curl-requests=$CURL_BASE --with-http-curl-libevent=$LIBEVENT_BASE --with-http-zlib-compression=$ZLIB_BASE --with-http-magic-mime=$MAGIC_BASE
+
+}
+# }}}
 # {{{ function check_soft_updates()
 function check_soft_updates()
 {
+    check_version fontforge
+    check_libpng_version
+    check_freetype_version
+    check_util_linux_version
+    check_version glib
+    check_version freetype
+    check_version harfbuzz
+    check_version nasm
+    check_version json_c
+    check_version nginx
+    check_version rsyslog
+    check_version libestr
     check_version hiredis
     check_version redis
     check_version libunwind
@@ -3944,66 +4598,7 @@ function check_soft_updates()
     check_version laravel_framework
 }
 # }}}
-# {{{ function compile_rabbitmq()
-function compile_rabbitmq()
-{
-    echo "compile_rabbitmq 未完成" >&2
-    return 1;
-    is_installed rabbitmq
-    if [ "$?" = "0" ];then
-        return;
-    fi
-
-    compile_libiconv
-
-    RABBITMQ_CONFIGURE="
-    ./configure --prefix=$LIBQRENCODE_BASE \
-                --with-libiconv-prefix=$LIBICONV_BASE
-    "
-
-    compile "rabbitmq" "$RABBITMQ_FILE_NAME" "rabbitmq-$RABBITMQ_VERSION" "$RABBITMQ_BASE" "RABBITMQ_CONFIGURE"
-}
-# }}}
-# {{{ function compile_php_extension_rabbitmq()
-function compile_php_extension_rabbitmq()
-{
-    echo "compile_php_extension_rabbitmq 未完成" >&2
-    return 1;
-    is_installed_php_extension rabbitmq
-    if [ "$?" = "0" ];then
-        return;
-    fi
-
-    compile_rabbitmq
-
-    PHP_EXTENSION_rabbitmq_CONFIGURE="
-    ./configure --with-php-config=$PHP_BASE/bin/php-config --with-librabbitmq-dir=$RABBITMQ_C_BASE
-    "
-
-    compile "php_extension_rabbitmq" "$rabbitmq_FILE_NAME" "rabbitmq-$rabbitmq_VERSION" "rabbitmq.so" "PHP_EXTENSION_rabbitmq_CONFIGURE"
-
-    /bin/rm -rf package.xml
-#http://pecl.php.net/get/amqp-1.7.1.tgz
-echo_build_start rabbitmq
-tar zxf ""
-cd
- $PHP_BASE/bin/phpize
- ./configure --with-php-config=$PHP_BASE/bin/php-config --with-librabbitmq-dir=$RABBITMQ_C_BASE
-make_run "$?/PHP rabbitmq"
-if [ "$?" != "0" ];then
-    exit 1;
-fi
-cd ..
-
-/bin/rm -rf php-rabbitmq-$RABBITMQ_VERSION
-
-
-#other ....
-# --with-wbxml=$WBXML_BASE
-# --enable-http --with-http-curl-requests=$CURL_BASE --with-http-curl-libevent=$LIBEVENT_BASE --with-http-zlib-compression=$ZLIB_BASE --with-http-magic-mime=$MAGIC_BASE
-
-}
-# }}}
+# {{{ check all soft version
 # {{{ function check_version()
 function check_version()
 {
@@ -4130,6 +4725,42 @@ function check_libunwind_version()
     echo -e "libunwind current version: \033[0;33m${LIBUNWIND_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
+# {{{ function check_freetype_version()
+function check_freetype_version()
+{
+    local new_version=`curl -k https://www.freetype.org/ 2>/dev/null|sed -n 's/^.\{0,\}<h4>FreeType \([0-9.]\{3,\}\)<\/h4>.\{0,\}$/\1/p'|sort -rV|head -1`
+    if [ -z "$new_version" ];then
+        echo -e "探测freetype新版本\033[0;31m失败\033[0m" >&2
+        return 1;
+    fi
+
+    is_new_version $FREETYPE_VERSION ${new_version//_/.}
+    if [ "$?" = "0" ];then
+        echo -e "freetype version is \033[0;32mthe latest.\033[0m"
+        return 0;
+    fi
+
+    echo -e "freetype current version: \033[0;33m${FREETYPE_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+}
+# }}}
+# {{{ function check_harfbuzz_version()
+function check_harfbuzz_version()
+{
+    local new_version=`curl -k https://www.freedesktop.org/software/harfbuzz/release/ 2>/dev/null|sed -n 's/^.\{0,\}"harfbuzz-\([0-9a-zA-Z._]\{2,\}\).tar.bz2".\{0,\}/\1/p'|sort -rV|head -1`
+    if [ -z "$new_version" ];then
+        echo -e "探测harfbuzz新版本\033[0;31m失败\033[0m" >&2
+        return 1;
+    fi
+
+    is_new_version $HARFBUZZ_VERSION ${new_version//_/.}
+    if [ "$?" = "0" ];then
+        echo -e "harfbuzz version is \033[0;32mthe latest.\033[0m"
+        return 0;
+    fi
+
+    echo -e "harfbuzz current version: \033[0;33m${HARFBUZZ_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+}
+# }}}
 # {{{ function check_libzip_version()
 function check_libzip_version()
 {
@@ -4161,7 +4792,17 @@ function check_libzip_version()
 # {{{ function check_php_version()
 function check_php_version()
 {
-    local versions=`curl http://php.net/downloads.php 2>/dev/null|sed -n 's/^.\{1,\}php-\([0-9.]\{1,\}\)\.tar\.xz.\{1,\}$/\1/p'|sort -rV`
+    local tmp=""
+    if [ "$#" = "0" ]; then
+        check_php_version 1
+    fi
+
+    #只查找当前小版本
+    if [ "$1" = "1" ]; then
+        local tmp=${PHP_VERSION%.*}
+    fi
+
+    local versions=`curl http://php.net/downloads.php 2>/dev/null|sed -n "s/^.\{1,\}php-\(${tmp}[0-9.]\{1,\}\)\.tar\.xz.\{1,\}$/\1/p"|sort -rV`
     local new_version=`echo "$versions"|head -1`;
     if [ -z "$new_version" ];then
         echo -e "探测php新版本\033[0;31m失败\033[0m" >&2
@@ -4221,6 +4862,50 @@ function check_mysql_version()
     fi
 
     echo -e "mysql current version: \033[0;33m${MYSQL_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+}
+# }}}
+# {{{ function check_nginx_version()
+function check_nginx_version()
+{
+    # Mainline version
+    # Stable version
+    # Legacy versions
+    # 难点是取到stable中的版本
+    local new_version=`curl -k http://nginx.org/en/download.html 2>/dev/null |sed -n 's/^.\{1,\}Stable version\(.\{1,\}\)Legacy versions.\{1,\}$/\1/p'|sed -n 's/^.\{1,\}nginx-\([0-9.]\{1,\}\)\.tar\.gz".\{1,\}$/\1/gp'|sort -rV|head -1`;
+    new_version=${new_version// /}
+    if [ -z "$new_version" ];then
+        echo -e "探测nginx新版本\033[0;31m失败\033[0m" >&2
+            return 1;
+    fi
+
+    is_new_version $NGINX_VERSION $new_version
+    if [ "$?" = "0" ];then
+        echo -e "nginx version is \033[0;32mthe latest.\033[0m"
+        return 0;
+    fi
+
+    echo -e "nginx current version: \033[0;33m${NGINX_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+
+}
+# }}}
+# {{{ function check_json_c_version()
+function check_json_c_version()
+{
+    local new_version=`curl -k https://s3.amazonaws.com/json-c_releases/ 2>/dev/null |tr / "\n"|sed -n 's/^.\{0,\}json-c-\([0-9.]\{1,\}\).tar.gz.\{0,\}/\1/p'|sort -rV|head -1`;
+    new_version=${new_version// /}
+    if [ -z "$new_version" ];then
+        echo -e "探测json-c新版本\033[0;31m失败\033[0m" >&2
+            return 1;
+    fi
+
+    is_new_version $JSON_VERSION $new_version
+    if [ "$?" = "0" ];then
+        echo -e "json-c version is \033[0;32mthe latest.\033[0m"
+        return 0;
+    fi
+
+    echo -e "json-c current version: \033[0;33m${JSON_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+
 }
 # }}}
 # {{{ function check_imagemagick_version()
@@ -4292,6 +4977,26 @@ function check_fontforge_version()
 function check_pdf2htmlEX_version()
 {
     check_github_soft_version pdf2htmlEX $PDF2HTMLEX_VERSION "https://github.com/coolwanglu/pdf2htmlEX/releases"
+}
+# }}}
+# {{{ function check_nasm_version()
+function check_nasm_version()
+{
+    local new_version=`curl -k http://www.nasm.us/ 2>/dev/null |sed -n '/The latest stable version of NASM is/{n;s/^.\{1,\}>\([0-9].\{1,\}\)<.\{1,\}$/\1/p;}'`;
+    new_version=${new_version// /}
+    if [ -z "$new_version" ];then
+        echo -e "探测nasm新版本\033[0;31m失败\033[0m" >&2
+            return 1;
+    fi
+
+    is_new_version $NASM_VERSION $new_version
+    if [ "$?" = "0" ];then
+        echo -e "nasm version is \033[0;32mthe latest.\033[0m"
+        return 0;
+    fi
+
+    echo -e "nasm current version: \033[0;33m${NASM_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+
 }
 # }}}
 # {{{ function check_tidy_version()
@@ -4446,6 +5151,42 @@ function check_sphinx_version()
 function check_swoole_version()
 {
     check_github_soft_version swoole $SWOOLE_VERSION "https://github.com/swoole/swoole-src/releases" "v\([0-9.]\{5,\}\)\(-stable\)\{0,1\}\.tar\.gz" 1
+}
+# }}}
+# {{{ function check_rsyslog_version()
+function check_rsyslog_version()
+{
+    check_github_soft_version rsyslog $RSYSLOG_VERSION "https://github.com/rsyslog/rsyslog/releases" "v\([0-9.]\{5,\}\)\(-stable\)\{0,1\}\.tar\.gz" 1
+}
+# }}}
+# {{{ function check_glib_version()
+function check_glib_version()
+{
+    check_github_soft_version glib $GLIB_VERSION "https://github.com/GNOME/glib/releases"
+}
+# }}}
+# {{{ function check_util_linux_version()
+function check_util_linux_version()
+{
+    check_github_soft_version util-linux $UTIL_LINUX_VERSION "https://github.com/karelzak/util-linux/releases"
+}
+# }}}
+# {{{ function check_libffi_version()
+function check_libffi_version()
+{
+    check_github_soft_version libffi $LIBFFI_VERSION "https://github.com/libffi/libffi/releases"
+}
+# }}}
+# {{{ function check_libestr_version()
+function check_libestr_version()
+{
+    check_github_soft_version libestr $LIBESTR_VERSION "https://github.com/rsyslog/libestr/releases" "v\([0-9.]\{5,\}\)\(-stable\)\{0,1\}\.tar\.gz" 1
+}
+# }}}
+# {{{ function check_libpng_version()
+function check_libpng_version()
+{
+    check_github_soft_version libpng $LIBPNG_VERSION "https://github.com/glennrp/libpng/releases" "v\([0-9.]\{5,\}\)\.tar\.gz" 1
 }
 # }}}
 # {{{ function check_sqlite_version()
@@ -4633,6 +5374,7 @@ function check_sourceforge_soft_version()
      echo -e "${soft} current version: \033[0;33m${current_version}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
+#}}}
 # {{{ function version_compare() 11出错误 0 相同 1 前高于后 2 前低于后
 function version_compare()
 {
@@ -4751,8 +5493,16 @@ function is_new_version()
 }
 # }}}
 # {{{ function pkg_config_path_init()
+
 function pkg_config_path_init()
 {
+    which pkg-config > /dev/null 2>&1;
+    if [ "$?" = "1" ];then
+        compile_pkgconfig
+    else
+        export PKG_CONFIG=`which pkg-config`;
+    fi
+
     local tmp_arr=( "/usr/lib64/pkgconfig" "/usr/share/pkgconfig" "/usr/lib/pkgconfig" "/usr/local/lib/pkgconfig" );
     local i=""
     for i in ${tmp_arr[@]}; do
@@ -4894,4 +5644,9 @@ function repair_dynamic_shared_library()
 #IP数据库自动更新, 需要在crontab中设置
 #$GEOIPUPDATE_BASE/bin/geoipupdate -h
 #$GEOIPUPDATE_BASE/bin/geoipupdate -f $BASE_DIR/etc/GeoIP2_update.conf -d /tmp/ &
+
+# 问题，及解决方法
+#libtoolize --quiet
+#libtoolize: `COPYING.LIB' not found in `/usr/share/libtool/libltdl'
+#yum install libtool-ltdl-devel
 

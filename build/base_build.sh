@@ -117,12 +117,14 @@ fi
 ################################################################################
 export LC_CTYPE=C 
 export LANG=C
+pkg_config_path_init
 #check_soft_updates
 #exit;
+compile_pdf2htmlEX
 compile_ImageMagick
-pkg_config_path_init
 compile_redis
 #compile_libunwind
+compile_rsyslog
 compile_zeromq
 compile_zlib
 compile_libgd
