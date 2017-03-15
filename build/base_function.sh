@@ -319,6 +319,7 @@ function compile()
 
     deal_pkg_config_path "$INSTALL_DIR"
     deal_ld_library_path "$INSTALL_DIR"
+    deal_path "$INSTALL_DIR"
 
     if [ "$?" != 0 ];then
         exit 1;
@@ -785,6 +786,7 @@ function is_installed()
 
     deal_pkg_config_path "$2"
     deal_ld_library_path "$2"
+    deal_path "$2"
 
     if [ "$?" != 0 ];then
         return 1;
@@ -2376,11 +2378,13 @@ function compile_fontforge()
         return;
     fi
 
+    local old_path="$PATH"
     FONTFORGE_CONFIGURE="
         configure_fontforge_command
     "
 
     compile "fontforge" "$FONTFORGE_FILE_NAME" "fontforge-$FONTFORGE_VERSION" "$FONTFORGE_BASE" "FONTFORGE_CONFIGURE"
+    export PATH="$old_path"
 }
 # }}}
 # {{{ function compile_pango()
@@ -4362,21 +4366,52 @@ function compile_jquery()
 # {{{ configure_fontforge_command()
 configure_fontforge_command()
 {
+    local autoconf1=""
+    local curr_version=""
+    local minimum_version="2.68";
+
+    local tmp_arr=( "/usr/bin/autoconf" "/usr/local/bin/autoconf" "`which autoconf`" );
+    local i=""
+
+    if [ "$OS_NAME" != "Darwin" ];then
+        for i in ${tmp_arr[@]}; do
+        {
+            if [ -f "$i" ];then
+                local curr_version=`$i --version|sed -n '1p'|awk '{print $NF;}'`;
+                is_new_version "$curr_version" "$minimum_version"
+                if [ "$?" = "0" ]; then
+                    autoconf1=$i;
+                    break;
+                fi
+            fi
+        }
+        done
+    fi
+
+    local old_path="$PATH"
+
+    if [ ! -z "$autoconf1" -a "$autoconf1" != "`which autoconf`" ];then
+        PATH="${autoconf1%/*}:$PATH"
+    fi
+
+    export PATH="$PATH" 
+
     ./bootstrap && \
-    LIBPNG_CFLAGS="$(get_cppflags $LIBPNG_BASE/include)" LIBPNG_LIBS="$(get_ldflags $LIBPNG_BASE/lib)" \
-     ./configure --prefix=$FONTFORGE_BASE \
-                 --disable-python-scripting \
-                 --disable-python-extension \
-                 --enable-extra-encodings \
-                 --without-x
+    LIBPNG_CFLAGS="$(get_cppflags $LIBPNG_BASE/include)" \
+    LIBPNG_LIBS="$(get_ldflags $LIBPNG_BASE/lib)" \
+    ./configure --prefix=$FONTFORGE_BASE \
+                --disable-python-scripting \
+                --disable-python-extension \
+                --enable-extra-encodings \
+                --without-x
+    local flag=$?
+    #export PATH="$old_path"
+    return $flag
 }
 # }}}
 # {{{ configure_curl_command()
 configure_curl_command()
 {
-    #CFLAGS="$(get_cppflags $OPENSSL_BASE/include)"
-    #CPPFLAGS="$(get_cppflags $OPENSSL_BASE/include)" \
-#LDFLAGS="$(get_ldflags $OPENSSL_BASE/lib64)" \
     ./configure --prefix=$CURL_BASE \
                 --with-zlib=$ZLIB_BASE \
                 --with-ssl=$OPENSSL_BASE
@@ -4386,8 +4421,6 @@ configure_curl_command()
 configure_php_command()
 {
     # EXTRA_LIBS="-lresolv" \
-#PKG_CONFIG_PATH="$PKG_CONFIG_PATH" \
-#    LDFLAGS="$(get_ldflags $OPENSSL_BASE/lib64)" \
     ./configure --prefix=$PHP_BASE \
                 --sysconfdir=$PHP_FPM_CONFIG_DIR \
                 --with-config-file-path=$PHP_CONFIG_DIR \
@@ -4451,17 +4484,44 @@ configure_php_command()
 # {{{ configure_libffi_command()
 configure_libffi_command()
 {
-    ./autogen.sh && \
+    local autoconf1=""
+    local curr_version=""
+    local minimum_version="2.68";
+
+    local tmp_arr=( "/usr/bin/autoconf" "/usr/local/bin/autoconf" "`which autoconf`" );
+    local i=""
+
+    if [ "$OS_NAME" != "Darwin" ];then
+        for i in ${tmp_arr[@]}; do
+        {
+            if [ -f "$i" ];then
+                local curr_version=`$i --version|sed -n '1p'|awk '{print $NF;}'`;
+                is_new_version "$curr_version" "$minimum_version"
+                if [ "$?" = "0" ]; then
+                    autoconf1=$i;
+                    break;
+                fi
+            fi
+        }
+        done
+    fi
+
+    local old_path="$PATH"
+
+    if [ ! -z "$autoconf1" -a "$autoconf1" != "`which autoconf`" ];then
+        PATH="${autoconf1%/*}:$PATH"
+    fi
+    PATH="$PATH" ./autogen.sh && \
     ./configure --prefix=$LIBFFI_BASE
+    local flag=$?
+    PATH="$old_path"
+    return $flag;
 }
 # }}}
 # {{{ configure_icu_command()
 configure_icu_command()
 {
-#export LD_LIBRARY_PATH="$LD_LIBRARY_PATH" &&
-#    export LD_LIBRARY_PATH && \
     ./configure --prefix=$ICU_BASE
-#export -n LD_LIBRARY_PATH
 }
 # }}}
 # {{{ configure_sphinxclient_command()
@@ -4538,36 +4598,28 @@ configure_libevent_command()
 configure_pdf2htmlEX_command()
 {
     local gcc=""
+    local minimum_version="4.6.3"
+    local curr_version=""
+    local tmp_arr=( "/usr/bin/gcc" "/usr/local/bin/gcc" "`which gcc`" );
+    local i=""
     if [ "$OS_NAME" != "Darwin" ];then
-        local minimum_version="4.6.3"
-        local gcc1="/usr/bin/gcc"
-        if [ -z "$gcc" -a -f "$gcc1" ]; then
-            local gcc_version=`$gcc1 --version|sed -n '1p'|awk '{print $NF;}'`;
-            is_new_version $gcc_version "$minimum_version"
-            if [ "$?" = "0" ]; then
-                gcc=$gcc1;
+        for i in ${tmp_arr[@]}; do
+        {
+            if [ -f "$i" ];then
+                local curr_version=`$i --version|sed -n '1p'|awk '{print $NF;}'`;
+                is_new_version "$curr_version" "$minimum_version"
+                if [ "$?" = "0" ]; then
+                    gcc=$i;
+                    break;
+                fi
             fi
-        fi
-        gcc1="/usr/local/bin/gcc"
-        if [ -z "$gcc" -a -f "$gcc1" ]; then
-            local gcc_version=`$gcc1 --version|sed -n '1p'|awk '{print $NF;}'`;
-            is_new_version $gcc_version "$minimum_version"
-            if [ "$?" = "0" ]; then
-                gcc=$gcc1;
-            fi
-        fi
-        local gcc1=`which gcc`;
-        if [ -z "$gcc" -a -f "$gcc1" ]; then
-            local gcc_version=`$gcc1 --version|sed -n '1p'|awk '{print $NF;}'`;
-            is_new_version $gcc_version "$minimum_version"
-            if [ "$?" = "0" ]; then
-                gcc=$gcc1;
-            fi
-        fi
-        if [ -z "$gcc" ];then
-            echo "please update your compiler." >&2
-            return 1;
-        fi
+        }
+        done
+    fi
+
+    if [ -z "$gcc" ];then
+        echo "please update your compiler." >&2
+        return 1;
     fi
 
     sed -i.bak "s/#include \"$(sed_quote poppler/GfxState.h)\"/#include \"$(sed_quote ${POPPLER_BASE}/include/poppler/GfxState.h)\"/" $POPPLER_BASE/include/poppler/splash/SplashBitmap.h
@@ -4584,29 +4636,6 @@ configure_pdf2htmlEX_command()
 # {{{ configure_libsodium_command()
 configure_libsodium_command()
 {
-    # 重新编译gcc（升级）后，再编译这个软件，有问题。
-    # 这里是想使用旧的gcc，新编译的应该是在/usr/local/bin/下，旧的是/usr/bin
-    local gcc=""
-    if [ "$OS_NAME" != "Darwin" ];then
-        local gcc1="/usr/bin/gcc"
-        if [ -z "$gcc" -a -f "$gcc1" ]; then
-            gcc=$gcc1;
-        fi
-        gcc1="/usr/local/bin/gcc"
-        if [ -z "$gcc" -a -f "$gcc1" ]; then
-            gcc=$gcc1;
-        fi
-        local gcc1=`which gcc`;
-        if [ -z "$gcc" -a -f "$gcc1" ]; then
-            gcc=$gcc1;
-        fi
-        if [ -z "$gcc" ];then
-            echo "cant not find C compiler." >&2
-            return 1;
-        fi
-    fi
-
-    CC="$gcc" \
     ./configure --prefix=$LIBSODIUM_BASE
 }
 # }}}
@@ -4655,7 +4684,9 @@ configure_php_amqp_command()
     if echo "$HOST_TYPE"|grep -q x86_64 ; then
         tmp_str="64"
     fi
-    CPPFLAGS="$(get_cppflags $RABBITMQ_C_BASE/include)" LDFLAGS="$(get_ldflags $RABBITMQ_C_BASE/lib${tmp_str})" \
+
+    CPPFLAGS="$(get_cppflags $RABBITMQ_C_BASE/include)" \
+    LDFLAGS="$(get_ldflags $RABBITMQ_C_BASE/lib${tmp_str})" \
     ./configure --with-php-config=$PHP_BASE/bin/php-config --with-amqp \
                 --with-librabbitmq-dir=$RABBITMQ_C_BASE
 }
@@ -4671,29 +4702,6 @@ configure_php_tidy_command()
 # {{{ configure_php_maxminddb_command()
 configure_php_maxminddb_command()
 {
-    # 重新编译gcc（升级）后，再编译这个软件，有问题。
-    # 这里是想使用旧的gcc，新编译的应该是在/usr/local/bin/下，旧的是/usr/bin
-    local gcc=""
-    if [ "$OS_NAME" != "Darwin" ];then
-        local gcc1="/usr/bin/gcc"
-        if [ -z "$gcc" -a -f "$gcc1" ]; then
-            gcc=$gcc1;
-        fi
-        gcc1="/usr/local/bin/gcc"
-        if [ -z "$gcc" -a -f "$gcc1" ]; then
-            gcc=$gcc1;
-        fi
-        local gcc1=`which gcc`;
-        if [ -z "$gcc" -a -f "$gcc1" ]; then
-            gcc=$gcc1;
-        fi
-        if [ -z "$gcc" ];then
-            echo "cant not find C compiler." >&2
-            return 1;
-        fi
-    fi
-
-    $( [ "$OS_NAME" != "Darwin" ] && echo "CC=\"$gcc\"" || echo "" ) \
     CPPFLAGS="$(get_cppflags $LIBMAXMINDDB_BASE/include)" LDFLAGS="$(get_ldflags $LIBMAXMINDDB_BASE/lib)" \
     ./configure --with-php-config=$PHP_BASE/bin/php-config --with-maxminddb
 }
@@ -4701,29 +4709,6 @@ configure_php_maxminddb_command()
 # {{{ configure_libmaxminddb_command()
 configure_libmaxminddb_command()
 {
-    # 重新编译gcc（升级）后，再编译这个软件，有问题。
-    # 这里是想使用旧的gcc，新编译的应该是在/usr/local/bin/下，旧的是/usr/bin
-    local gcc=""
-    if [ "$OS_NAME" != "Darwin" ];then
-        local gcc1="/usr/bin/gcc"
-        if [ -z "$gcc" -a -f "$gcc1" ]; then
-            gcc=$gcc1;
-        fi
-        gcc1="/usr/local/bin/gcc"
-        if [ -z "$gcc" -a -f "$gcc1" ]; then
-            gcc=$gcc1;
-        fi
-        local gcc1=`which gcc`;
-        if [ -z "$gcc" -a -f "$gcc1" ]; then
-            gcc=$gcc1;
-        fi
-        if [ -z "$gcc" ];then
-            echo "cant not find C compiler." >&2
-            return 1;
-        fi
-    fi
-
-    $( [ "$OS_NAME" != "Darwin" ] && echo "CC=\"$gcc\"" || echo "" ) \
     ./configure --prefix=$LIBMAXMINDDB_BASE
 }
 # }}}
@@ -5822,6 +5807,7 @@ function is_new_version()
 function pkg_config_path_init()
 {
     ld_library_path_init
+    path_init
 
     which pkg-config > /dev/null 2>&1;
     if [ "$?" = "1" ];then
@@ -5910,6 +5896,54 @@ function deal_ld_library_path()
 
     if [ "$j" = "" ];then
         # echo "ERROR: deal_ld_library_path parameter error. value: $*  dir is not find pkgconfig dir." >&2
+        return 0;
+        #return 1;
+    fi
+}
+# }}}
+# {{{ function path_init()
+
+function path_init()
+{
+    PATH=""
+    local tmp_arr=( "/bin" "/usr/local/bin" "/usr/bin" );
+    local i=""
+    for i in ${tmp_arr[@]}; do
+    {
+        if [ -d "$i" ];then
+            PATH="$i:$PATH";
+        fi
+    }
+    done
+
+    PATH=${PATH%:}
+    export PATH
+}
+# }}}
+# {{{ function deal_path()
+function deal_path()
+{
+    local i="";
+    local j="";
+    for i in "$@"
+    do
+        if [ -z "$i" ] || [ ! -d $i ]; then
+            echo "ERROR: deal_path parameter error. value: $i" >&2
+            return 1;
+        fi
+        for j in `find $i -mindepth 0 -maxdepth 1 -a \( -name bin -o -name sbin \) -type d`;
+        do
+            echo ${PATH}: |grep -q "$j:";
+            if [ "$?" != 0 ];then
+                PATH="$j:$PATH"
+            fi
+        done
+    done
+
+    export PATH
+
+    if [ "$j" = "" ];then
+        # echo "ERROR: deal_path parameter error. value: $*  dir is not find bin dir." >&2
         return 0;
         #return 1;
     fi
