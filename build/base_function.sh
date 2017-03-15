@@ -318,6 +318,7 @@ function compile()
     fi
 
     deal_pkg_config_path "$INSTALL_DIR"
+    deal_ld_library_path "$INSTALL_DIR"
 
     if [ "$?" != 0 ];then
         exit 1;
@@ -348,6 +349,7 @@ function wget_base_library()
     wget_lib $LIBICONV_FILE_NAME      "http://ftp.gnu.org/gnu/libiconv/$LIBICONV_FILE_NAME"
     wget_lib $LIBXML2_FILE_NAME       "ftp://xmlsoft.org/libxml2/$LIBXML2_FILE_NAME"
     wget_lib $JSON_FILE_NAME          "https://s3.amazonaws.com/json-c_releases/releases/$JSON_FILE_NAME"
+    wget_lib $LIBFASTJSON_FILE_NAME   "https://github.com/rsyslog/libfastjson/archive/v${LIBFASTJSON_FILE_NAME##*-}"
     # http://sourceforge.net/projects/mcrypt/files/MCrypt/2.6.8/mcrypt-2.6.8.tar.gz/download
     wget_lib $LIBMCRYPT_FILE_NAME     "http://sourceforge.net/projects/mcrypt/files/Libmcrypt/$LIBMCRYPT_VERSION/$LIBMCRYPT_FILE_NAME/download"
     wget_lib $SQLITE_FILE_NAME        "http://www.sqlite.org/2017/$SQLITE_FILE_NAME"
@@ -366,6 +368,9 @@ function wget_base_library()
     wget_lib $SPHINX_FILE_NAME        "https://github.com/sphinxsearch/sphinx/archive/${SPHINX_FILE_NAME#*-}"
     wget_lib $PHP_SPHINX_FILE_NAME    "https://github.com/php/pecl-search_engine-sphinx/archive/${PHP_SPHINX_FILE_NAME##*-}"
     wget_lib $RSYSLOG_FILE_NAME       "http://www.rsyslog.com/files/download/rsyslog/${RSYSLOG_FILE_NAME}"
+    wget_lib $LIBLOGGING_FILE_NAME    "https://github.com/rsyslog/liblogging/archive/v${LIBLOGGING_FILE_NAME##*-}"
+    wget_lib $LIBGCRYPT_FILE_NAME     "ftp://ftp.gnupg.org/gcrypt/libgcrypt/${LIBGCRYPT_FILE_NAME}"
+    wget_lib $LIBGPG_ERROR_FILE_NAME  "ftp://ftp.gnupg.org/gcrypt/libgpg-error//${LIBGPG_ERROR_FILE_NAME}"
     wget_lib $LIBESTR_FILE_NAME       "http://libestr.adiscon.com/files/download/${LIBESTR_FILE_NAME}"
 
     # wget_lib $LIBPNG_FILE_NAME     "https://sourceforge.net/projects/libpng/files/libpng$(echo ${LIBPNG_VERSION%\.*}|sed 's/\.//g')/$LIBPNG_VERSION/$LIBPNG_FILE_NAME/download"
@@ -779,6 +784,7 @@ function is_installed()
     fi
 
     deal_pkg_config_path "$2"
+    deal_ld_library_path "$2"
 
     if [ "$?" != 0 ];then
         return 1;
@@ -923,7 +929,7 @@ function is_installed_pcre()
 # {{{ function is_installed_openssl()
 function is_installed_openssl()
 {
-    local FILENAME="$OPENSSL_BASE/lib/pkgconfig/openssl.pc"
+    local FILENAME=`find $OPENSSL_BASE/lib*/pkgconfig -name openssl.pc|sed -n '1p'`
     if [ ! -f "$FILENAME" ];then
         return 1;
     fi
@@ -1463,6 +1469,48 @@ function is_installed_rsyslog()
     return;
 }
 # }}}
+# {{{ function is_installed_liblogging()
+function is_installed_liblogging()
+{
+    local FILENAME="$LIBLOGGING_BASE/lib/pkgconfig/liblogging-stdlog.pc"
+    if [ ! -f "$FILENAME" ];then
+        return 1;
+    fi
+    local version=`pkg-config --modversion $FILENAME`
+    if [ "$version" != "$LIBLOGGING_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
+# {{{ function is_installed_libgcrypt()
+function is_installed_libgcrypt()
+{
+    local FILENAME="$LIBGCRYPT_BASE/bin/libgcrypt-config"
+    if [ ! -f $FILENAME ];then
+        return 1;
+    fi
+    local version=`$FILENAME --version`
+    if [ "$version" != "$LIBGCRYPT_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
+# {{{ function is_installed_libgpg_error()
+function is_installed_libgpg_error()
+{
+    local FILENAME="$LIBGPG_ERROR_BASE/bin/gpg-error-config"
+    if [ ! -f $FILENAME ];then
+        return 1;
+    fi
+    local version=`$FILENAME --version`
+    if [ "$version" != "$LIBGPG_ERROR_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
 # {{{ function is_installed_libestr()
 function is_installed_libestr()
 {
@@ -1486,6 +1534,20 @@ function is_installed_json()
     fi
     local version=`pkg-config --modversion $FILENAME`
     if [ "$version" != "$JSON_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
+# {{{ function is_installed_libfastjson()
+function is_installed_libfastjson()
+{
+    local FILENAME="$LIBFASTJSON_BASE/lib/pkgconfig/libfastjson.pc"
+    if [ ! -f "$FILENAME" ];then
+        return 1;
+    fi
+    local version=`pkg-config --modversion $FILENAME`
+    if [ "$version" != "$LIBFASTJSON_VERSION" ];then
         return 1;
     fi
     return;
@@ -1933,11 +1995,13 @@ function compile_icu()
         return;
     fi
 
+    export LD_LIBRARY_PATH
     ICU_CONFIGURE="
-    ./configure --prefix=$ICU_BASE
+        configure_icu_command
     "
 
     compile "icu" "$ICU_FILE_NAME" "icu/source" "$ICU_BASE" "ICU_CONFIGURE"
+    export -n LD_LIBRARY_PATH
     if [ "$OS_NAME" = "Darwin" ];then
         repair_dynamic_shared_library $ICU_BASE/lib "libicu*dylib"
     fi
@@ -2129,6 +2193,21 @@ function compile_json()
     "
 
     compile "json-c" "$JSON_FILE_NAME" "json-c-$JSON_VERSION" "$JSON_BASE" "JSON_CONFIGURE"
+}
+# }}}
+# {{{ function compile_libfastjson()
+function compile_libfastjson()
+{
+    is_installed libfastjson "$LIBFASTJSON_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    LIBFASTJSON_CONFIGURE="
+        ./autogen.sh --prefix=$LIBFASTJSON_BASE
+    "
+
+    compile "libfastjson" "$LIBFASTJSON_FILE_NAME" "libfastjson-$LIBFASTJSON_VERSION" "$LIBFASTJSON_BASE" "LIBFASTJSON_CONFIGURE"
 }
 # }}}
 # {{{ function compile_libmcrypt()
@@ -2482,9 +2561,7 @@ function compile_curl()
     fi
 
     CURL_CONFIGURE="
-    ./configure --prefix=$CURL_BASE \
-                --with-zlib=$ZLIB_BASE \
-                --with-ssl=$OPENSSL_BASE
+        configure_curl_command
     "
     # --disable-debug --enable-optimize
 
@@ -3042,25 +3119,91 @@ function compile_nginx()
 # {{{ function compile_rsyslog()
 function compile_rsyslog()
 {
+    compile_liblogging
+    compile_libgcrypt
     compile_libestr
-    compile_json
+    compile_libfastjson
 
     is_installed rsyslog "$RSYSLOG_BASE"
     if [ "$?" = "0" ];then
         return;
     fi
 
+    PATH="$LIBGCRYPT_BASE/bin:$PATH"
+    if test is_installed_mysql ; then
+        PATH="$MYSQL_BASE/bin:$PATH"
+    fi
+    export PATH
+
     RSYSLOG_CONFIGURE="
     ./configure --prefix=$RSYSLOG_BASE \
-                --enable-mysql \
-                --enable-snmp \
                 --enable-elasticsearch \
+                $(is_installed_mysql && echo --enable-mysql || echo "") \
                 --enable-mail
                 "
+               # --enable-libgcrypt
+
+               # error: Net-SNMP is missing
+               # --enable-snmp \
 
     compile "rsyslog" "$RSYSLOG_FILE_NAME" "rsyslog-$RSYSLOG_VERSION" "$RSYSLOG_BASE" "RSYSLOG_CONFIGURE"
 
     init_rsyslog_conf
+}
+# }}}
+# {{{ function compile_liblogging()
+function compile_liblogging()
+{
+    is_installed liblogging "$LIBLOGGING_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    LIBLOGGING_CONFIGURE="
+        ./autogen.sh --prefix=$LIBLOGGING_BASE \
+                     --disable-man-pages
+    "
+                    #    --enable-rfc3195
+                    #    --enable-journal
+                    #--enable-stdlog
+
+    compile "liblogging" "$LIBLOGGING_FILE_NAME" "liblogging-$LIBLOGGING_VERSION" "$LIBLOGGING_BASE" "LIBLOGGING_CONFIGURE"
+}
+# }}}
+# {{{ function compile_libgcrypt()
+function compile_libgcrypt()
+{
+    compile_libgpg_error
+
+    is_installed libgcrypt "$LIBGCRYPT_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    LIBGCRYPT_CONFIGURE="
+    ./configure --prefix=$LIBGCRYPT_BASE
+    "
+
+    compile "libgcrypt" "$LIBGCRYPT_FILE_NAME" "libgcrypt-$LIBGCRYPT_VERSION" "$LIBGCRYPT_BASE" "LIBGCRYPT_CONFIGURE"
+}
+# }}}
+# {{{ function compile_libgpg_error()
+function compile_libgpg_error()
+{
+    is_installed libgpg_error "$LIBGPG_ERROR_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    LIBGPG_ERROR_CONFIGURE="
+    ./configure --prefix=$LIBGPG_ERROR_BASE
+    "
+
+                #--enable-threads=posix
+                #--with-libiconv-prefix=
+                #--with-libintl-prefix=
+
+    compile "libgpg-error" "$LIBGPG_ERROR_FILE_NAME" "libgpg-error-$LIBGPG_ERROR_VERSION" "$LIBGPG_ERROR_BASE" "LIBGPG_ERROR_CONFIGURE"
 }
 # }}}
 # {{{ function compile_libestr()
@@ -3142,7 +3285,7 @@ function compile_libsodium()
     fi
 
     LIBSODIUM_CONFIGURE="
-    ./configure --prefix=$LIBSODIUM_BASE
+        configure_libsodium_command
     "
 
     compile "libsodium" "$LIBSODIUM_FILE_NAME" "libsodium-$LIBSODIUM_VERSION" "$LIBSODIUM_BASE" "LIBSODIUM_CONFIGURE"
@@ -3246,66 +3389,9 @@ function compile_php()
         return;
     fi
 
-    # EXTRA_LIBS="-lresolv" \
     PHP_CONFIGURE="
-    ./configure --prefix=$PHP_BASE \
-                --sysconfdir=$PHP_FPM_CONFIG_DIR \
-                --with-config-file-path=$PHP_CONFIG_DIR \
-                $(is_installed_apache && echo --with-apxs2=$APACHE_BASE/bin/apxs || echo "") \
-                --with-openssl=$OPENSSL_BASE \
-                --enable-mysqlnd  \
-                --with-zlib-dir=$ZLIB_BASE \
-                --with-pdo-mysql=mysqlnd \
-                --with-pdo-sqlite=$SQLITE_BASE --without-sqlite3 \
-                --enable-zip \
-                --with-zlib-dir=$ZLIB_BASE \
-                --enable-soap \
-                --with-libxml-dir=$LIBXML2_BASE \
-                --with-gettext=$GETTEXT_BASE \
-                --with-iconv=$LIBICONV_BASE \
-                --with-mcrypt=$LIBMCRYPT_BASE \
-                --enable-sockets \
-                --enable-pcntl \
-                --enable-sysvmsg \
-                --enable-sysvsem \
-                --enable-sysvshm \
-                --enable-shmop \
-                --enable-mbstring \
-                --enable-xml \
-                --disable-debug \
-                --enable-bcmath \
-                --enable-exif \
-                --with-curl=$CURL_BASE \
-                --without-regex \
-                --enable-maintainer-zts \
-                --with-gmp=$GMP_BASE \
-                --enable-fpm \
-                $( [ \"$OS_NAME\" != \"Darwin\" ] && echo --with-fpm-acl ) \
-                --with-gd=$LIBGD_BASE \
-                --with-freetype-dir=$FREETYPE_BASE \
-                --enable-gd-native-ttf \
-                --with-jpeg-dir=$JPEG_BASE \
-                --with-png-dir=$LIBPNG_BASE \
-                --with-xpm-dir=$LIBXPM_BASE \
-                --with-zlib-dir=$ZLIB_BASE \
-                $( [ `echo "$PHP_VERSION 7.1.0"|tr " " "\n"|sort -rV|head -1` = "$PHP_VERSION" ] && echo "--disable-zend-signals" ||echo " ") \
-                --enable-opcache
+        configure_php_command
     "
-
-                # --with-libzip=$LIBZIP_BASE \
-
-                # --with-fpm-systemd \  # Your system does not support systemd.
-
-                # --with-imap=$IMAP_BASE --with-imap-ssl=$OPENSSL_BASE --with-kerberos=$KERBEROS_BASE
-
-                # --without-iconv
-                # --with-tidy=$TIDY_BASE
-                # --with-imagick=$IMAGICK_BASE
-                # --with-gearman=$GEARMAN_BASE
-                # --enable-redis
-                # --with-amqp
-                # --with-libdir=lib64
-                # --enable-embase
 
     compile "php" "$PHP_FILE_NAME" "php-$PHP_VERSION" "$PHP_BASE" "PHP_CONFIGURE" "after_php_make_install"
 
@@ -4040,7 +4126,7 @@ function compile_libmaxminddb()
     fi
 
     LIBMAXMINDDB_CONFIGURE="
-    ./configure --prefix=$LIBMAXMINDDB_BASE
+    configure_libmaxminddb_command
     "
 
     compile "libmaxminddb" "$LIBMAXMINDDB_FILE_NAME" "libmaxminddb-$LIBMAXMINDDB_VERSION" "$LIBMAXMINDDB_BASE" "LIBMAXMINDDB_CONFIGURE"
@@ -4285,11 +4371,97 @@ configure_fontforge_command()
                  --without-x
 }
 # }}}
+# {{{ configure_curl_command()
+configure_curl_command()
+{
+    #CFLAGS="$(get_cppflags $OPENSSL_BASE/include)"
+    #CPPFLAGS="$(get_cppflags $OPENSSL_BASE/include)" \
+#LDFLAGS="$(get_ldflags $OPENSSL_BASE/lib64)" \
+    ./configure --prefix=$CURL_BASE \
+                --with-zlib=$ZLIB_BASE \
+                --with-ssl=$OPENSSL_BASE
+}
+# }}}
+# {{{ configure_php_command()
+configure_php_command()
+{
+    # EXTRA_LIBS="-lresolv" \
+#PKG_CONFIG_PATH="$PKG_CONFIG_PATH" \
+#    LDFLAGS="$(get_ldflags $OPENSSL_BASE/lib64)" \
+    ./configure --prefix=$PHP_BASE \
+                --sysconfdir=$PHP_FPM_CONFIG_DIR \
+                --with-config-file-path=$PHP_CONFIG_DIR \
+                $(is_installed_apache && echo --with-apxs2=$APACHE_BASE/bin/apxs || echo "") \
+                --with-openssl=$OPENSSL_BASE \
+                --enable-mysqlnd  \
+                --with-zlib-dir=$ZLIB_BASE \
+                --with-pdo-mysql=mysqlnd \
+                --with-pdo-sqlite=$SQLITE_BASE --without-sqlite3 \
+                --enable-zip \
+                --with-zlib-dir=$ZLIB_BASE \
+                --enable-soap \
+                --with-libxml-dir=$LIBXML2_BASE \
+                --with-gettext=$GETTEXT_BASE \
+                --with-iconv=$LIBICONV_BASE \
+                --with-mcrypt=$LIBMCRYPT_BASE \
+                --enable-sockets \
+                --enable-pcntl \
+                --enable-sysvmsg \
+                --enable-sysvsem \
+                --enable-sysvshm \
+                --enable-shmop \
+                --enable-mbstring \
+                --enable-xml \
+                --disable-debug \
+                --enable-bcmath \
+                --enable-exif \
+                --with-curl=$CURL_BASE \
+                --without-regex \
+                --enable-maintainer-zts \
+                --with-gmp=$GMP_BASE \
+                --enable-fpm \
+                $( [ \"$OS_NAME\" != \"Darwin\" ] && echo --with-fpm-acl ) \
+                --with-gd=$LIBGD_BASE \
+                --with-freetype-dir=$FREETYPE_BASE \
+                --enable-gd-native-ttf \
+                --with-jpeg-dir=$JPEG_BASE \
+                --with-png-dir=$LIBPNG_BASE \
+                --with-xpm-dir=$LIBXPM_BASE \
+                --with-zlib-dir=$ZLIB_BASE \
+                $( [ `echo "$PHP_VERSION 7.1.0"|tr " " "\n"|sort -rV|head -1` = "$PHP_VERSION" ] && echo "--disable-zend-signals" ||echo " ") \
+                --enable-opcache
+
+                # --with-libzip=$LIBZIP_BASE \
+
+                # --with-fpm-systemd \  # Your system does not support systemd.
+
+                # --with-imap=$IMAP_BASE --with-imap-ssl=$OPENSSL_BASE --with-kerberos=$KERBEROS_BASE
+
+                # --without-iconv
+                # --with-tidy=$TIDY_BASE
+                # --with-imagick=$IMAGICK_BASE
+                # --with-gearman=$GEARMAN_BASE
+                # --enable-redis
+                # --with-amqp
+                # --with-libdir=lib64
+                # --enable-embase
+
+}
+# }}}
 # {{{ configure_libffi_command()
 configure_libffi_command()
 {
     ./autogen.sh && \
     ./configure --prefix=$LIBFFI_BASE
+}
+# }}}
+# {{{ configure_icu_command()
+configure_icu_command()
+{
+#export LD_LIBRARY_PATH="$LD_LIBRARY_PATH" &&
+#    export LD_LIBRARY_PATH && \
+    ./configure --prefix=$ICU_BASE
+#export -n LD_LIBRARY_PATH
 }
 # }}}
 # {{{ configure_sphinxclient_command()
@@ -4409,6 +4581,35 @@ configure_pdf2htmlEX_command()
               ")
 }
 # }}}
+# {{{ configure_libsodium_command()
+configure_libsodium_command()
+{
+    # 重新编译gcc（升级）后，再编译这个软件，有问题。
+    # 这里是想使用旧的gcc，新编译的应该是在/usr/local/bin/下，旧的是/usr/bin
+    local gcc=""
+    if [ "$OS_NAME" != "Darwin" ];then
+        local gcc1="/usr/bin/gcc"
+        if [ -z "$gcc" -a -f "$gcc1" ]; then
+            gcc=$gcc1;
+        fi
+        gcc1="/usr/local/bin/gcc"
+        if [ -z "$gcc" -a -f "$gcc1" ]; then
+            gcc=$gcc1;
+        fi
+        local gcc1=`which gcc`;
+        if [ -z "$gcc" -a -f "$gcc1" ]; then
+            gcc=$gcc1;
+        fi
+        if [ -z "$gcc" ];then
+            echo "cant not find C compiler." >&2
+            return 1;
+        fi
+    fi
+
+    CC="$gcc" \
+    ./configure --prefix=$LIBSODIUM_BASE
+}
+# }}}
 # {{{ configure_ImageMagick_command()
 configure_ImageMagick_command()
 {
@@ -4470,8 +4671,60 @@ configure_php_tidy_command()
 # {{{ configure_php_maxminddb_command()
 configure_php_maxminddb_command()
 {
+    # 重新编译gcc（升级）后，再编译这个软件，有问题。
+    # 这里是想使用旧的gcc，新编译的应该是在/usr/local/bin/下，旧的是/usr/bin
+    local gcc=""
+    if [ "$OS_NAME" != "Darwin" ];then
+        local gcc1="/usr/bin/gcc"
+        if [ -z "$gcc" -a -f "$gcc1" ]; then
+            gcc=$gcc1;
+        fi
+        gcc1="/usr/local/bin/gcc"
+        if [ -z "$gcc" -a -f "$gcc1" ]; then
+            gcc=$gcc1;
+        fi
+        local gcc1=`which gcc`;
+        if [ -z "$gcc" -a -f "$gcc1" ]; then
+            gcc=$gcc1;
+        fi
+        if [ -z "$gcc" ];then
+            echo "cant not find C compiler." >&2
+            return 1;
+        fi
+    fi
+
+    $( [ "$OS_NAME" != "Darwin" ] && echo "CC=\"$gcc\"" || echo "" ) \
     CPPFLAGS="$(get_cppflags $LIBMAXMINDDB_BASE/include)" LDFLAGS="$(get_ldflags $LIBMAXMINDDB_BASE/lib)" \
     ./configure --with-php-config=$PHP_BASE/bin/php-config --with-maxminddb
+}
+# }}}
+# {{{ configure_libmaxminddb_command()
+configure_libmaxminddb_command()
+{
+    # 重新编译gcc（升级）后，再编译这个软件，有问题。
+    # 这里是想使用旧的gcc，新编译的应该是在/usr/local/bin/下，旧的是/usr/bin
+    local gcc=""
+    if [ "$OS_NAME" != "Darwin" ];then
+        local gcc1="/usr/bin/gcc"
+        if [ -z "$gcc" -a -f "$gcc1" ]; then
+            gcc=$gcc1;
+        fi
+        gcc1="/usr/local/bin/gcc"
+        if [ -z "$gcc" -a -f "$gcc1" ]; then
+            gcc=$gcc1;
+        fi
+        local gcc1=`which gcc`;
+        if [ -z "$gcc" -a -f "$gcc1" ]; then
+            gcc=$gcc1;
+        fi
+        if [ -z "$gcc" ];then
+            echo "cant not find C compiler." >&2
+            return 1;
+        fi
+    fi
+
+    $( [ "$OS_NAME" != "Darwin" ] && echo "CC=\"$gcc\"" || echo "" ) \
+    ./configure --prefix=$LIBMAXMINDDB_BASE
 }
 # }}}
 # }}}
@@ -4539,6 +4792,7 @@ cd ..
 # {{{ function check_soft_updates()
 function check_soft_updates()
 {
+    check_version curl
     check_version fontforge
     check_libpng_version
     check_freetype_version
@@ -4548,8 +4802,12 @@ function check_soft_updates()
     check_version harfbuzz
     check_version nasm
     check_version json_c
+    check_version libfastjson
     check_version nginx
     check_version rsyslog
+    check_version liblogging
+    check_version libgcrypt
+    check_version libgpg_error
     check_version libestr
     check_version hiredis
     check_version redis
@@ -4688,6 +4946,24 @@ function check_icu_version()
     fi
 
     echo -e "icu current version: \033[0;33m${ICU_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+}
+# }}}
+# {{{ function check_curl_version()
+function check_curl_version()
+{
+    local new_version=`curl -k https://curl.haxx.se/download/ 2>/dev/null|sed -n 's/^.\{1,\}>curl-\([0-9a-zA-Z._]\{2,\}\).tar.gz<.\{1,\}/\1/p'|sort -rV|head -1`
+    if [ -z "$new_version" ];then
+        echo -e "探测curl新版本\033[0;31m失败\033[0m" >&2
+        return 1;
+    fi
+
+    is_new_version $CURL_VERSION ${new_version//_/.}
+    if [ "$?" = "0" ];then
+        echo -e "curl version is \033[0;32mthe latest.\033[0m"
+        return 0;
+    fi
+
+    echo -e "curl current version: \033[0;33m${CURL_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
 # {{{ function check_zlib_version()
@@ -4907,6 +5183,12 @@ function check_json_c_version()
 
     echo -e "json-c current version: \033[0;33m${JSON_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 
+}
+# }}}
+# {{{ function check_libfastjson_version()
+function check_libfastjson_version()
+{
+    check_github_soft_version libfastjson $LIBFASTJSON_VERSION "https://github.com/rsyslog/libfastjson/releases"
 }
 # }}}
 # {{{ function check_imagemagick_version()
@@ -5158,6 +5440,48 @@ function check_swoole_version()
 function check_rsyslog_version()
 {
     check_github_soft_version rsyslog $RSYSLOG_VERSION "https://github.com/rsyslog/rsyslog/releases" "v\([0-9.]\{5,\}\)\(-stable\)\{0,1\}\.tar\.gz" 1
+}
+# }}}
+# {{{ function check_liblogging_version()
+function check_liblogging_version()
+{
+    check_github_soft_version liblogging $LIBLOGGING_VERSION "https://github.com/rsyslog/liblogging/releases" "v\([0-9.]\{5,\}\)\(-stable\)\{0,1\}\.tar\.gz" 1
+}
+# }}}
+# {{{ function check_libgcrypt_version()
+function check_libgcrypt_version()
+{
+    local new_version=`curl -k ftp://ftp.gnupg.org/gcrypt/libgcrypt/ 2>/dev/null |sed -n 's/^.\{1,\} libgcrypt-\([0-9.]\{1,\}\).tar.gz$/\1/p'|sort -rV|head -1`
+    if [ -z "$new_version" ];then
+        echo -e "探测libgcrypt新版本\033[0;31m失败\033[0m" >&2
+        return 1;
+    fi
+
+    is_new_version $LIBGCRYPT_VERSION $new_version
+    if [ "$?" = "0" ];then
+        echo -e "libgcrypt version is \033[0;32mthe latest.\033[0m"
+        return 0;
+    fi
+
+    echo -e "libgcrypt current version: \033[0;33m${LIBGCRYPT_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+}
+# }}}
+# {{{ function check_libgpg_error_version()
+function check_libgpg_error_version()
+{
+    local new_version=`curl -k ftp://ftp.gnupg.org/gcrypt/libgpg-error/ 2>/dev/null |sed -n 's/^.\{1,\} libgpg-error-\([0-9.]\{1,\}\).tar.gz$/\1/p'|sort -rV|head -1`
+    if [ -z "$new_version" ];then
+        echo -e "探测libgpg-error新版本\033[0;31m失败\033[0m" >&2
+        return 1;
+    fi
+
+    is_new_version $LIBGPG_ERROR_VERSION $new_version
+    if [ "$?" = "0" ];then
+        echo -e "libgpg-error version is \033[0;32mthe latest.\033[0m"
+        return 0;
+    fi
+
+    echo -e "libgpg-error current version: \033[0;33m${LIBGPG_ERROR_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
 # {{{ function check_glib_version()
@@ -5497,6 +5821,8 @@ function is_new_version()
 
 function pkg_config_path_init()
 {
+    ld_library_path_init
+
     which pkg-config > /dev/null 2>&1;
     if [ "$?" = "1" ];then
         compile_pkgconfig
@@ -5540,6 +5866,50 @@ function deal_pkg_config_path()
 
     if [ "$j" = "" ];then
         # echo "ERROR: deal_pkg_config_path parameter error. value: $*  dir is not find pkgconfig dir." >&2
+        return 0;
+        #return 1;
+    fi
+}
+# }}}
+# {{{ function ld_library_path_init()
+
+function ld_library_path_init()
+{
+    local tmp_arr=( "/usr/lib" "/usr/lib64" "/usr/local/lib" "/usr/local/lib64" );
+    local i=""
+    for i in ${tmp_arr[@]}; do
+    {
+        if [ -d "$i" ];then
+            LD_LIBRARY_PATH="$i:$LD_LIBRARY_PATH";
+        fi
+    }
+    done
+
+    LD_LIBRARY_PATH=${LD_LIBRARY_PATH%:}
+}
+# }}}
+# {{{ function deal_ld_library_path()
+function deal_ld_library_path()
+{
+    local i="";
+    local j="";
+    for i in "$@"
+    do
+        if [ -z "$i" ] || [ ! -d $i ]; then
+            echo "ERROR: deal_ld_library_path parameter error. value: $i" >&2
+            return 1;
+        fi
+        for j in `find $i -mindepth 0 -maxdepth 1 -a \( -name lib -o -name lib64 \) -type d`;
+        do
+            echo ${LD_LIBRARY_PATH}: |grep -q "$j:";
+            if [ "$?" != 0 ];then
+                LD_LIBRARY_PATH="$j:$LD_LIBRARY_PATH"
+            fi
+        done
+    done
+
+    if [ "$j" = "" ];then
+        # echo "ERROR: deal_ld_library_path parameter error. value: $*  dir is not find pkgconfig dir." >&2
         return 0;
         #return 1;
     fi

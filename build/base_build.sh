@@ -120,18 +120,21 @@ export LANG=C
 pkg_config_path_init
 #check_soft_updates
 #exit;
-compile_pdf2htmlEX
+compile_openssl
 compile_ImageMagick
 compile_redis
 #compile_libunwind
-compile_rsyslog
 compile_zeromq
 compile_zlib
 compile_libgd
 compile_php
 compile_memcached
 compile_sphinx
+compile_mysql
+compile_nginx
 compile_sqlite
+compile_rsyslog
+compile_pdf2htmlEX
 compile_php_extension_dio
 compile_php_extension_pthreads
 compile_php_extension_qrencode
@@ -158,8 +161,6 @@ compile_php_extension_memcached
 compile_php_extension_tidy
 compile_php_extension_sphinx
 compile_php_extension_imagick
-compile_mysql
-compile_nginx
 # geoip2
 compile_libmaxminddb
 compile_php_extension_maxminddb
@@ -179,6 +180,7 @@ echo `date "+%Y-%d-%m %H:%M:%S"` end
 end_time=`date +%s`
 echo "used times: $((end_time - start_time))s"
 
+echo $LD_LIBRARY_PATH
 exit;
 cp $php_ini $PHP_CONFIG_DIR/php-cli.ini
 
