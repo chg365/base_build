@@ -178,6 +178,46 @@ class memory_table
         return true;
     }
     // }}}
+    // {{{ public function incr(string $key, string $column, int $incrby = 1)
+    public function incr(string $key, string $column, int $incrby = 1)
+    {
+        if (!isset($this->__field_arr[$column]))
+        {
+            return false;
+        }
+        if (!$this->is_exists($key))
+        {
+            return false;
+        }
+        $flag = $this->__table->incr($key, $column, $incrby);
+        if (!$flag)
+        {
+            return false;
+        }
+
+        return true;
+    }
+    // }}}
+    // {{{ public function decr(string $key, string $column, int $incrby = 1)
+    public function decr(string $key, string $column, int $incrby = 1)
+    {
+        if (!isset($this->__field_arr[$column]))
+        {
+            return false;
+        }
+        if (!$this->is_exists($key))
+        {
+            return false;
+        }
+        $flag = $this->__table->decr($key, $column, $incrby);
+        if (!$flag)
+        {
+            return false;
+        }
+
+        return true;
+    }
+    // }}}
     // {{{ public function get(string $key)
     public function memory_get(string $key)
     {

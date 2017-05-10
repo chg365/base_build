@@ -338,6 +338,10 @@ class swoole_test_daemon
                     'type' => memory_table::MEMORY_TYPE_INT,
                     'size' => memory_table::MEMORY_LENGTH_INT,
                     ),  // 处理业务失败数
+                'busy'      => array(
+                    'type' => memory_table::MEMORY_TYPE_INT,
+                    'size' => memory_table::MEMORY_LENGTH_TINYINT,
+                    ), // 是否繁忙
                 );
         $process_num = 1;
         foreach ($this->__process_conf as $name => $v)
@@ -461,6 +465,7 @@ class swoole_test_daemon
                 }, false, 2);
                 $pid = $process->start();
                 $this->__processes[$pid] = $process;
+                /*
                 $status = array('init_time' => time(),
                         'name' => $name,
                         'total' => 0, // 处理业务总数
@@ -468,6 +473,16 @@ class swoole_test_daemon
                         'memory' => 0, // 占用内存
                         );
                 $this->__process_status[$pid] = $status;
+                */
+                $this->__memory_table->add($pid, array(
+                            'pid' => $pid,
+                            'name' => $name,
+                            'init_time' => time(),
+                            'memory' => 0, // memory_get_usage(true), // memory_get_peak_usage 
+                            'total' => 0,
+                            'fail' => 0,
+                            'busy' => 0,
+                            ));
             }
         }
 
@@ -835,47 +850,21 @@ class swoole_test_daemon
      */
     protected function _free_child($pid, $status)
     {
-        $name = $this->__process_status[$pid]['name'];
+        $res = $this->__memory_table->get($pid);
+        if (!$res)
+        {
+            $this->log('获取进程[' . $pid . ']数据失败', LOG_INFO);
+            return;
+        }
+        $name = $res['name'];
         $this->log("free child {$name}[{$pid}], child status: $status", LOG_DEBUG);
 
         // 在进程结束时，更新统计
-        $this->__statistics[$name]['total'] += $this->__process_status[$pid]['total'];
-        $this->__statistics[$name]['fail']  += $this->__process_status[$pid]['fail'];
+        $this->__statistics[$name]['total'] += $res['total'];
+        $this->__statistics[$name]['fail']  += $res['fail'];
 
-        // 删除绑定的事件
-        /*
-        if (!swoole_event_del($this->__processes[$pid]->pipe)) {
-            $this->log("free child {$name}[{$pid}], delete event faild.", LOG_DEBUG);
-        }
-        */
         // 删除
-        unset($this->__processes[$pid], $this->__process_status[$pid]);
-        /**
-
-        if (!$this->__has_init) { // 初始化阶段
-            if (pcntl_wifexited($status) && !pcntl_wexitstatus($status)) { // 正常退出
-                return ;
-            }
-            $this->__pids = array();
-            posix_kill(0, SIGTERM);
-            $this->log("fork process `$name` failed, exit.", LOG_INFO);
-            $this->_del_counter($pid, true);
-            exit(1);
-        }
-
-        if (!isset($this->__process_cfg[$name]['type'])
-                || self::P_TYPE_DAEMON <> $this->__process_cfg[$name]['type']) {
-            return ;
-        }
-
-        if (isset($this->__retry_info[$name])) {
-            $this->__retry_info[$name]['proc_num']++;
-        } else {
-            $this->__retry_info[$name] = array('proc_num' => 1, 'retry_times' => 0, 'last_retry' => 0);
-        }
-
-        $this->__retry_info[$name]['old_pid'][$pid] = $pid;
-        **/
+        unset($this->__processes[$pid]);
     }
 
     // }}}
@@ -1269,17 +1258,14 @@ abstract class oc_process
      * @param int $count 完成的任务数
      * @param boolean 完成的任务是否成功 true 成功, false 失败
      * @param boolean $is_busy 是否忙碌
-     * @return void
+     * @return boolean
      */
     public function report_status($count = 1, $flag = true, $is_busy = false)
     {
-        $array = array(
-                'atomic'   => $count . ($flag ? '' : '-'),
-                'memory'   => memory_get_usage(true),
-                'lifetime' => time(),
-                'busy'     => (int)$flag,
-                );
-        $this->__process->write(serialize($array));
+        $flag1 = $this->report_finished_task_num($count, $flag);
+        $flag2 = $this->report_busy($is_busy);
+        $flag3 = $this->report_current_memory();
+        return $flag1 && $flag2 && $flag3;
     }
     // }}}
     // {{{ public function report_finished_task_num()
@@ -1288,36 +1274,44 @@ abstract class oc_process
      *
      * @param int $count 完成的任务数
      * @param boolean $flag 完成的任务是否成功 true 成功, false 失败
-     * @return void
+     * @return boolean
      */
     public function report_finished_task_num($count = 1, $flag = true)
     {
-        $this->__process->write('atomic:' . $count . ($flag ? '' : '-'));
+        $res = $this->__swoole_table->incr($this->__pid, 'total', $count);
+        if (!$res)
+        {
+            $this->log('统计完成任务数，自增操作失败. pid[' . $this->__pid . '] count[' . $count . '] flag[' . (int)$flag . ']', LOG_INFO);
+            return false;
+        }
+        if (!$flag) {
+            $res = $this->__swoole_table->incr($this->__pid, 'fail', $count);
+            if (!$res)
+            {
+                $this->log('统计完成任务数，自增操作失败. pid[' . $this->__pid . '] count[' . $count . '] flag[' . (int)$flag . ']', LOG_INFO);
+                return false;
+            }
+        }
+        return true;
     }
     // }}}
     // {{{ public function report_current_memory()
     /**
      * 报告当前进程内存占用
      *
-     * @return void
+     * @return boolean
      */
     public function report_current_memory()
     {
         //$memory = memory_get_peak_usage(true);
         $memory = memory_get_usage(true);
-        $this->__process->write('memory:' . $memory);
-    }
-    // }}}
-    // {{{ public function report_current_lifetime()
-    /**
-     * 报告子进程执行的时间
-     *
-     * @return void
-     */
-    public function report_current_lifetime()
-    {
-        // 这个数据没意思，在父进程中记时，这里只是通知父进程处理
-        $this->__process->write('lifetime:' . time()); 
+        $res = $this->__swoole_table->set($this->__pid, array('memory' => $memory,));
+        if (!$res)
+        {
+            $this->log('报告使用内存失败. pid[' . $this->__pid . '] memory size[' . $memory . ']', LOG_INFO);
+            return false;
+        }
+        return true;
     }
     // }}}
     // {{{ public function report_current_busy()
@@ -1325,11 +1319,18 @@ abstract class oc_process
      * 报告当前进程是否忙碌，比如待处理任务队列,积压太多需要处理的业务
      *
      * @param boolean $is_busy true 忙碌, false 空闲
-     * @return void
+     * @return boolean
      */
     public function report_current_busy($is_busy = true)
     {
-        $this->__process->write('busy:' . ((int)(boolean)$is_busy));
+        $is_busy = (int)(boolean)$is_busy;
+        $res = $this->__swoole_table->set($this->__pid, array('busy' => $is_busy,));
+        if (!$res)
+        {
+            $this->log('报告繁忙状态失败. pid[' . $this->__pid . '] is_busy[' . $is_busy . ']', LOG_INFO);
+            return false;
+        }
+        return true;
     }
     // }}}
     // {{{ protected function signal_dispatch()
