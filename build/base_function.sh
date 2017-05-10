@@ -350,7 +350,6 @@ function wget_base_library()
     wget_lib $LIBICONV_FILE_NAME      "http://ftp.gnu.org/gnu/libiconv/$LIBICONV_FILE_NAME"
     wget_lib $LIBXML2_FILE_NAME       "ftp://xmlsoft.org/libxml2/$LIBXML2_FILE_NAME"
     wget_lib $JSON_FILE_NAME          "https://s3.amazonaws.com/json-c_releases/releases/$JSON_FILE_NAME"
-    wget_lib $LIBFASTJSON_FILE_NAME   "https://github.com/rsyslog/libfastjson/archive/v${LIBFASTJSON_FILE_NAME##*-}"
     # http://sourceforge.net/projects/mcrypt/files/MCrypt/2.6.8/mcrypt-2.6.8.tar.gz/download
     wget_lib $LIBMCRYPT_FILE_NAME     "http://sourceforge.net/projects/mcrypt/files/Libmcrypt/$LIBMCRYPT_VERSION/$LIBMCRYPT_FILE_NAME/download"
     wget_lib $SQLITE_FILE_NAME        "http://www.sqlite.org/2017/$SQLITE_FILE_NAME"
@@ -369,7 +368,10 @@ function wget_base_library()
     wget_lib $SPHINX_FILE_NAME        "https://github.com/sphinxsearch/sphinx/archive/${SPHINX_FILE_NAME#*-}"
     wget_lib $PHP_SPHINX_FILE_NAME    "https://github.com/php/pecl-search_engine-sphinx/archive/${PHP_SPHINX_FILE_NAME##*-}"
     wget_lib $RSYSLOG_FILE_NAME       "http://www.rsyslog.com/files/download/rsyslog/${RSYSLOG_FILE_NAME}"
-    wget_lib $LIBLOGGING_FILE_NAME    "https://github.com/rsyslog/liblogging/archive/v${LIBLOGGING_FILE_NAME##*-}"
+    #wget_lib $LIBFASTJSON_FILE_NAME   "https://github.com/rsyslog/libfastjson/archive/v${LIBFASTJSON_FILE_NAME##*-}"
+    wget_lib $LIBFASTJSON_FILE_NAME   "http://download.rsyslog.com/libfastjson/${LIBFASTJSON_FILE_NAME}"
+    #wget_lib $LIBLOGGING_FILE_NAME    "https://github.com/rsyslog/liblogging/archive/v${LIBLOGGING_FILE_NAME##*-}"
+    wget_lib $LIBLOGGING_FILE_NAME    "http://download.rsyslog.com/liblogging/${LIBLOGGING_FILE_NAME}"
     wget_lib $LIBGCRYPT_FILE_NAME     "ftp://ftp.gnupg.org/gcrypt/libgcrypt/${LIBGCRYPT_FILE_NAME}"
     wget_lib $LIBGPG_ERROR_FILE_NAME  "ftp://ftp.gnupg.org/gcrypt/libgpg-error//${LIBGPG_ERROR_FILE_NAME}"
     wget_lib $LIBESTR_FILE_NAME       "http://libestr.adiscon.com/files/download/${LIBESTR_FILE_NAME}"
@@ -378,8 +380,10 @@ function wget_base_library()
     local version=${LIBPNG_VERSION%.*};
     wget_lib $LIBPNG_FILE_NAME        "https://sourceforge.net/projects/libpng/files/libpng${version/./}/$LIBPNG_VERSION/$LIBPNG_FILE_NAME/download"
 
-    wget_lib $GLIB_FILE_NAME          "https://github.com/GNOME/glib/archive/${GLIB_FILE_NAME##*-}"
-    wget_lib $LIBFFI_FILE_NAME        "https://github.com/libffi/libffi/archive/v${LIBFFI_FILE_NAME##*-}"
+    #wget_lib $GLIB_FILE_NAME          "https://github.com/GNOME/glib/archive/${GLIB_FILE_NAME##*-}"
+    wget_lib $GLIB_FILE_NAME          "http://ftp.acc.umu.se/pub/gnome/sources/glib/${GLIB_VERSION%.*}/${GLIB_FILE_NAME}"
+    #wget_lib $LIBFFI_FILE_NAME        "https://github.com/libffi/libffi/archive/v${LIBFFI_FILE_NAME##*-}"
+    wget_lib $LIBFFI_FILE_NAME        "ftp://sourceware.org/pub/libffi/${LIBFFI_FILE_NAME}"
     wget_lib $PIXMAN_FILE_NAME        "http://cairographics.org/releases/$PIXMAN_FILE_NAME"
     wget_lib $CAIRO_FILE_NAME         "http://cairographics.org/releases/$CAIRO_FILE_NAME"
 
@@ -419,9 +423,9 @@ function wget_base_library()
     wget_lib $LIBMEMCACHED_FILE_NAME  "https://launchpad.net/libmemcached/${LIBMEMCACHED_VERSION%.*}/$LIBMEMCACHED_VERSION/+download/$LIBMEMCACHED_FILE_NAME"
     wget_lib $MEMCACHED_FILE_NAME     "http://memcached.org/files/${MEMCACHED_FILE_NAME}"
     wget_lib $REDIS_FILE_NAME         "http://download.redis.io/releases/${REDIS_FILE_NAME}"
-    #  https://github.com/downloads/libevent/libevent/$LIBEVENT_FILE_NAME
     # wget_lib $LIBEVENT_FILE_NAME      "https://sourceforge.net/projects/levent/files//libevent-${LIBEVENT_VERSION%.*}/$LIBEVENT_FILE_NAME"
-    wget_lib $LIBEVENT_FILE_NAME      "https://sourceforge.net/projects/levent/files/release-${LIBEVENT_VERSION}-stable/$LIBEVENT_FILE_NAME/download"
+    # wget_lib $LIBEVENT_FILE_NAME      "https://sourceforge.net/projects/levent/files/release-${LIBEVENT_VERSION}-stable/$LIBEVENT_FILE_NAME/download"
+    wget_lib $LIBEVENT_FILE_NAME      "https://github.com/libevent/libevent/archive/${LIBEVENT_FILE_NAME#*-}"
     wget_lib $LIBQRENCODE_FILE_NAME   "http://fukuchi.org/works/qrencode/$LIBQRENCODE_FILE_NAME"
     wget_lib $POSTGRESQL_FILE_NAME    "https://ftp.postgresql.org/pub/source/v$POSTGRESQL_VERSION/$POSTGRESQL_FILE_NAME"
     wget_lib $APR_FILE_NAME           "http://mirrors.cnnic.cn/apache//apr/$APR_FILE_NAME"
@@ -475,6 +479,10 @@ function wget_base_library()
     wget_lib $ELECTRON_FILE_NAME      "https://github.com/electron/electron/archive/v${ELECTRON_FILE_NAME#*-}"
 
     wget_lib $PHANTOMJS_FILE_NAME     "https://github.com/ariya/phantomjs/archive/${PHANTOMJS_FILE_NAME#*-}"
+
+    wget_lib $FAMOUS_FILE_NAME "https://github.com/Famous/famous/archive/${FAMOUS_FILE_NAME##*-}"
+    wget_lib $FAMOUS_FRAMEWORK_FILE_NAME "https://github.com/Famous/framework/archive/v${FAMOUS_FRAMEWORK_FILE_NAME##*-}"
+    wget_lib $FAMOUS_ANGULAR_FILE_NAME "https://github.com/Famous/famous-angular/archive/${FAMOUS_ANGULAR_FILE_NAME##*-}"
 
 #    if [ "$OS_NAME" = 'Darwin' ];then
 
@@ -778,13 +786,16 @@ function is_installed()
         return 1;
     fi
 
+    if [ -d "$2" ]; then
+        deal_pkg_config_path "$2"
+    fi
+
     $func
 
     if [ "$?" != "0" ];then
         return 1;
     fi
 
-    deal_pkg_config_path "$2"
     deal_ld_library_path "$2"
     deal_path "$2"
 
@@ -852,7 +863,7 @@ function is_installed_sphinx()
     if [ ! -f "$SPHINX_BASE/bin/searchd" ];then
         return 1;
     fi
-    local version=`LD_LIBRARY_PATH="$MYSQL_BASE/lib:$LD_LIBRARY_PATH"  $SPHINX_BASE/bin/searchd -h|sed -n '1p'|awk -F'[ -]' '{ print $2; }'`
+    local version=`LD_LIBRARY_PATH="$MYSQL_BASE/lib:$LD_LIBRARY_PATH" $SPHINX_BASE/bin/searchd -h|sed -n '1p'|awk -F'[ -]' '{ print $2; }'`
     if [ "$version" != "$SPHINX_VERSION" ];then
         return 1;
     fi
@@ -867,7 +878,7 @@ function is_installed_sphinxclient()
     fi
     # 没有版本比较
     return;
-    # local version=`LD_LIBRARY_PATH="$MYSQL_BASE/lib:$LD_LIBRARY_PATH"  $SPHINX_BASE/bin/searchd -h|sed -n '1p'|awk -F'[ -]' '{ print $2; }'`
+    # local version=`LD_LIBRARY_PATH="$MYSQL_BASE/lib:$LD_LIBRARY_PATH" $SPHINX_BASE/bin/searchd -h|sed -n '1p'|awk -F'[ -]' '{ print $2; }'`
     if [ "$version" != "$SPHINX_VERSION" ];then
         return 1;
     fi
@@ -931,7 +942,12 @@ function is_installed_pcre()
 # {{{ function is_installed_openssl()
 function is_installed_openssl()
 {
-    local FILENAME=`find $OPENSSL_BASE/lib*/pkgconfig -name openssl.pc|sed -n '1p'`
+    local FILENAME=""
+
+    if [ -d "$OPENSSL_BASE/" ];then
+        #FILENAME=`find $OPENSSL_BASE/lib*/pkgconfig -name openssl.pc|sed -n '1p'`
+        FILENAME=`find $OPENSSL_BASE/ -name openssl.pc|sed -n '1p'`
+    fi
     if [ ! -f "$FILENAME" ];then
         return 1;
     fi
@@ -2206,7 +2222,7 @@ function compile_libfastjson()
     fi
 
     LIBFASTJSON_CONFIGURE="
-        ./autogen.sh --prefix=$LIBFASTJSON_BASE
+        ./configure --prefix=$LIBFASTJSON_BASE
     "
 
     compile "libfastjson" "$LIBFASTJSON_FILE_NAME" "libfastjson-$LIBFASTJSON_VERSION" "$LIBFASTJSON_BASE" "LIBFASTJSON_CONFIGURE"
@@ -2241,7 +2257,7 @@ function compile_libevent()
     configure_libevent_command
     "
 
-    compile "libevent" "$LIBEVENT_FILE_NAME" "libevent-${LIBEVENT_VERSION}-stable" "$LIBEVENT_BASE" "LIBEVENT_CONFIGURE"
+    compile "libevent" "$LIBEVENT_FILE_NAME" "libevent-release-${LIBEVENT_VERSION}-stable" "$LIBEVENT_BASE" "LIBEVENT_CONFIGURE"
 }
 # }}}
 # {{{ function compile_jpeg()
@@ -2645,7 +2661,7 @@ function compile_glib()
     fi
 
     GLIB_CONFIGURE="
-    ./autogen.sh --prefix=$GLIB_BASE \
+    ./configure --prefix=$GLIB_BASE \
                  --with-pcre=internal
     "
                  #--with-pcre=system \
@@ -3164,7 +3180,7 @@ function compile_liblogging()
     fi
 
     LIBLOGGING_CONFIGURE="
-        ./autogen.sh --prefix=$LIBLOGGING_BASE \
+        ./configure --prefix=$LIBLOGGING_BASE \
                      --disable-man-pages
     "
                     #    --enable-rfc3195
@@ -3770,6 +3786,7 @@ function compile_php_extension_pthreads()
     ./configure --with-php-config=$PHP_BASE/bin/php-config
     "
     # --enable-pthreads
+    # --with-pthreads-sanitize --with-pthreads-dmalloc
 
     compile "php_extension_pthreads" "$PTHREADS_FILE_NAME" "pthreads-$PTHREADS_VERSION" "pthreads.so" "PHP_EXTENSION_PTHREADS_CONFIGURE"
 
@@ -4024,11 +4041,12 @@ function compile_mysql()
     cmake ../mysql-$MYSQL_VERSION -DCMAKE_INSTALL_PREFIX=$MYSQL_BASE \
                                   -DSYSCONFDIR=$MYSQL_CONFIG_DIR \
                                   -DDEFAULT_CHARSET=utf8 -DDEFAULT_COLLATION=utf8_general_ci \
-                                  -DWITH_SSL=$OPENSSL_BASE \
+                                  -DWITH_SSL=bundled \
                                   -DWITH_BOOST=../boost_${BOOST_VERSION}/ \
                                   -DWITH_ZLIB=bundled \
                                   -DINSTALL_MYSQLTESTDIR=
 
+                                  # -DWITH_SSL=$OPENSSL_BASE \  # OPENSSL_VERSIOn > 1.1时，编译不过去
                                   # -DWITH_INNOBASE_STORAGE_ENGINE=1 \
                                   # -DWITH_PARTITION_STORAGE_ENGINE=1
                                   # -DWITH_INNODB_MEMCACHED=1 \ mac系统下编译不过去，报错
@@ -4179,7 +4197,7 @@ function compile_geoipupdate()
     fi
 
     GEOIPUPDATE_CONFIGURE="
-    ./configure --prefix=$GEOIPUPDATE_BASE
+    configure_geoipupdate_command
     "
 
     compile "geoipupdate" "$GEOIPUPDATE_FILE_NAME" "geoipupdate-$GEOIPUPDATE_VERSION" "$GEOIPUPDATE_BASE" "GEOIPUPDATE_CONFIGURE"
@@ -4362,7 +4380,44 @@ function compile_jquery()
 
 }
 # }}}
+# {{{ function compile_famous()
+function compile_famous()
+{
+    echo_build_start famous
+    mkdir -p $FAMOUS_BASE
+
+    decompress ${FAMOUS_FILE_NAME}
+    if [ "$?" != "0" ];then
+        # return 1;
+        exit 1;
+    fi
+
+    famous.css            famous-global.js      famous-global.min.js  famous.js             famous.min.js
+    cp famous-${FAMOUS_VERSION}/dist/*.min.js $FAMOUS_BASE/
+    cp famous-${FAMOUS_VERSION}/dist/*.css $CSS_BASE/
+    cd famous-0.3.5
+    cp dist/famous
+
+    famous.css            famous-global.js      famous-global.min.js  famous.js             famous.min.js
+
+
+
+
+
+     famous-angular-0.5.2]# ls dist/
+     famous-angular.css  famous-angular.js  famous-angular.min.css  famous-angular.min.js
+
+
+}
+# }}}
 # {{{ configure command functions
+# {{{ configure_geoipupdate_command()
+configure_geoipupdate_command()
+{
+    CPPFLAGS="$(get_cppflags $CURL_BASE/include)" LDFLAGS="$(get_ldflags $CURL_BASE/lib)" \
+    ./configure --prefix=$GEOIPUPDATE_BASE
+}
+# }}}
 # {{{ configure_fontforge_command()
 configure_fontforge_command()
 {
@@ -4464,6 +4519,8 @@ configure_php_command()
                 $( [ `echo "$PHP_VERSION 7.1.0"|tr " " "\n"|sort -rV|head -1` = "$PHP_VERSION" ] && echo "--disable-zend-signals" ||echo " ") \
                 --enable-opcache
 
+                # --with-openssl=$OPENSSL_BASE --with-system-ciphers --with-kerberos=$KERBEROS_BASE
+
                 # --with-libzip=$LIBZIP_BASE \
 
                 # --with-fpm-systemd \  # Your system does not support systemd.
@@ -4511,7 +4568,7 @@ configure_libffi_command()
     if [ ! -z "$autoconf1" -a "$autoconf1" != "`which autoconf`" ];then
         PATH="${autoconf1%/*}:$PATH"
     fi
-    PATH="$PATH" ./autogen.sh && \
+    PATH="$PATH" \
     ./configure --prefix=$LIBFFI_BASE
     local flag=$?
     PATH="$old_path"
@@ -4590,8 +4647,10 @@ configure_libmemcached_command()
 # {{{ configure_libevent_command()
 configure_libevent_command()
 {
+    ./autogen.sh && \
     CPPFLAGS="$(get_cppflags $OPENSSL_BASE/include)" LDFLAGS="$(get_ldflags $OPENSSL_BASE/lib)" \
-    ./configure --prefix=$LIBEVENT_BASE
+    PKG_CONFIG_PATH="$PKG_CONFIG_PATH" \
+    ./configure --prefix=$LIBEVENT_BASE --enable-openssl
 }
 # }}}
 # {{{ configure_pdf2htmlEX_command()
@@ -4777,6 +4836,14 @@ cd ..
 # {{{ function check_soft_updates()
 function check_soft_updates()
 {
+    #yum update -y curl nss
+    #which curl
+    #which sed
+    #which sort 
+    #which head
+
+    check_version libevent
+    check_version gettext
     check_version curl
     check_version fontforge
     check_libpng_version
@@ -5153,21 +5220,7 @@ function check_nginx_version()
 # {{{ function check_json_c_version()
 function check_json_c_version()
 {
-    local new_version=`curl -k https://s3.amazonaws.com/json-c_releases/ 2>/dev/null |tr / "\n"|sed -n 's/^.\{0,\}json-c-\([0-9.]\{1,\}\).tar.gz.\{0,\}/\1/p'|sort -rV|head -1`;
-    new_version=${new_version// /}
-    if [ -z "$new_version" ];then
-        echo -e "探测json-c新版本\033[0;31m失败\033[0m" >&2
-            return 1;
-    fi
-
-    is_new_version $JSON_VERSION $new_version
-    if [ "$?" = "0" ];then
-        echo -e "json-c version is \033[0;32mthe latest.\033[0m"
-        return 0;
-    fi
-
-    echo -e "json-c current version: \033[0;33m${JSON_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
-
+    check_github_soft_version json-c $JSON_VERSION "https://github.com/json-c/json-c/releases" "json-c-\([0-9.]\{1,\}\)-[0-9.]\{1,\}.tar.gz" 1
 }
 # }}}
 # {{{ function check_libfastjson_version()
@@ -5421,6 +5474,12 @@ function check_swoole_version()
     check_github_soft_version swoole $SWOOLE_VERSION "https://github.com/swoole/swoole-src/releases" "v\([0-9.]\{5,\}\)\(-stable\)\{0,1\}\.tar\.gz" 1
 }
 # }}}
+# {{{ function check_libevent_version()
+function check_libevent_version()
+{
+    check_github_soft_version libevent $LIBEVENT_VERSION "https://github.com/libevent/libevent/releases" "release-\([0-9.]\{5,\}\)\(-stable\)\{0,1\}\.tar\.gz" 1
+}
+# }}}
 # {{{ function check_rsyslog_version()
 function check_rsyslog_version()
 {
@@ -5469,10 +5528,42 @@ function check_libgpg_error_version()
     echo -e "libgpg-error current version: \033[0;33m${LIBGPG_ERROR_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
+# {{{ function check_gettext_version()
+function check_gettext_version()
+{
+    local new_version=`curl -k http://ftp.gnu.org/gnu/gettext/ 2>/dev/null |sed -n 's/^.\{1,\}>gettext-\([0-9.]\{1,\}\).tar.gz<.\{1,\}$/\1/p'|sort -rV|head -1`
+    if [ -z "$new_version" ];then
+        echo -e "探测gettext新版本\033[0;31m失败\033[0m" >&2
+        return 1;
+    fi
+
+    is_new_version $GETTEXT_VERSION $new_version
+    if [ "$?" = "0" ];then
+        echo -e "gettext version is \033[0;32mthe latest.\033[0m"
+        return 0;
+    fi
+
+    echo -e "gettext current version: \033[0;33m${GETTEXT_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+}
+# }}}
 # {{{ function check_glib_version()
 function check_glib_version()
 {
-    check_github_soft_version glib $GLIB_VERSION "https://github.com/GNOME/glib/releases"
+    local new_version=`curl -k https://developer.gnome.org/glib/ 2>/dev/null |sed -n 's/^.\{1,\}>\([0-9._-]\{1,\}\)<\/a><\/li>.\{0,\}$/\1/p'|sort -rV|head -1`
+    if [ -z "$new_version" ];then
+        echo -e "探测glib新版本\033[0;31m失败\033[0m" >&2
+        return 1;
+    fi
+
+    is_new_version $GLIB_VERSION $new_version
+    if [ "$?" = "0" ];then
+        echo -e "glib version is \033[0;32mthe latest.\033[0m"
+        return 0;
+    fi
+
+    echo -e "glib current version: \033[0;33m${GLIB_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+
+    #check_github_soft_version glib $GLIB_VERSION "https://github.com/GNOME/glib/releases"
 }
 # }}}
 # {{{ function check_util_linux_version()

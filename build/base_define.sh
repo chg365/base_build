@@ -108,6 +108,7 @@ laravel_BASE=$BASE_DIR/inc/laravel
 
 CKEDITOR_BASE=$BASE_DIR/web/js/ckeditor
 JQUERY_BASE=$BASE_DIR/web/js/
+FAMOUS_BASE=$BASE_DIR/web/js/
 SWFUPLOAD_BASE=$BASE_DIR/web/js/swfupload
 
 
@@ -118,29 +119,29 @@ PHANTOMJS_BASE=$CONTRIB_BASE
 
 # }}}
 # {{{ open source libray version info
-PKGCONFIG_VERSION="0.29.1" # http://pkgconfig.freedesktop.org/releases/
+PKGCONFIG_VERSION="0.29.2" # http://pkgconfig.freedesktop.org/releases/
 RE2C_VERSION="0.16" # http://re2c.org/about/about.html#version
 
 PCRE_VERSION="8.39"
 #PCRE_VERSION="10.20" # pcre2 编译apache时报错
-OPENSSL_VERSION="1.0.2k" #1.1.0大版本升级后，有问题啊
+OPENSSL_VERSION="1.1.0e" # 1.0.2k 1.1.0大版本升级后，有问题啊
 HIREDIS_VERSION="0.13.3"
 ZLIB_VERSION="1.2.11" # www.zlib.net
-CURL_VERSION="7.53.1"
-ICU_VERSION="58.2" # http://site.icu-project.org/
+CURL_VERSION="7.54.0"
+ICU_VERSION="58.2" # 59.1 gcc要4.4.8以上 http://site.icu-project.org/
 LIBZIP_VERSION="1.2.0" # http://www.nih.at/libzip/index.html
-GETTEXT_VERSION="0.19.7" # http://ftp.gnu.org/gnu/gettext/
+GETTEXT_VERSION="0.19.8.1" # http://ftp.gnu.org/gnu/gettext/
 LIBICONV_VERSION="1.14" # http://ftp.gnu.org/gnu/libiconv/
 LIBXML2_VERSION="2.9.4" # ftp://xmlsoft.org/libxml2/
 JSON_VERSION="0.12.1" # https://github.com/json-c/json-c/releases
-LIBFASTJSON_VERSION="0.99.4" # https://github.com/rsyslog/libfastjson/releases
+LIBFASTJSON_VERSION="0.99.5" # https://github.com/rsyslog/libfastjson/releases
 LIBMCRYPT_VERSION="2.5.8" # http://sourceforge.net/projects/mcrypt/files/Libmcrypt/
 LIBXPM_VERSION="3.5.11"
 IMAP_VERSION="2007f"
 KERBEROS_VERSION="1.14.2"
 GMP_VERSION="6.1.2"
 LIBMEMCACHED_VERSION="1.0.18" # 1.0.17 php memcached编译不过去  1.0.16
-LIBEVENT_VERSION="2.0.22"
+LIBEVENT_VERSION="2.1.8"
 LIBQRENCODE_VERSION="3.4.4"
 LIBXSLT_VERSION="1.1.29"
 TIDY_VERSION="5.4.0"
@@ -148,20 +149,20 @@ SPHINX_VERSION="2.2.11"
 PHP_SPHINX_VERSION="php7"
 
 LIBGD_VERSION="2.1.1" # http://libgd.github.io/
-IMAGEMAGICK_VERSION="7.0.5-2" # http://www.imagemagick.org/download/
+IMAGEMAGICK_VERSION="7.0.5-5" # http://www.imagemagick.org/download/
 JPEG_VERSION="9b" # 8d # http://www.ijg.org/files/
-LIBPNG_VERSION="1.6.28"
-NASM_VERSION="2.12.02"
+LIBPNG_VERSION="1.6.29"
+NASM_VERSION="2.13.01"
 LIBJPEG_VERSION="1.5.0"
 OPENJPEG_VERSION="2.1.2" # 2.1.0
 CAIRO_VERSION="1.14.6"
 PIXMAN_VERSION="0.34.0"
 EXPAT_VERSION="2.1.1"
 FREETYPE_VERSION="2.7.1"
-GLIB_VERSION="2.51.4"
+GLIB_VERSION="2.52.2" # https://developer.gnome.org/glib/
 UTIL_LINUX_VERSION="2.29.2"
 LIBFFI_VERSION="3.2.1"
-HARFBUZZ_VERSION="1.4.5"
+HARFBUZZ_VERSION="1.4.6"
 FONTCONFIG_VERSION="2.12.0"
 POPPLER_VERSION="0.45.0"
 PANGO_VERSION="1.40.1"
@@ -189,55 +190,58 @@ RABBITMQ_C_VERSION="0.8.0"
 PHP_ZMQ_VERSION="master" #1.1.3
 PHP_LIBSODIUM_VERSION="1.0.0"
 
-SQLITE_VERSION="3170000"
+SQLITE_VERSION="3180000"
 POSTGRESQL_VERSION="9.4.4"
 
 APR_VERSION="1.5.2"
 APR_UTIL_VERSION="1.5.4"
 
 APACHE_VERSION="2.4.16"
-MYSQL_VERSION="5.7.17"
+MYSQL_VERSION="5.7.18"
 BOOST_VERSION="1_59_0" # 1_61_0
-NGINX_VERSION="1.10.3"
-RSYSLOG_VERSION="8.25.0"
+NGINX_VERSION="1.12.0"
+RSYSLOG_VERSION="8.26.0"
 LIBLOGGING_VERSION="1.0.6"
 LIBGCRYPT_VERSION="1.7.6"
 LIBGPG_ERROR_VERSION="1.27"
 LIBESTR_VERSION="0.1.10"
-PHP_VERSION="7.0.16"
+PHP_VERSION="7.1.4" # 7.0.17
 
 MEMCACHED_VERSION="1.4.29"
 PHP_MEMCACHED_VERSION="3.0.3"
 REDIS_VERSION="3.2.8"
 EVENT_VERSION="2.1.0"
-DIO_VERSION="0.0.9" # http://pecl.php.net/package/dio
+DIO_VERSION="0.1.0" # http://pecl.php.net/package/dio
 PHP_LIBEVENT_VERSION="0.1.0" # http://pecl.php.net/package/libevent
 APCU_VERSION="5.1.5"
 APCU_BC_VERSION="1.0.3"
 YAF_VERSION="3.0.4"
-PHALCON_VERSION="3.0.4"
+PHALCON_VERSION="3.1.2"
 XDEBUG_VERSION="2.4.0"
 RAPHF_VERSION="2.0.0"
 PROPRO_VERSION="2.0.1"
 PECL_HTTP_VERSION="3.0.1"
 AMQP_VERSION="1.7.1"
 MAILPARSE_VERSION="3.0.1"
-PHP_REDIS_VERSION="3.1.1"
-PHP_MONGODB_VERSION="1.2.6"
+PHP_REDIS_VERSION="3.1.2"
+PHP_MONGODB_VERSION="1.2.9"
 SOLR_VERSION="2.4.0"
 IMAGICK_VERSION="3.4.3" # http://pecl.php.net/package/imagick
 PTHREADS_VERSION="3.1.6" # http://pecl.php.net/package/pthreads
-SWOOLE_VERSION="2.0.6" # http://pecl.php.net/package/swoole
+SWOOLE_VERSION="2.0.7" # http://pecl.php.net/package/swoole
 #QRENCODE_VERSION="0.0.3"
 QRENCODE_VERSION="0.1.0"
 
 ZEND_VERSION="2.4.9" # http://framework.zend.com/downloads/latest
 SMARTY_VERSION="3.1.31" # www.smarty.net
-LARAVEL_VERSION="5.4.15"
-LARAVEL_FRAMEWORK_VERSION="5.4.15"
+LARAVEL_VERSION="5.4.21"
+LARAVEL_FRAMEWORK_VERSION="5.4.22"
 
 CKEDITOR_VERSION="4.5.6" #  www.ckeditor.com
 JQUERY_VERSION="1.11.3.min" # http://jquery.com/
+FAMOUS_VERSION="0.3.5"
+FAMOUS_FRAMEWORK_VERSION="0.13.1"
+FAMOUS_ANGULAR_VERSION="0.5.2"
 #SWFUpload%20v2.2.0.1%20Core.zip
 #SWFUpload_v250_beta_3_core.zip
 SWFUPLOAD_VERSION="2.2.0.1"
@@ -246,9 +250,9 @@ SWFUPLOAD_VERSION="2.2.0.1"
 LIBMAXMINDDB_VERSION="1.2.0"
 MAXMIND_DB_READER_PHP_VERSION="1.1.3"
 WEB_SERVICE_COMMON_PHP_VERSION="0.3.1"
-GEOIP2_PHP_VERSION="2.4.5"
+GEOIP2_PHP_VERSION="2.5.0"
 GEOIPUPDATE_VERSION="2.3.1"
-ELECTRON_VERSION="1.6.3"
+ELECTRON_VERSION="1.6.8"
 PHANTOMJS_VERSION="2.1.1"
 
 # }}}
@@ -292,7 +296,7 @@ PHP_SPHINX_FILE_NAME="pecl-search_engine-sphinx-${PHP_SPHINX_VERSION}.tar.gz"
 LIBJPEG_FILE_NAME="libjpeg-turbo-$LIBJPEG_VERSION.tar.gz"
 OPENJPEG_FILE_NAME="openjpeg-${OPENJPEG_VERSION/%.0/}.tar.gz" #2.1.0及以前文件名是 openjpeg-version.2.1.tar.gz
 FREETYPE_FILE_NAME="freetype-${FREETYPE_VERSION}.tar.bz2"
-GLIB_FILE_NAME="glib-${GLIB_VERSION}.tar.gz"
+GLIB_FILE_NAME="glib-${GLIB_VERSION}.tar.xz"
 UTIL_LINUX_FILE_NAME="util-linux-${UTIL_LINUX_VERSION}.tar.xz"
 LIBFFI_FILE_NAME="libffi-${LIBFFI_VERSION}.tar.gz"
 HARFBUZZ_FILE_NAME="harfbuzz-${HARFBUZZ_VERSION}.tar.bz2"
@@ -309,7 +313,7 @@ GMP_FILE_NAME="gmp-$GMP_VERSION.tar.xz"
 IMAP_FILE_NAME="imap-$IMAP_VERSION.tar.gz"
 KERBEROS_FILE_NAME="krb5-$KERBEROS_VERSION.tar.gz"
 LIBMEMCACHED_FILE_NAME="libmemcached-$LIBMEMCACHED_VERSION.tar.gz"
-LIBEVENT_FILE_NAME="libevent-${LIBEVENT_VERSION}-stable.tar.gz"
+LIBEVENT_FILE_NAME="libevent-release-${LIBEVENT_VERSION}-stable.tar.gz"
 LIBQRENCODE_FILE_NAME="qrencode-$LIBQRENCODE_VERSION.tar.bz2"
 POSTGRESQL_FILE_NAME="postgresql-$POSTGRESQL_VERSION.tar.bz2"
 APR_FILE_NAME="apr-$APR_VERSION.tar.gz"
@@ -349,6 +353,9 @@ LARAVEL_FILE_NAME="laravel-${LARAVEL_VERSION}.tar.gz"
 LARAVEL_FRAMEWORK_FILE_NAME="framework-${LARAVEL_FRAMEWORK_VERSION}.tar.gz"
 CKEDITOR_FILE_NAME="ckeditor_${CKEDITOR_VERSION}_full.tar.gz"
 JQUERY_FILE_NAME="jquery-$JQUERY_VERSION.js"
+FAMOUS_FILE_NAME="famous-${FAMOUS_VERSION}.tar.gz"
+FAMOUS_ANGULAR_FILE_NAME="famous-angular-${FAMOUS_ANGULAR_VERSION}.tar.gz"
+FAMOUS_FRAMEWORK_FILE_NAME="framework-${FAMOUS_FRAMEWORK_VERSION}.tar.gz"
 SWFUPLOAD_FILE_NAME="SWFUpload v$SWFUPLOAD_VERSION Core.zip"
 
 

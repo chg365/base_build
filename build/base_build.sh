@@ -1,5 +1,38 @@
 #!/bin/bash
 
+# autoconf，automake，autopoint，pkg-config
+#wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-6.repo
+#yum install cmake gcc xz cmake texinfo bzip2 xz-devel gcc-c++ ncurses-devel ncurses
+#yum update -y curl nss cyrus-sasl cyrus-sasl-devel
+
+#tar Jxf m4-1.4.17.tar.xz
+#cd m4-1.4.17
+#./configure && make && make install
+#cd ..
+#rm -rf m4-1.4.17
+
+#tar zxf autoconf-2.69.tar.gz
+#cd autoconf-2.69
+#./configure && make && make install
+#cd ..
+#rm -rf autoconf-2.69
+
+#tar Jxf automake-1.15.tar.xz
+#cd automake-1.15
+#./configure && make && make install
+#cd ..
+#rm -rf automake-1.15
+
+#tar Jxf libtool-2.4.6.tar.xz
+#cd libtool-2.4.6
+#./configure && make && make install
+#cd ..
+#rm -rf libtool-2.4.6
+
+
+
+
+
 autoconf_version=`autoconf --version|head -1|awk '{ print $NF; }'`
 if [ `echo "$autoconf_version 2.63"|tr " " "\n"|sort -rV|head -1` = "2.63" ] ; then
     echo "Autoconf version 2.64 or higher is required" >&2
@@ -134,7 +167,7 @@ compile_mysql
 compile_nginx
 compile_sqlite
 compile_rsyslog
-compile_pdf2htmlEX
+#compile_pdf2htmlEX
 compile_php_extension_dio
 compile_php_extension_pthreads
 compile_php_extension_qrencode
@@ -146,7 +179,7 @@ compile_php_extension_event
 #compile_php_extension_libevent
 compile_php_extension_libsodium
 compile_php_extension_yaf
-compile_php_extension_phalcon #不支持7.1
+compile_php_extension_phalcon
 compile_php_extension_xdebug
 compile_php_extension_raphf
 compile_php_extension_propro
