@@ -426,6 +426,9 @@ function wget_base_library()
     # wget_lib $LIBEVENT_FILE_NAME      "https://sourceforge.net/projects/levent/files//libevent-${LIBEVENT_VERSION%.*}/$LIBEVENT_FILE_NAME"
     # wget_lib $LIBEVENT_FILE_NAME      "https://sourceforge.net/projects/levent/files/release-${LIBEVENT_VERSION}-stable/$LIBEVENT_FILE_NAME/download"
     wget_lib $LIBEVENT_FILE_NAME      "https://github.com/libevent/libevent/archive/${LIBEVENT_FILE_NAME#*-}"
+    wget_lib $GEARMAND_FILE_NAME       "https://github.com/gearman/gearmand/releases/download/${GEARMAND_VERSION}/${GEARMAND_FILE_NAME}"
+    #wget_lib $GEARMAND_FILE_NAME      "https://github.com/gearman/gearmand/archive/${GEARMAND_FILE_NAME#*-}"
+    wget_lib $PHP_GEARMAN_FILE_NAME   "https://github.com/wcgallego/pecl-gearman/archive/${PHP_GEARMAN_FILE_NAME}"
     wget_lib $LIBQRENCODE_FILE_NAME   "http://fukuchi.org/works/qrencode/$LIBQRENCODE_FILE_NAME"
     wget_lib $POSTGRESQL_FILE_NAME    "https://ftp.postgresql.org/pub/source/v$POSTGRESQL_VERSION/$POSTGRESQL_FILE_NAME"
     wget_lib $APR_FILE_NAME           "http://mirrors.cnnic.cn/apache//apr/$APR_FILE_NAME"
@@ -468,7 +471,7 @@ function wget_base_library()
     wget_lib $LIBSODIUM_FILE_NAME     "https://download.libsodium.org/libsodium/releases/$LIBSODIUM_FILE_NAME"
     wget_lib $PHP_ZMQ_FILE_NAME       "https://github.com/mkoppanen/php-zmq/archive/${PHP_ZMQ_FILE_NAME##*-}"
     # wget_lib $SWFUPLOAD_FILE_NAME    "http://swfupload.googlecode.com/files/SWFUpload%20v$SWFUPLOAD_VERSION%20Core.zip"
-    wget_lib $GEOLITE2_CITY_MMDB_FILE_NAME "http://geolite.maxmind.com/download/geoip/database/$GEOLITE2_CITY_MMDB_FILE_NAME"
+    wget_lib $GEOLITE2_CITY_MMDB_FILE_NAME    "http://geolite.maxmind.com/download/geoip/database/$GEOLITE2_CITY_MMDB_FILE_NAME"
     wget_lib $GEOLITE2_COUNTRY_MMDB_FILE_NAME "http://geolite.maxmind.com/download/geoip/database/$GEOLITE2_COUNTRY_MMDB_FILE_NAME"
     wget_lib $LIBMAXMINDDB_FILE_NAME  "https://github.com/maxmind/libmaxminddb/releases/download/${LIBMAXMINDDB_VERSION}/${LIBMAXMINDDB_FILE_NAME}"
     wget_lib $MAXMIND_DB_READER_PHP_FILE_NAME "https://github.com/maxmind/MaxMind-DB-Reader-php/archive/v${MAXMIND_DB_READER_PHP_FILE_NAME##*-}"
@@ -708,10 +711,12 @@ function init_nginx_conf()
     mkdir -p $NGINX_CONFIG_DIR
     cp $curr_dir/nginx/nginx.conf $NGINX_CONFIG_DIR/nginx.conf
 
-#WEB_ROOT_DIR
-#    PROJECT_NAME
-#    LOG_DIR
-#    RUN_DIR
+
+    sed -i.bak.$$ "s/WEB_ROOT_DIR/$(sed_quote2 $BASE_DIR/web)/g" $NGINX_CONFIG_DIR/nginx.conf
+    sed -i.bak.$$ "s/GEOIP2_DATA_DIR/$(sed_quote2 $GEOIP2_DATA_DIR)/g" $NGINX_CONFIG_DIR/nginx.conf
+    sed -i.bak.$$ "s/LOG_DIR/$(sed_quote2 $LOG_DIR)/g" $NGINX_CONFIG_DIR/nginx.conf
+    sed -i.bak.$$ "s/RUN_DIR/$(sed_quote2 $BASE_DIR/run)/g" $NGINX_CONFIG_DIR/nginx.conf
+    sed -i.bak.$$ "s/PROJECT_NAME/$(sed_quote2 $project_abbreviation)/g" $NGINX_CONFIG_DIR/nginx.conf
 #    nobody
 
     # fastcgi_param  SERVER_SOFTWARE
@@ -839,6 +844,20 @@ function is_installed_redis()
     fi
     local version=`${REDIS_BASE}/bin/redis-cli --version |awk '{ print $2; }'`
     if [ "$version" != "$REDIS_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
+# {{{ function is_installed_gearmand()
+function is_installed_gearmand()
+{
+    local FILENAME="$GEARMAND_BASE/lib/pkgconfig/gearmand.pc"
+    if [ ! -f "$FILENAME" ];then
+        return 1;
+    fi
+    local version=`pkg-config --modversion $FILENAME`
+    if [ "$version" != "$GEARMAND_VERSION" ];then
         return 1;
     fi
     return;
@@ -972,6 +991,25 @@ function is_installed_icu()
 
     local version=`pkg-config --modversion $FILENAME`
     if [ "${version}" != "$ICU_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
+# {{{ function is_installed_boost()
+function is_installed_boost()
+{
+    local ext='.so'
+    if [ "$OS_NAME" = "Darwin" ];then
+        ext=".dylib"
+    fi
+    local FILENAME="${BOOST_BASE}/lib/libboost_program_options${ext}"
+    if [ ! -f "$FILENAME" ];then
+        return 1;
+    fi
+
+    local version=`find ${BOOST_BASE}/lib/ -name "libboost_program_options${ext}.[0-9]*.[0-9]*.[0-9]*"|sed -n "s/^.*${ext}.\([0-9]\{1,\}.[0-9]\{1,\}.[0-9]\{1,\}\)/\1/p"|tr . _`;
+    if [ "${version}" != "$BOOST_VERSION" ];then
         return 1;
     fi
     return;
@@ -1144,7 +1182,7 @@ function is_installed_freetype()
         return 1;
     fi
     local version=`$FREETYPE_BASE/bin/freetype-config --ftversion`
-    if [ "${version}" != "$FREETYPE_VERSION" ];then
+    if [ "${version}" != "$FREETYPE_VERSION" -a "${version%.0}" != "$FREETYPE_VERSION" ];then
         return 1;
     fi
     return;
@@ -1363,29 +1401,26 @@ function is_installed_gmp()
 # {{{ function is_installed_imap()
 function is_installed_imap()
 {
-    echo "is_installed_imap Function not implemented ." >&2
-    return 1;
-    local FILENAME="$IMAP_BASE/lib/pkgconfig/imap.pc"
+    local FILENAME="$IMAP_BASE/lib/libc-client.a"
     if [ ! -f "$FILENAME" ];then
         return 1;
     fi
-    local version=`pkg-config --modversion $FILENAME`
-    if [ "${version}" != "$IMAP_VERSION" ];then
-        return 1;
-    fi
     return;
+#local version=`pkg-config --modversion $FILENAME`
+#    if [ "${version}" != "$IMAP_VERSION" ];then
+#        return 1;
+#    fi
+#    return;
 }
 # }}}
 # {{{ function is_installed_kerberos()
 function is_installed_kerberos()
 {
-    echo "is_installed_kerberos Function not implemented ." >&2
-    return 1;
     local FILENAME="$KERBEROS_BASE/lib/pkgconfig/krb5.pc"
     if [ ! -f "$FILENAME" ];then
         return 1;
     fi
-    local version=`pkg-config --modversion $FILENAME`
+    local version=`PKG_CONFIG_PATH="$PKG_CONFIG_PATH" pkg-config --modversion $FILENAME`
     if [ "${version}" != "$KERBEROS_VERSION" ];then
         return 1;
     fi
@@ -2007,7 +2042,6 @@ function compile_openssl()
 # {{{ function compile_icu()
 function compile_icu()
 {
-
     is_installed icu "$ICU_BASE"
     if [ "$?" = "0" ];then
         return;
@@ -2022,6 +2056,81 @@ function compile_icu()
     export -n LD_LIBRARY_PATH
     if [ "$OS_NAME" = "Darwin" ];then
         repair_dynamic_shared_library $ICU_BASE/lib "libicu*dylib"
+    fi
+
+}
+# }}}
+# {{{ function compile_boost()
+function compile_boost()
+{
+    compile_icu
+
+    is_installed boost "$BOOST_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    #yum install python-devel bzip2-devel
+    #yum install gperf libevent-devel libuuid-devel
+
+    decompress $BOOST_FILE_NAME
+    if [ "$?" != "0" ];then
+        echo "decompress file error. FILE_NAME: $BOOST_FILE_NAME" >&2
+        exit 1;
+        #return 1;
+    fi
+    cd $FILE_DIR
+    cd "boost_${BOOST_VERSION}"
+    if [ "$?" != "0" ];then
+        echo "cd boost_${BOOST_VERSION} failed." >&2;
+        exit 1;
+    fi
+
+    local COMMAND="./bootstrap.sh --with-icu=$ICU_BASE --prefix=$BOOST_BASE && ./b2 install --with-program_options"
+    echo "configure command: "
+    echo ${!COMMAND}
+    echo ""
+    ${!COMMAND}
+
+    if [ "$?" != "0" ];then
+        echo "Install boost failed." >&2;
+        exit 1;
+    fi
+
+    if [ $? -ne 0 ];then
+        echo "Install boost failed." >&2;
+        exit 1;
+    fi
+
+#    atomic
+#    chrono
+#    container
+#    context
+#    coroutine
+#    coroutine2
+#    date_time
+#    exception
+#    filesystem
+#    graph
+#    graph_parallel
+#    iostreams
+#    locale
+#    log
+#    math
+#    mpi
+#    program_options
+#    python
+#    random
+#    regex
+#    serialization
+#    signals
+#    system
+#    test
+#    thread
+#    timer
+#    wave
+    if [ "$OS_NAME" = "Darwin" ];then
+        repair_dynamic_shared_library $BOOST_BASE/lib "libboost*dylib"
     fi
 
 }
@@ -2457,6 +2566,25 @@ function compile_redis()
     compile "redis" "$REDIS_FILE_NAME" "redis-$REDIS_VERSION" "$REDIS_BASE" "REDIS_CONFIGURE" "after_redis_make_install"
 }
 # }}}
+# {{{ function compile_gearmand()
+function compile_gearmand()
+{
+    compile_openssl
+    compile_curl
+    #compile_boost
+    #yum install boost boost-devel
+
+    is_installed gearmand "$GEARMAND_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    GEARMAND_CONFIGURE="
+        configure_gearmand_command
+    "
+    compile "gearmand" "$GEARMAND_FILE_NAME" "gearmand-$GEARMAND_VERSION" "$GEARMAND_BASE" "GEARMAND_CONFIGURE"
+}
+# }}}
 # {{{ function configure_hiredis_command()
 function configure_hiredis_command()
 {
@@ -2494,6 +2622,38 @@ function configure_redis_command()
             fi
         fi
     fi
+}
+# }}}
+# {{{ function configure_gearmand_command()
+function configure_gearmand_command()
+{
+    # 没有configure
+    if [ ! -f "./configure" ]; then
+        # 执行报错，就只能下载有configure的包了
+        ./bootstap.sh
+        if [ "$?" != "0" ];then
+            return 1;
+        fi
+    fi
+    CPPFLAGS="$(get_cppflags $CURL_BASE/include)" LDFLAGS="$(get_ldflags $CURL_BASE/lib)" \
+    ./configure --prefix=$GEARMAND_BASE \
+                --enable-ssl \
+                --enable-cyassl \
+                --with-mysql=no \
+                --with-boost=$( if is_installed_boost ; then echo ${BOOST_BASE} ; else echo yes ; fi) \
+                --with-openssl=$OPENSSL_BASE \
+
+                #--with-curl-prefix=$CURL_BASE # 加上后make时报错 Makefile:2138: *** missing separator. Stop.
+                #--with-boost-libdir=${BOOST_BASE}/lib \
+                #--enable-jobserver[=no/yes/#]
+                #--with-drizzled=
+                #--with-sqlite3=
+                #--with-postgresql=
+                #--with-memcached=
+                #--with-sphinx-build=
+                #--with-lcov=
+                #--with-genhtml=
+
 }
 # }}}
 # {{{ function after_redis_make_install()
@@ -2960,16 +3120,101 @@ function compile_gmp()
 # {{{ function compile_imap()
 function compile_imap()
 {
+    #yum install openssl openssl-devel
+    #yum install kerberos-devel krb5-workstation
+    #yum install pam pam-devel
+
+    compile_kerberos
+    # 不支持openssl-1.1.0 及以上版本
+    local OPENSSL_BASE=$OPENSSL_BASE
+    local tmp_64=""
+    if is_new_version $OPENSSL_VERSION "1.1.0" ; then
+        if [ -f "/usr/lib64/pkgconfig/libssl.pc" ]; then
+            local OPENSSL_BASE="/usr"
+            local tmp_64="64"
+        elif [ -f "/usr/lib/pkgconfig/libssl.pc" ]; then
+            local OPENSSL_BASE="/usr"
+            local tmp_64=""
+        elif [ -f "/usr/local/lib64/pkgconfig/libssl.pc" ]; then
+            local OPENSSL_BASE="/usr/local"
+            local tmp_64="64"
+        elif [ -f "/usr/local/lib/pkgconfig/libssl.pc" ]; then
+            local OPENSSL_BASE="/usr/local"
+            local tmp_64=""
+        else
+            echo "Please install OpenSSL(1.0.x) first." >&2
+            exit 1;
+        fi
+    else
+        compile_openssl
+    fi
+
+    IMAP_OPENSSL_BASE=$OPENSSL_BASE
+    IMAP_TMP_64=$tmp_64
+
     is_installed imap "$IMAP_BASE"
     if [ "$?" = "0" ];then
         return;
     fi
 
-    IMAP_CONFIGURE="
-    ./configure --prefix=$IMAP_BASE
-    "
+    echo_build_start imap
+    decompress $IMAP_FILE_NAME
+    if [ "$?" != "0" ];then
+        echo "decompress file error. FILE_NAME: $IMAP_FILE_NAME" >&2
+        exit 1;
+    fi
 
-    compile "imap" "$IMAP_FILE_NAME" "imap-$IMAP_VERSION" "$IMAP_BASE" "IMAP_CONFIGURE"
+    cd imap-$IMAP_VERSION
+    if [ "$?" != "0" ];then
+        echo "dir [imap-${IMAP_VERSION}] is not exists." >&2
+        exit 1;
+    fi
+
+    configure_imap_command
+
+    cd ..
+    rm -rf imap-${IMAP_VERSION}
+}
+# }}}
+# {{{ function configure_imap_command()
+function configure_imap_command()
+{
+    if is_new_version $OPENSSL_VERSION "1.1.0" ; then
+        local OPENSSL_BASE=$IMAP_OPENSSL_BASE
+        local tmp_64=$IMAP_TMP_64
+    fi
+
+    local os_type="lr5" #red hat linux 7.2以下
+    if [ "$OS_NAME" = "Darwin" ]; then
+        local os_type="osx"
+    fi
+
+    #local old_str='SPECIALS="SSLINCLUDE=.* SSLLIB=.* SSLCERTS=.* SSLKEYS=.* GSSDIR=.*"'
+    #local new_str="SPECIALS=\"SSLINCLUDE=${OPENSSL_BASE}/include/openssl SSLLIB=${OPENSSL_BASE}/lib${tmp_64} SSLCERTS=${OPENSSL_BASE}/ssl/certs SSLKEYS=${OPENSSL_BASE}/ssl/private GSSDIR=${KERBEROS_BASE}\""
+    #sed -i "/lr5:/{n;n;n;s/$(sed_quote2 $old_str)/$(sed_quote2 $new_str)/}" ./Makefile
+
+    #IP6=4
+    #make lr5 PASSWDTYPE=std SSLTYPE=unix.nopwd EXTRACFLAGS=-fPIC IP=4
+    echo "make command: "
+    echo "make $os_type SSLINCLUDE=$OPENSSL_BASE/include/openssl SSLLIB=$OPENSSL_BASE/lib${tmp_64} SSLKEYS=$OPENSSL_BASE/ssl/private GSSDIR=$KERBEROS_BASE EXTRACFLAGS=-fPIC"
+
+    make "$os_type" SSLINCLUDE=$OPENSSL_BASE/include/openssl SSLLIB=$OPENSSL_BASE/lib${tmp_64} SSLKEYS=$OPENSSL_BASE/ssl/private GSSDIR=$KERBEROS_BASE EXTRACFLAGS=-fPIC
+
+    if [ "$?" != "0" ]; then
+        echo "Install imap failed." >&2;
+        exit 1;
+    fi
+
+    mkdir -p $IMAP_BASE/{lib,include} && \
+    cp -rf c-client/*.h $IMAP_BASE/include/ && \
+    cp -rf c-client/*.c $IMAP_BASE/lib/ && \
+    cp -rf c-client/c-client.a $IMAP_BASE/lib/libc-client.a
+
+    if [ "$?" != "0" ]; then
+        echo "Install imap failed." >&2;
+        exit 1;
+    fi
+
 }
 # }}}
 # {{{ function compile_kerberos()
@@ -2984,7 +3229,7 @@ function compile_kerberos()
     ./configure --prefix=$KERBEROS_BASE
     "
 
-    compile "kerberos" "$KERBEROS_FILE_NAME" "krb5-$KERBEROS_VERSION" "$KERBEROS_BASE" "KERBEROS_CONFIGURE"
+    compile "kerberos" "$KERBEROS_FILE_NAME" "krb5-$KERBEROS_VERSION/src" "$KERBEROS_BASE" "KERBEROS_CONFIGURE"
 }
 # }}}
 # {{{ function compile_libmemcached()
@@ -3101,13 +3346,20 @@ function compile_nginx()
                 --conf-path=$NGINX_CONFIG_DIR/nginx.conf \
                 --with-ipv6 \
                 --with-threads \
+                --with-http_mp4_module \
+                --with-http_image_filter_module \
+                --with-http_sub_module \
                 --with-http_ssl_module \
+                --with-http_stub_status_module \
+                --with-http_realip_module \
                 --with-pcre=../pcre-$PCRE_VERSION \
                 --with-zlib=../zlib-$ZLIB_VERSION \
                 --with-openssl=../openssl-$OPENSSL_VERSION \
                 --with-http_gunzip_module \
                 --with-http_gzip_static_module
     "
+                # --add-module=../nginx-accesskey-2.0.3 \
+                # --add-module=../ngx_http_geoip2_module \
                 # --with-poll_module \
                 # --with-http_auth_request_module    enable ngx_http_auth_request_module
                 # --with-http_random_index_module    enable ngx_http_random_index_module
@@ -3701,6 +3953,26 @@ function compile_php_extension_redis()
     /bin/rm -rf package.xml
 }
 # }}}
+# {{{ function compile_php_extension_gearman()
+function compile_php_extension_gearman()
+{
+    compile_gearmand
+
+    is_installed_php_extension gearman
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    PHP_EXTENSION_GEARMAN_CONFIGURE="
+    ./configure --with-php-config=$PHP_BASE/bin/php-config \
+                --with-gearman=$GEARMAND_BASE
+    "
+
+    compile "php_extension_gearman" "$PHP_GEARMAN_FILE_NAME" "${PHP_GEARMAN_FILE_NAME%-*}-${PHP_GEARMAN_VERSION}" "gearman.so" "PHP_EXTENSION_GEARMAN_CONFIGURE"
+
+    /bin/rm -rf package.xml
+}
+# }}}
 # {{{ function compile_php_extension_mongodb()
 function compile_php_extension_mongodb()
 {
@@ -3979,6 +4251,50 @@ function compile_php_extension_tidy()
     fi
 }
 # }}}
+# {{{ function compile_php_extension_imap()
+function compile_php_extension_imap()
+{
+    compile_kerberos
+    compile_imap
+    #yum install -y libc-client-devel libc-client
+    compile_openssl
+
+    is_installed_php_extension imap
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    PHP_EXTENSION_IMAP_CONFIGURE="
+        configure_php_ext_imap_command
+    "
+
+    compile "php_extension_imap" "$PHP_FILE_NAME" "php-${PHP_VERSION}/ext/imap" "imap.so" "PHP_EXTENSION_IMAP_CONFIGURE"
+
+    /bin/rm -rf package.xml
+    if [ "$OS_NAME" = "Darwin" ];then
+        repair_dynamic_shared_library $PHP_EXTENSION_DIR/imap.so
+    fi
+}
+# }}}
+# {{{ function configure_php_ext_imap_command()
+function configure_php_ext_imap_command()
+{
+    if is_new_version $OPENSSL_VERSION "1.1.0" ; then
+        local OPENSSL_BASE=$IMAP_OPENSSL_BASE
+        local tmp_64=$IMAP_TMP_64
+    fi
+    if is_new_version $OPENSSL_VERSION "1.1.0" && echo "$HOST_TYPE"|grep -q x86_64 ; then
+        sed -i.bak$$ 's/str="$IMAP_DIR\/$PHP_LIBDIR/str="$IMAP_DIR\/${PHP_LIBDIR}64/' configure
+    fi
+    ./configure --with-php-config=$PHP_BASE/bin/php-config \
+                --with-imap$( if is_installed_imap ; then echo =$IMAP_BASE ; fi ) \
+                --with-kerberos=$KERBEROS_BASE \
+                --with-imap-ssl=$OPENSSL_BASE
+
+    # CPPFLAGS="$(get_cppflags $OPENSSL_BASE/include)" LDFLAGS="$(get_ldflags $OPENSSL_BASE/lib)" \
+                # --with-libdir=lib64 \
+}
+# }}}
 # {{{ function compile_php_extension_sphinx()
 function compile_php_extension_sphinx()
 {
@@ -4201,35 +4517,39 @@ function compile_geoipupdate()
     "
 
     compile "geoipupdate" "$GEOIPUPDATE_FILE_NAME" "geoipupdate-$GEOIPUPDATE_VERSION" "$GEOIPUPDATE_BASE" "GEOIPUPDATE_CONFIGURE"
-    cp $curr_dir/GeoIP2_update.conf $BASE_DIR/etc/
+    sudo sed -i.bak.$$ "s/^# DatabaseDirectory .*$/DatabaseDirectory $(sed_quote2 $GEOIP2_DATA_DIR)/" $BASE_DIR/etc/GeoIP.conf
+    if [ "$?" != "0" ]; then
+        echo "mod $BASE_DIR/etc/GeoIP.conf faild." >&2;
+        return 1;
+    fi
 }
 # }}}
 # }}}
 # {{{ function cp_GeoLite2_data()
 function cp_GeoLite2_data()
 {
-    if [ -z "$GEOIP2_ETC_DIR" ];then
-        echo "variable GEOIP2_ETC_DIR is nod exists." >&2
+    if [ -z "$GEOIP2_DATA_DIR" ];then
+        echo "variable GEOIP2_DATA_DIR is nod exists." >&2
         return 1;
     fi
 
-    mkdir -p $GEOIP2_ETC_DIR
+    mkdir -p $GEOIP2_DATA_DIR
 
     if [ ! -f "$GEOLITE2_CITY_MMDB_FILE_NAME" ] || [ ! -f "$GEOLITE2_COUNTRY_MMDB_FILE_NAME" ];then
         echo "file [${GEOLITE2_CITY_MMDB_FILE_NAME}] or [${GEOLITE2_COUNTRY_MMDB_FILE_NAME}]  not exists." >&2
         return 1;
     fi 
 
-    if [ ! -f  "$GEOIP2_ETC_DIR/GeoLite2-City.mmdb" ];then
-        gunzip -c $GEOLITE2_CITY_MMDB_FILE_NAME > $GEOIP2_ETC_DIR/GeoLite2-City.mmdb
+    if [ ! -f  "$GEOIP2_DATA_DIR/GeoLite2-City.mmdb" ];then
+        gunzip -c $GEOLITE2_CITY_MMDB_FILE_NAME > $GEOIP2_DATA_DIR/GeoLite2-City.mmdb
         if [ "$?" != "0" ];then
             echo "gunzip faild. file: $GEOLITE2_CITY_MMDB_FILE_NAME" >&2
             return 1;
         fi
     fi
 
-    if [ ! -f  "$GEOIP2_ETC_DIR/GeoLite2-Country.mmdb" ];then
-        gunzip -c $GEOLITE2_COUNTRY_MMDB_FILE_NAME > $GEOIP2_ETC_DIR/GeoLite2-Country.mmdb
+    if [ ! -f  "$GEOIP2_DATA_DIR/GeoLite2-Country.mmdb" ];then
+        gunzip -c $GEOLITE2_COUNTRY_MMDB_FILE_NAME > $GEOIP2_DATA_DIR/GeoLite2-Country.mmdb
         if [ "$?" != "0" ];then
             echo "gunzip faild. file: $GEOLITE2_COUNTRY_MMDB_FILE_NAME" >&2
             return 1;
@@ -4415,7 +4735,7 @@ function compile_famous()
 configure_geoipupdate_command()
 {
     CPPFLAGS="$(get_cppflags $CURL_BASE/include)" LDFLAGS="$(get_ldflags $CURL_BASE/lib)" \
-    ./configure --prefix=$GEOIPUPDATE_BASE
+    ./configure --prefix=$GEOIPUPDATE_BASE --sysconfdir=$BASE_DIR/etc
 }
 # }}}
 # {{{ configure_fontforge_command()
@@ -4842,13 +5162,15 @@ function check_soft_updates()
     #which sort 
     #which head
 
+    check_version boost
+    check_version gearman
+    check_version gearmand
     check_version libevent
     check_version gettext
     check_version curl
     check_version fontforge
-    check_libpng_version
-    check_freetype_version
-    check_util_linux_version
+    check_version libpng
+    check_version util_linux
     check_version glib
     check_version freetype
     check_version harfbuzz
@@ -4886,6 +5208,7 @@ function check_soft_updates()
     check_version fontforge
     check_version pdf2htmlEX
 
+    check_pecl_xdebug_version
     check_pecl_dio_version
     check_pecl_memcached_version
     check_pecl_qrencode_version
@@ -5294,6 +5617,18 @@ function check_fontforge_version()
     check_github_soft_version fontforge $FONTFORGE_VERSION "https://github.com/fontforge/fontforge/releases"
 }
 # }}}
+# {{{ function check_gearmand_version()
+function check_gearmand_version()
+{
+    check_github_soft_version gearmand $GEARMAND_VERSION "https://github.com/gearman/gearmand/releases"
+}
+# }}}
+# {{{ function check_gearman_version()
+function check_gearman_version()
+{
+    check_github_soft_version gearman $PHP_GEARMAN_VERSION "https://github.com/wcgallego/pecl-gearman/releases" "gearman-\([0-9.]\{1,\}\).tar.gz" 1
+}
+# }}}
 # {{{ function check_pdf2htmlEX_version()
 function check_pdf2htmlEX_version()
 {
@@ -5409,6 +5744,12 @@ function check_pecl_dio_version()
 {
     #check_github_soft_version pecl-system-dio $DIO_VERSION "https://github.com/php/pecl-system-dio/releases"
     check_php_pecl_version dio $DIO_VERSION
+}
+# }}}
+# {{{ function check_pecl_xdebug_version()
+function check_pecl_xdebug_version()
+{
+    check_php_pecl_version xdebug $XDEBUG_VERSION
 }
 # }}}
 # {{{ function check_pecl_memcached_version()
@@ -5616,6 +5957,12 @@ function check_pecl_sphinx_version()
     check_php_pecl_version sphinx $PHP_SPHINX_VERSION
 }
 # }}}
+# {{{ function check_boost_version()
+function check_boost_version()
+{
+    check_sourceforge_soft_version boost ${BOOST_VERSION//_/.} 's/^.\{0,\}<tr title="\([0-9.]\{1,\}\)" class="folder \{0,\}"> \{0,\}$/\1/p'
+}
+# }}}
 # {{{ function check_github_soft_version()
 function check_github_soft_version()
 {
@@ -5758,7 +6105,12 @@ function check_sourceforge_soft_version()
 {
     local soft=$1
     local current_version=$2
-    local new_version=`curl -k https://sourceforge.net/projects/${soft}/files/${soft}2/ 2>/dev/null|sed -n "s/^.\{1,\}Download \{1,\}${soft}-\([0-9.]\{1,\}\).tar\..\{1,\}$/\1/p"|sort -rV|head -1`;
+    local pattern=$3
+
+    if [ -z "$pattern" ]; then
+        pattern="s/^.\{1,\}Download \{1,\}${soft}-\([0-9.]\{1,\}\).tar\..\{1,\}$/\1/p"
+    fi
+    local new_version=`curl -k https://sourceforge.net/projects/${soft}/files/${soft}/ 2>/dev/null|sed -n "$pattern"|sort -rV|head -1`;
      if [ -z "$new_version" ];then
          echo -e "探测${soft}的新版本\033[0;31m失败\033[0m" >&2
          return 1;
@@ -6140,6 +6492,10 @@ function repair_dynamic_shared_library()
 #IP数据库自动更新, 需要在crontab中设置
 #$GEOIPUPDATE_BASE/bin/geoipupdate -h
 #$GEOIPUPDATE_BASE/bin/geoipupdate -f $BASE_DIR/etc/GeoIP2_update.conf -d /tmp/ &
+
+# 每周三5点更新 (GeoIP2、GeoIP旧版国家及城市以及GeoIP旧版区域数据库每周二更新。所有其他数据库在每个月的第一个周二更新)
+# 时差
+#0 5 * * 3 /usr/local/eyou/mail/opt/bin/geoipupdate >/dev/null 2>&1 &
 
 # 问题，及解决方法
 #libtoolize --quiet

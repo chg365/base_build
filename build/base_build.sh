@@ -2,7 +2,7 @@
 
 # autoconf，automake，autopoint，pkg-config
 #wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-6.repo
-#yum install cmake gcc xz cmake texinfo bzip2 xz-devel gcc-c++ ncurses-devel ncurses
+#yum install cmake gcc xz cmake texinfo bzip2 xz-devel gcc-c++ ncurses-devel ncurses byacc file re2c
 #yum update -y curl nss cyrus-sasl cyrus-sasl-devel
 
 #tar Jxf m4-1.4.17.tar.xz
@@ -168,6 +168,7 @@ compile_nginx
 compile_sqlite
 compile_rsyslog
 #compile_pdf2htmlEX
+compile_php_extension_gearman
 compile_php_extension_dio
 compile_php_extension_pthreads
 compile_php_extension_qrencode
@@ -198,10 +199,10 @@ compile_php_extension_imagick
 compile_libmaxminddb
 compile_php_extension_maxminddb
 compile_geoipupdate
+compile_php_extension_imap
 cp_GeoLite2_data
 install_web_service_common_php
 install_geoip2_php
-
 
 $PHP_BASE/bin/php --ini
 
@@ -311,4 +312,3 @@ ldd /usr/local/chg/base/opt/php/lib/php/extensions/no-debug-zts-20151012/geoip.s
 
 http://www.rabbitmq.com/releases/rabbitmq-server/v3.6.5/rabbitmq-server-3.6.5.tar.xz
 wget --content-disposition --no-check-certificate https://github.com/phpDocumentor/phpDocumentor2/archive/v2.9.0.tar.gz
-
