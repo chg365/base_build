@@ -153,7 +153,7 @@ SPHINX_VERSION="2.2.11"
 PHP_SPHINX_VERSION="php7"
 
 LIBGD_VERSION="2.1.1" # http://libgd.github.io/
-IMAGEMAGICK_VERSION="7.0.5-6" # http://www.imagemagick.org/download/
+IMAGEMAGICK_VERSION="7.0.5-7" # http://www.imagemagick.org/download/
 JPEG_VERSION="9b" # 8d # http://www.ijg.org/files/
 LIBPNG_VERSION="1.6.29"
 NASM_VERSION="2.13.01"
@@ -336,7 +336,7 @@ PECL_HTTP_FILE_NAME="pecl_http-${PECL_HTTP_VERSION}.tgz"
 AMQP_FILE_NAME="amqp-${AMQP_VERSION}.tgz"
 MAILPARSE_FILE_NAME="mailparse-${MAILPARSE_VERSION}.tgz"
 PHP_REDIS_FILE_NAME="redis-${PHP_REDIS_VERSION}.tgz"
-PHP_GEARMAN_FILE_NAME="pecl-gearman-gearman-${PHP_GEARMAN_VERSION}.tar.gz"
+PHP_GEARMAN_FILE_NAME="gearman-${PHP_GEARMAN_VERSION}.tar.gz"
 PHP_MONGODB_FILE_NAME="mongodb-${PHP_MONGODB_VERSION}.tgz"
 SOLR_FILE_NAME="solr-${SOLR_VERSION}.tgz"
 MEMCACHED_FILE_NAME="memcached-$MEMCACHED_VERSION.tar.gz"
