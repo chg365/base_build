@@ -2456,7 +2456,7 @@ function compile_cairo()
 {
     compile_libpng
     compile_pixman
-    compile_glib
+    [ "$OS_NAME" != "Darwin" ] && compile_glib
     compile_fontconfig
 
     is_installed cairo "$CAIRO_BASE"
@@ -2516,7 +2516,7 @@ function compile_fontforge()
 function compile_pango()
 {
     compile_cairo
-    compile_glib
+    [ "$OS_NAME" != "Darwin" ] && compile_glib
     compile_freetype
     compile_fontconfig
 
@@ -2777,7 +2777,7 @@ function compile_freetype()
 # {{{ function compile_harfbuzz()
 function compile_harfbuzz()
 {
-    compile_glib
+    [ "$OS_NAME" != "Darwin" ] && compile_glib
     compile_icu
 
     is_installed freetype "$FREETYPE_BASE"
@@ -2791,7 +2791,7 @@ function compile_harfbuzz()
     fi
 
     HARFBUZZ_CONFIGURE="
-    ./configure --prefix=$HARFBUZZ_BASE
+    configure_harfbuzz_command
     "
 
     compile "harfbuzz" "$HARFBUZZ_FILE_NAME" "harfbuzz-$HARFBUZZ_VERSION" "$HARFBUZZ_BASE" "HARFBUZZ_CONFIGURE"
@@ -2809,10 +2809,12 @@ function compile_glib()
     compile_libiconv
     compile_libffi
 
-    # 需要libmount,没有时，才编译
-    pkg-config --modversion mount >/dev/null 2>&1
-    if [ "$?" != "0" ]; then
-    compile_util_linux
+    if [ "$OS_NAME" != "Darwin" ]; then
+        # 需要libmount,没有时，才编译
+        pkg-config --modversion mount >/dev/null 2>&1
+        if [ "$?" != "0" ]; then
+            compile_util_linux
+        fi
     fi
 
     is_installed glib "$GLIB_BASE"
@@ -3342,36 +3344,8 @@ function compile_nginx()
     fi
 
     NGINX_CONFIGURE="
-    ./configure --prefix=$NGINX_BASE \
-                --conf-path=$NGINX_CONFIG_DIR/nginx.conf \
-                --with-ipv6 \
-                --with-threads \
-                --with-http_mp4_module \
-                --with-http_image_filter_module \
-                --with-http_sub_module \
-                --with-http_ssl_module \
-                --with-http_stub_status_module \
-                --with-http_realip_module \
-                --with-pcre=../pcre-$PCRE_VERSION \
-                --with-zlib=../zlib-$ZLIB_VERSION \
-                --with-openssl=../openssl-$OPENSSL_VERSION \
-                --with-http_gunzip_module \
-                --with-http_gzip_static_module
+        configure_nginx_command
     "
-                # --add-module=../nginx-accesskey-2.0.3 \
-                # --add-module=../ngx_http_geoip2_module \
-                # --with-poll_module \
-                # --with-http_auth_request_module    enable ngx_http_auth_request_module
-                # --with-http_random_index_module    enable ngx_http_random_index_module
-                #--with-http_realip_module # 启用ngx_http_realip_module支持（这个模块允许从请求标头更改客户端的IP地址值，默认为关）
-                # --with-http_gzip_static_module 启用ngx_http_gzip_static_module支持（在线实时压缩输出数据流）
-                # --with-http_secure_link_module 启用ngx_http_secure_link_module支持（计算和检查要求所需的安全链接网址）
-                # --with-http_degradation_module  启用ngx_http_degradation_module支持（允许在内存不足的情况下返回204或444码）
-                # --with-http_stub_status_module 启用ngx_http_stub_status_module支持（获取nginx自上次启动以来的工作状态）
-                # --with-mail 启用POP3/IMAP4/SMTP代理模块支持
-                # --with-mail_ssl_module 启用ngx_mail_ssl_module支持
-                # --with-rtsig_module # 启用rtsig模块支持（实时信号）
-                # --with-file-aio # 启用file aio支持（一种APL文件传输格式）
 
     decompress $PCRE_FILE_NAME && decompress $ZLIB_FILE_NAME && decompress $OPENSSL_FILE_NAME
     if [ "$?" != "0" ];then
@@ -3408,12 +3382,18 @@ function compile_rsyslog()
     export PATH
 
     RSYSLOG_CONFIGURE="
-    ./configure --prefix=$RSYSLOG_BASE \
+    ./configure CC=\"gcc -arch i386 -arch x86_64\" \
+                CXX=\"g++ -arch i386 -arch x86_64\" \
+                CPP=\"gcc -E\" CXXCPP=\"g++ -E\" \
+                --prefix=$RSYSLOG_BASE \
                 --enable-elasticsearch \
-                $(is_installed_mysql && echo --enable-mysql || echo "") \
+                $(is_installed_mysql && echo --enable-mysql ) \
                 --enable-mail
                 "
+# No package 'uuid' found
+# No package 'systemd' found
                # --enable-libgcrypt
+#$( [ \"$OS_NAME\" = \"Darwin\" ] && echo --disable-uuid ) \
 
                # error: Net-SNMP is missing
                # --enable-snmp \
@@ -3726,7 +3706,15 @@ function compile_php_extension_intl()
     "
     compile "php_extension_intl" "$PHP_FILE_NAME" "php-$PHP_VERSION/ext/intl/" "intl.so" "PHP_EXTENSION_INTL_CONFIGURE"
     if [ "$OS_NAME" = "Darwin" ];then
-        repair_dynamic_shared_library $PHP_EXTENSION_DIR/intl.so
+        for i in `find $PHP_LIB_DIR -name "no-debug-*"`;
+        do
+        {
+            local file_name="${i}/intl.so"
+            if [ -f "$file_name" ];then
+                repair_dynamic_shared_library $file_name
+            fi
+        }
+        done
     fi
 }
 # }}}
@@ -4247,7 +4235,15 @@ function compile_php_extension_tidy()
 
     /bin/rm -rf package.xml
     if [ "$OS_NAME" = "Darwin" ];then
-        repair_dynamic_shared_library $PHP_EXTENSION_DIR/tidy.so
+        for i in `find $PHP_LIB_DIR -name "no-debug-*"`;
+        do
+        {
+            local file_name="${i}/tidy.so"
+            if [ -f "$file_name" ];then
+                repair_dynamic_shared_library $file_name
+            fi
+        }
+        done
     fi
 }
 # }}}
@@ -4772,8 +4768,8 @@ configure_fontforge_command()
     export PATH="$PATH" 
 
     ./bootstrap && \
-    LIBPNG_CFLAGS="$(get_cppflags $LIBPNG_BASE/include)" \
-    LIBPNG_LIBS="$(get_ldflags $LIBPNG_BASE/lib)" \
+    LIBPNG_CFLAGS="$(get_cppflags $LIBPNG_BASE/include /usr/local/include )" \
+    LIBPNG_LIBS="$(get_ldflags $LIBPNG_BASE/lib /usr//local/lib )" \
     ./configure --prefix=$FONTFORGE_BASE \
                 --disable-python-scripting \
                 --disable-python-extension \
@@ -4790,6 +4786,14 @@ configure_curl_command()
     ./configure --prefix=$CURL_BASE \
                 --with-zlib=$ZLIB_BASE \
                 --with-ssl=$OPENSSL_BASE
+}
+# }}}
+# {{{ configure_harfbuzz_command()
+configure_harfbuzz_command()
+{
+    CPPFLAGS="$(get_cppflags ${$ICU_BASE}/include ${FREETYPE_BASE}/include)" \
+    LDFLAGS="$(get_ldflags ${ICU_BASE}/lib ${FREETYPE_BASE}/lib)" \
+    ./configure --prefix=$HARFBUZZ_BASE
 }
 # }}}
 # {{{ configure_php_command()
@@ -4901,6 +4905,49 @@ configure_icu_command()
     ./configure --prefix=$ICU_BASE
 }
 # }}}
+# {{{ configure_nginx_command()
+configure_nginx_command()
+{
+    ./configure --prefix=$NGINX_BASE \
+                --conf-path=$NGINX_CONFIG_DIR/nginx.conf \
+                --with-ipv6 \
+                --with-threads \
+                --with-http_mp4_module \
+                --with-http_image_filter_module \
+                --with-http_sub_module \
+                --with-http_ssl_module \
+                --with-http_stub_status_module \
+                --with-http_realip_module \
+                --with-pcre=../pcre-$PCRE_VERSION \
+                --with-zlib=../zlib-$ZLIB_VERSION \
+                --with-openssl=../openssl-$OPENSSL_VERSION \
+                --with-http_gunzip_module \
+                --with-http_gzip_static_module
+
+    # openssl编译不过去
+    [ "$OS_NAME" = "Darwin" ] && \
+    sed -i.bak 's/config --prefix/Configure darwin64-x86_64-cc --prefix/' ./objs/Makefile
+
+    # openssl编译不过去, 这个不起作用
+    #$( [ \"$OS_NAME\" = \"Darwin\" ] && echo --with-openssl-opt=\"-darwin64-x86_64-cc\" ) \
+
+
+                # --add-module=../nginx-accesskey-2.0.3 \
+                # --add-module=../ngx_http_geoip2_module \
+                # --with-poll_module \
+                # --with-http_auth_request_module    enable ngx_http_auth_request_module
+                # --with-http_random_index_module    enable ngx_http_random_index_module
+                #--with-http_realip_module # 启用ngx_http_realip_module支持（这个模块允许从请求标头更改客户端的IP地址值，默认为关）
+                # --with-http_gzip_static_module 启用ngx_http_gzip_static_module支持（在线实时压缩输出数据流）
+                # --with-http_secure_link_module 启用ngx_http_secure_link_module支持（计算和检查要求所需的安全链接网址）
+                # --with-http_degradation_module  启用ngx_http_degradation_module支持（允许在内存不足的情况下返回204或444码）
+                # --with-http_stub_status_module 启用ngx_http_stub_status_module支持（获取nginx自上次启动以来的工作状态）
+                # --with-mail 启用POP3/IMAP4/SMTP代理模块支持
+                # --with-mail_ssl_module 启用ngx_mail_ssl_module支持
+                # --with-rtsig_module # 启用rtsig模块支持（实时信号）
+                # --with-file-aio # 启用file aio支持（一种APL文件传输格式）
+}
+# }}}
 # {{{ configure_sphinxclient_command()
 configure_sphinxclient_command()
 {
@@ -4996,7 +5043,7 @@ configure_pdf2htmlEX_command()
         done
     fi
 
-    if [ -z "$gcc" ];then
+    if [ "$OS_NAME" != 'Darwin' -a -z "$gcc" ];then
         echo "please update your compiler." >&2
         return 1;
     fi
