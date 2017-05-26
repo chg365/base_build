@@ -411,8 +411,7 @@ function wget_base_library()
     wget_lib $FONTFORGE_FILE_NAME     "https://github.com/fontforge/fontforge/archive/${FONTFORGE_FILE_NAME#*-}"
     wget_lib $PDF2HTMLEX_FILE_NAME    "https://github.com/coolwanglu/pdf2htmlEX/archive/v${PDF2HTMLEX_FILE_NAME#*-}"
     wget_lib $PANGO_FILE_NAME         "http://ftp.gnome.org/pub/GNOME/sources/pango/${PANGO_VERSION%.*}/$PANGO_FILE_NAME"
-    # wget_lib https://www.freedesktop.org/software/harfbuzz/release/harfbuzz-1.2.7.tar.bz2
-    wget_lib $LIBXPM_FILE_NAME        "http://xorg.freedesktop.org/releases/individual/lib/$LIBXPM_FILE_NAME"
+    wget_lib $LIBXPM_FILE_NAME        "https://www.x.org/releases/individual/lib/$LIBXPM_FILE_NAME"
     # wget_lib $LIBGD_FILE_NAME       "https://bitbucket.org/libgd/gd-libgd/downloads/$LIBGD_FILE_NAME"
     wget_lib $LIBGD_FILE_NAME         "http://fossies.org/linux/www/$LIBGD_FILE_NAME"
     #wget_lib $IMAGEMAGICK_FILE_NAME  "https://github.com/ImageMagick/ImageMagick/archive/${IMAGEMAGICK_FILE_NAME#*-}"
@@ -489,18 +488,18 @@ function wget_base_library()
 
 #    if [ "$OS_NAME" = 'Darwin' ];then
 
-        wget_lib $KBPROTO_FILE_NAME          "http://xorg.freedesktop.org/archive/individual/proto/$KBPROTO_FILE_NAME"
-        wget_lib $INPUTPROTO_FILE_NAME       "http://xorg.freedesktop.org/archive/individual/proto/$INPUTPROTO_FILE_NAME"
-        wget_lib $XEXTPROTO_FILE_NAME        "http://xorg.freedesktop.org/archive/individual/proto/$XEXTPROTO_FILE_NAME"
-        wget_lib $XPROTO_FILE_NAME           "http://xorg.freedesktop.org/archive/individual/proto/$XPROTO_FILE_NAME"
-        wget_lib $XTRANS_FILE_NAME           "http://xorg.freedesktop.org/archive/individual/lib/$XTRANS_FILE_NAME"
-        wget_lib $LIBXAU_FILE_NAME           "http://xorg.freedesktop.org/archive/individual/lib/$LIBXAU_FILE_NAME"
-        wget_lib $LIBX11_FILE_NAME           "http://xorg.freedesktop.org/archive/individual/lib/$LIBX11_FILE_NAME"
-        wget_lib $LIBPTHREAD_STUBS_FILE_NAME "http://xorg.freedesktop.org/archive/individual/xcb/$LIBPTHREAD_STUBS_FILE_NAME"
-        wget_lib $LIBXCB_FILE_NAME           "http://xorg.freedesktop.org/archive/individual/xcb/$LIBXCB_FILE_NAME"
-        wget_lib $XCB_PROTO_FILE_NAME        "http://xorg.freedesktop.org/archive/individual/xcb/$XCB_PROTO_FILE_NAME"
-        wget_lib $MACROS_FILE_NAME           "http://xorg.freedesktop.org/archive/individual/util/$MACROS_FILE_NAME"
-        wget_lib $XF86BIGFONTPROTO_FILE_NAME "http://xorg.freedesktop.org/archive/individual/proto/${XF86BIGFONTPROTO_FILE_NAME}"
+        wget_lib $KBPROTO_FILE_NAME          "https://www.x.org/archive/individual/proto/$KBPROTO_FILE_NAME"
+        wget_lib $INPUTPROTO_FILE_NAME       "https://www.x.org/archive/individual/proto/$INPUTPROTO_FILE_NAME"
+        wget_lib $XEXTPROTO_FILE_NAME        "https://www.x.org/archive/individual/proto/$XEXTPROTO_FILE_NAME"
+        wget_lib $XPROTO_FILE_NAME           "https://www.x.org/archive/individual/proto/$XPROTO_FILE_NAME"
+        wget_lib $XTRANS_FILE_NAME           "https://www.x.org/archive/individual/lib/$XTRANS_FILE_NAME"
+        wget_lib $LIBXAU_FILE_NAME           "https://www.x.org/archive/individual/lib/$LIBXAU_FILE_NAME"
+        wget_lib $LIBX11_FILE_NAME           "https://www.x.org/archive/individual/lib/$LIBX11_FILE_NAME"
+        wget_lib $LIBPTHREAD_STUBS_FILE_NAME "https://www.x.org/archive/individual/xcb/$LIBPTHREAD_STUBS_FILE_NAME"
+        wget_lib $LIBXCB_FILE_NAME           "https://www.x.org/archive/individual/xcb/$LIBXCB_FILE_NAME"
+        wget_lib $XCB_PROTO_FILE_NAME        "https://www.x.org/archive/individual/xcb/$XCB_PROTO_FILE_NAME"
+        wget_lib $MACROS_FILE_NAME           "https://www.x.org/archive/individual/util/$MACROS_FILE_NAME"
+        wget_lib $XF86BIGFONTPROTO_FILE_NAME "https://www.x.org/archive/individual/proto/${XF86BIGFONTPROTO_FILE_NAME}"
 
 #    fi
 
@@ -4910,10 +4909,9 @@ configure_nginx_command()
 {
     ./configure --prefix=$NGINX_BASE \
                 --conf-path=$NGINX_CONFIG_DIR/nginx.conf \
-                --with-ipv6 \
+                $( is_new_version $NGINX_VERSION "1.12.0" && echo "--with-http_v2_module" || echo "--with-ipv6" ) \
                 --with-threads \
                 --with-http_mp4_module \
-                --with-http_image_filter_module \
                 --with-http_sub_module \
                 --with-http_ssl_module \
                 --with-http_stub_status_module \
@@ -4924,14 +4922,26 @@ configure_nginx_command()
                 --with-http_gunzip_module \
                 --with-http_gzip_static_module
 
+    local flag="$?"
+    if [ "$flag" != "0" ]; then
+        return 1;
+    fi
+
     # openssl编译不过去
     [ "$OS_NAME" = "Darwin" ] && \
-    sed -i.bak 's/config --prefix/Configure darwin64-x86_64-cc --prefix/' ./objs/Makefile
+    sed -i.bak 's/config --prefix/Configure darwin64-x86_64-cc --prefix/' ./objs/Makefile || :
+
+    local flag="$?"
+    if [ "$flag" != "0" ]; then
+        return 1;
+    fi
 
     # openssl编译不过去, 这个不起作用
     #$( [ \"$OS_NAME\" = \"Darwin\" ] && echo --with-openssl-opt=\"-darwin64-x86_64-cc\" ) \
 
 
+                # the HTTP image filter module requires the GD library.
+                # --with-http_image_filter_module \
                 # --add-module=../nginx-accesskey-2.0.3 \
                 # --add-module=../ngx_http_geoip2_module \
                 # --with-poll_module \
@@ -5209,11 +5219,45 @@ function check_soft_updates()
     #which sort 
     #which head
 
+
+    check_version libsodium
+    exit;
+    check_version pango
+    check_version poppler
+    check_version fontconfig
+    check_version expat
+    check_version cairo
+    check_version pixman
+    check_version jpeg
+    check_version libgd
+    check_version qrencode
+    check_version libmemcached
+    check_version kerberos
+    check_version imap
+    check_version inputproto
+    check_version xextproto
+    check_version xproto
+    check_version xtrans
+    check_version libXau
+    check_version libX11
+    check_version libpthread_stubs
+    check_version libxcb
+    check_version xcb_proto
+    check_version macros
+    check_version xf86bigfontproto
+    check_version kbproto
+    check_version libXpm
+    check_version libmcrypt
+    check_version libxslt
+    check_version libxml2
+    check_version gettext
+    check_version libiconv
+    check_version libjpeg
+    check_version pcre
     check_version boost
     check_version gearman
     check_version gearmand
     check_version libevent
-    check_version gettext
     check_version curl
     check_version fontforge
     check_version libpng
@@ -5445,19 +5489,7 @@ function check_freetype_version()
 # {{{ function check_harfbuzz_version()
 function check_harfbuzz_version()
 {
-    local new_version=`curl -k https://www.freedesktop.org/software/harfbuzz/release/ 2>/dev/null|sed -n 's/^.\{0,\}"harfbuzz-\([0-9a-zA-Z._]\{2,\}\).tar.bz2".\{0,\}/\1/p'|sort -rV|head -1`
-    if [ -z "$new_version" ];then
-        echo -e "探测harfbuzz新版本\033[0;31m失败\033[0m" >&2
-        return 1;
-    fi
-
-    is_new_version $HARFBUZZ_VERSION ${new_version//_/.}
-    if [ "$?" = "0" ];then
-        echo -e "harfbuzz version is \033[0;32mthe latest.\033[0m"
-        return 0;
-    fi
-
-    echo -e "harfbuzz current version: \033[0;33m${HARFBUZZ_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+    check_ftp_version harfbuzz ${HARFBUZZ_VERSION} https://www.freedesktop.org/software/harfbuzz/release/ 's/^.\{1,\}>harfbuzz-\([0-9.]\{1,\}\)\.tar\.bz2<.\{0,\}$/\1/p'
 }
 # }}}
 # {{{ function check_libzip_version()
@@ -5645,7 +5677,6 @@ function check_pkgconfig_version()
     echo -e "pkgconfig current version: \033[0;33m${PKGCONFIG_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
-
 # {{{ function check_re2c_version()
 function check_re2c_version()
 {
@@ -5656,6 +5687,12 @@ function check_re2c_version()
 function check_openjpeg_version()
 {
     check_github_soft_version openjpeg $OPENJPEG_VERSION "https://github.com/uclouvain/openjpeg/releases"
+}
+# }}}
+# {{{ function check_libgd_version()
+function check_libgd_version()
+{
+    check_github_soft_version libgd $LIBGD_VERSION "https://github.com/libgd/libgd/releases" "gd-\([0-9.]\{1,\}\).tar.gz" 1
 }
 # }}}
 # {{{ function check_fontforge_version()
@@ -5919,19 +5956,13 @@ function check_libgpg_error_version()
 # {{{ function check_gettext_version()
 function check_gettext_version()
 {
-    local new_version=`curl -k http://ftp.gnu.org/gnu/gettext/ 2>/dev/null |sed -n 's/^.\{1,\}>gettext-\([0-9.]\{1,\}\).tar.gz<.\{1,\}$/\1/p'|sort -rV|head -1`
-    if [ -z "$new_version" ];then
-        echo -e "探测gettext新版本\033[0;31m失败\033[0m" >&2
-        return 1;
-    fi
-
-    is_new_version $GETTEXT_VERSION $new_version
-    if [ "$?" = "0" ];then
-        echo -e "gettext version is \033[0;32mthe latest.\033[0m"
-        return 0;
-    fi
-
-    echo -e "gettext current version: \033[0;33m${GETTEXT_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+    check_ftp_gnu_org_version gettext $GETTEXT_VERSION
+}
+# }}}
+# {{{ function check_libiconv_version()
+function check_libiconv_version()
+{
+    check_ftp_gnu_org_version libiconv $LIBICONV_VERSION
 }
 # }}}
 # {{{ function check_glib_version()
@@ -5978,6 +6009,24 @@ function check_libpng_version()
     check_github_soft_version libpng $LIBPNG_VERSION "https://github.com/glennrp/libpng/releases" "v\([0-9.]\{5,\}\)\.tar\.gz" 1
 }
 # }}}
+# {{{ function check_kerberos_version()
+function check_kerberos_version()
+{
+    local new_version=`curl -k http://web.mit.edu/kerberos/dist/ 2>/dev/null |sed -n 's/.\{1,\}>krb5-\([0-9.-]\{1,\}\).tar.gz<.\{1,\}$/\1/p'|tr - .|sort -rV|head -1`
+    if [ -z "$new_version" ];then
+        echo -e "探测kerberos新版本\033[0;31m失败\033[0m" >&2
+        return 1;
+    fi
+
+    is_new_version $KERBEROS_VERSION $new_version
+    if [ "$?" = "0" ];then
+        echo -e "kerberos version is \033[0;32mthe latest.\033[0m"
+        return 0;
+    fi
+
+    echo -e "kerberos current version: \033[0;33m${KERBEROS_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+}
+# }}}
 # {{{ function check_sqlite_version()
 function check_sqlite_version()
 {
@@ -5997,6 +6046,78 @@ function check_sqlite_version()
     echo -e "sqlite current version: \033[0;33m${SQLITE_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
+# {{{ function check_imap_version()
+function check_imap_version()
+{
+    local new_version=`curl -k https://www.mirrorservice.org/sites/ftp.cac.washington.edu/imap/ 2>/dev/null |sed -n 's/^.\{1,\}>imap-\([0-9a-zA-Z.-]\{1,\}\).tar.gz<.\{1,\}$/\1/p'|sort -rV|head -1`
+    if [ -z "$new_version" ];then
+        echo -e "探测imap新版本\033[0;31m失败\033[0m" >&2
+        return 1;
+    fi
+
+    is_new_version $IMAP_VERSION $new_version
+    if [ "$?" = "0" ];then
+        echo -e "imap version is \033[0;32mthe latest.\033[0m"
+        return 0;
+    fi
+
+    echo -e "imap current version: \033[0;33m${IMAP_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+}
+# }}}
+# {{{ function check_libmemcached_version()
+function check_libmemcached_version()
+{
+    local new_version=`curl -k "https://launchpad.net/libmemcached/+download" 2>/dev/null |sed -n 's/^.*>libmemcached-\([0-9.-]\{1,\}\).tar.gz<.*$/\1/p'|sort -rV|head -1`
+    if [ -z "$new_version" ];then
+        echo -e "探测libmemcached新版本\033[0;31m失败\033[0m" >&2
+        return 1;
+    fi
+
+    is_new_version $LIBMEMCACHED_VERSION $new_version
+    if [ "$?" = "0" ];then
+        echo -e "libmemcached version is \033[0;32mthe latest.\033[0m"
+        return 0;
+    fi
+
+    echo -e "libmemcached current version: \033[0;33m${LIBMEMCACHED_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+}
+# }}}
+# {{{ function check_qrencode_version()
+function check_qrencode_version()
+{
+    local new_version=`curl -k https://fukuchi.org/works/qrencode/ 2>/dev/null |sed -n 's/^.*>qrencode-\([0-9.-]\{1,\}\).tar.gz<.*$/\1/p'|sort -rV|head -1`
+    if [ -z "$new_version" ];then
+        echo -e "探测qrencode新版本\033[0;31m失败\033[0m" >&2
+        return 1;
+    fi
+
+    is_new_version $LIBQRENCODE_VERSION $new_version
+    if [ "$?" = "0" ];then
+        echo -e "qrencode version is \033[0;32mthe latest.\033[0m"
+        return 0;
+    fi
+
+    echo -e "qrencode current version: \033[0;33m${LIBQRENCODE_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+}
+# }}}
+# {{{ function check_jpeg_version()
+function check_jpeg_version()
+{
+    local new_version=`curl -k http://www.ijg.org/files/ 2>/dev/null |sed -n 's/^.*>jpegsrc\.v\([0-9a-zA-Z.]\{1,\}\).tar.gz<.*$/\1/p'|sort -rV|head -1`
+    if [ -z "$new_version" ];then
+        echo -e "探测jpeg新版本\033[0;31m失败\033[0m" >&2
+        return 1;
+    fi
+
+    is_new_version $JPEG_VERSION $new_version
+    if [ "$?" = "0" ];then
+        echo -e "jpeg version is \033[0;32mthe latest.\033[0m"
+        return 0;
+    fi
+
+    echo -e "jpeg current version: \033[0;33m${JPEG_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+}
+# }}}
 # {{{ function check_pecl_sphinx_version()
 function check_pecl_sphinx_version()
 {
@@ -6004,10 +6125,208 @@ function check_pecl_sphinx_version()
     check_php_pecl_version sphinx $PHP_SPHINX_VERSION
 }
 # }}}
+# {{{ function check_libxml2_version()
+function check_libxml2_version()
+{
+    check_ftp_xmlsoft_org_version libxml2 ${LIBXML2_VERSION}
+}
+# }}}
+# {{{ function check_libxslt_version()
+function check_libxslt_version()
+{
+    check_ftp_xmlsoft_org_version libxslt ${LIBXSLT_VERSION}
+}
+# }}}
 # {{{ function check_boost_version()
 function check_boost_version()
 {
     check_sourceforge_soft_version boost ${BOOST_VERSION//_/.} 's/^.\{0,\}<tr title="\([0-9.]\{1,\}\)" class="folder \{0,\}"> \{0,\}$/\1/p'
+}
+# }}}
+# {{{ function check_libmcrypt_version()
+function check_libmcrypt_version()
+{
+    check_sourceforge_soft_version mcrypt ${LIBMCRYPT_VERSION//_/.} 's/^.\{0,\}<tr title="\([0-9.]\{1,\}\)" class="folder \{0,\}"> \{0,\}$/\1/p' Libmcrypt
+}
+# }}}
+# {{{ function check_libjpeg_version()
+function check_libjpeg_version()
+{
+    check_sourceforge_soft_version libjpeg-turbo ${LIBJPEG_VERSION} 's/^.\{0,\}<tr title="\([0-9.]\{1,\}\)" class="folder \{0,\}"> \{0,\}$/\1/p' "0"
+}
+# }}}
+# {{{ function check_pcre_version()
+function check_pcre_version()
+{
+    check_sourceforge_soft_version pcre ${PCRE_VERSION//_/.} 's/^.\{0,\}<tr title="\([0-9.]\{1,\}\)" class="folder \{0,\}"> \{0,\}$/\1/p'
+    check_sourceforge_soft_version pcre ${PCRE_VERSION//_/.} 's/^.\{0,\}<tr title="\([0-9.]\{1,\}\)" class="folder \{0,\}"> \{0,\}$/\1/p' pcre2
+}
+# }}}
+# {{{ function check_expat_version()
+function check_expat_version()
+{
+    check_sourceforge_soft_version expat ${EXPAT_VERSION} 's/^.\{0,\}<tr title="\([0-9.]\{1,\}\)" class="folder \{0,\}"> \{0,\}$/\1/p'
+}
+# }}}
+# {{{ function check_libXpm_version()
+function check_libXpm_version()
+{
+    check_freedesktop_soft_version libXpm ${LIBXPM_VERSION} https://www.x.org/releases/individual/lib/
+}
+# }}}
+# {{{ function check_kbproto_version()
+function check_kbproto_version()
+{
+    check_freedesktop_soft_version kbproto ${KBPROTO_VERSION} https://www.x.org/archive/individual/proto/
+}
+# }}}
+# {{{ function check_inputproto_version()
+function check_inputproto_version()
+{
+    check_freedesktop_soft_version inputproto ${INPUTPROTO_VERSION} https://www.x.org/archive/individual/proto/
+}
+# }}}
+# {{{ function check_xextproto_version()
+function check_xextproto_version()
+{
+    check_freedesktop_soft_version xextproto ${XEXTPROTO_VERSION} https://www.x.org/archive/individual/proto/
+}
+# }}}
+# {{{ function check_xproto_version()
+function check_xproto_version()
+{
+    check_freedesktop_soft_version xproto ${XPROTO_VERSION} https://www.x.org/archive/individual/proto/
+}
+# }}}
+# {{{ function check_xtrans_version()
+function check_xtrans_version()
+{
+    check_freedesktop_soft_version xtrans ${XTRANS_VERSION} https://www.x.org/archive/individual/lib/
+}
+# }}}
+# {{{ function check_libXau_version()
+function check_libXau_version()
+{
+    check_freedesktop_soft_version libXau ${LIBXAU_VERSION} https://www.x.org/archive/individual/lib/
+}
+# }}}
+# {{{ function check_libX11_version()
+function check_libX11_version()
+{
+    check_freedesktop_soft_version libX11 ${LIBX11_VERSION} https://www.x.org/archive/individual/lib/
+}
+# }}}
+# {{{ function check_libpthread_stubs_version()
+function check_libpthread_stubs_version()
+{
+    check_freedesktop_soft_version libpthread-stubs ${LIBPTHREAD_STUBS_VERSION} https://www.x.org/archive/individual/xcb/
+}
+# }}}
+# {{{ function check_libxcb_version()
+function check_libxcb_version()
+{
+    check_freedesktop_soft_version libxcb ${LIBXCB_VERSION} https://www.x.org/archive/individual/xcb/
+}
+# }}}
+# {{{ function check_xcb_proto_version()
+function check_xcb_proto_version()
+{
+    check_freedesktop_soft_version xcb-proto ${XCB_PROTO_VERSION} https://www.x.org/archive/individual/xcb/
+}
+# }}}
+# {{{ function check_macros_version()
+function check_macros_version()
+{
+    check_freedesktop_soft_version util-macros ${MACROS_VERSION} https://www.x.org/archive/individual/util/
+}
+# }}}
+# {{{ function check_xf86bigfontproto_version()
+function check_xf86bigfontproto_version()
+{
+    check_freedesktop_soft_version xf86bigfontproto ${XF86BIGFONTPROTO_VERSION} https://www.x.org/archive/individual/proto/
+}
+# }}}
+# {{{ function check_cairo_version()
+function check_cairo_version()
+{
+    check_ftp_version cairo ${CAIRO_VERSION} http://cairographics.org/releases/
+}
+# }}}
+# {{{ function check_pixman_version()
+function check_pixman_version()
+{
+    check_ftp_version pixman ${PIXMAN_VERSION} http://cairographics.org/releases/
+}
+# }}}
+# {{{ function check_fontconfig_version()
+function check_fontconfig_version()
+{
+    check_ftp_version fontconfig ${FONTCONFIG_VERSION} https://www.freedesktop.org/software/fontconfig/release/
+}
+# }}}
+# {{{ function check_poppler_version()
+function check_poppler_version()
+{
+    check_ftp_version poppler ${POPPLER_VERSION} https://poppler.freedesktop.org/ 's/^.\{1,\}>poppler-\([0-9.]\{1,\}\)\.tar\.xz<.\{0,\}$/\1/p'
+}
+# }}}
+# {{{ function check_pango_version()
+function check_pango_version()
+{
+    local tmpdir=`curl -Lk http://ftp.gnome.org/pub/GNOME/sources/pango/ 2>/dev/null|sed -n 's/^.*>\([0-9.-]\{1,\}\)\/<.*$/\1/p'|sort -rV | head -1`;
+    if [ -z "$tmpdir" ];then
+         echo -e "探测${pango}的新版本\033[0;31m失败\033[0m" >&2
+    fi
+    check_ftp_version pango ${PANGO_VERSION} http://ftp.gnome.org/pub/GNOME/sources/pango/${tmpdir}/ 's/^.\{1,\}>pango-\([0-9.]\{1,\}\)\.tar\.xz<.\{0,\}$/\1/p'
+}
+# }}}
+# {{{ function check_ftp_gnu_org_version()
+function check_ftp_gnu_org_version()
+{
+    local soft=$1
+    local current_version=$2
+    local url="http://ftp.gnu.org/gnu/${soft}/"
+    local pattern=$3
+
+    check_ftp_version $soft $current_version $url $pattern
+}
+# }}}
+# {{{ function check_ftp_xmlsoft_org_version()
+function check_ftp_xmlsoft_org_version()
+{
+    local soft=$1
+    local current_version=$2
+    local url="ftp://xmlsoft.org/${soft}/"
+    local pattern=$3
+
+    check_ftp_version $soft $current_version $url $pattern
+}
+# }}}
+# {{{ function check_ftp_version()
+function check_ftp_version()
+{
+    local soft=$1
+    local current_version=$2
+    local url=$3
+    local pattern=$4
+
+    if [ -z "$pattern" ]; then
+        pattern="s/^.\{1,\}>${soft}-\([0-9.]\{1,\}\)\.tar\.gz<.\{0,\}$/\1/p"
+    fi
+
+    local new_version=`curl -Lk "${url}" 2>/dev/null |sed -n "$pattern"|sort -urV|head -1`
+    if [ -z "$new_version" ];then
+        echo -e "探测${soft}新版本\033[0;31m失败\033[0m" >&2
+        return 1;
+    fi
+
+    is_new_version $current_version $new_version
+    if [ "$?" = "0" ];then
+        echo -e "${soft} version is \033[0;32mthe latest.\033[0m"
+        return 0;
+    fi
+
+    echo -e "${soft} current version: \033[0;33m${current_version}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
 # {{{ function check_github_soft_version()
@@ -6153,11 +6472,44 @@ function check_sourceforge_soft_version()
     local soft=$1
     local current_version=$2
     local pattern=$3
+    local soft1=$soft
+
+    if [ ! -z "$4" ];then
+        soft1="$4"
+    fi
 
     if [ -z "$pattern" ]; then
         pattern="s/^.\{1,\}Download \{1,\}${soft}-\([0-9.]\{1,\}\).tar\..\{1,\}$/\1/p"
     fi
-    local new_version=`curl -k https://sourceforge.net/projects/${soft}/files/${soft}/ 2>/dev/null|sed -n "$pattern"|sort -rV|head -1`;
+    local new_version=`curl -Lk https://sourceforge.net/projects/${soft}/files/$( [ "${soft1}" = "0" ] || echo "${soft1}/" ) 2>/dev/null|sed -n "$pattern"|sort -rV|head -1`;
+     if [ -z "$new_version" ];then
+         echo -e "探测${soft}的新版本\033[0;31m失败\033[0m" >&2
+         return 1;
+     fi
+
+     is_new_version $current_version $new_version
+     if [ "$?" = "0" ];then
+         echo -e "${soft} version is \033[0;32mthe latest.\033[0m"
+         return 0;
+     elif [ "$?" = "11" ] ; then
+         return;
+     fi
+
+     echo -e "${soft} current version: \033[0;33m${current_version}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+}
+# }}}
+# {{{ function check_freedesktop_soft_version()
+function check_freedesktop_soft_version()
+{
+    local soft=$1
+    local current_version=$2
+    local url=$3
+    local pattern=$4
+
+    if [ -z "$pattern" ]; then
+        pattern="s/^.*>${soft}-\([0-9.]\{1,\}\)\.tar\.gz<.*$/\1/p"
+    fi
+    local new_version=`curl -Lk $url 2>/dev/null|sed -n "$pattern"|sort -rV|head -1`;
      if [ -z "$new_version" ];then
          echo -e "探测${soft}的新版本\033[0;31m失败\033[0m" >&2
          return 1;
