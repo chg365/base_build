@@ -4843,7 +4843,7 @@ configure_php_command()
                 --enable-bcmath \
                 --enable-exif \
                 --with-curl=$CURL_BASE \
-                --without-regex \
+                $( [ `echo "$PHP_VERSION 7.1.0"|tr " " "\n"|sort -rV|head -1` = "$PHP_VERSION" ] && echo "" || echo "--without-regex" ) \
                 --enable-maintainer-zts \
                 --with-gmp=$GMP_BASE \
                 --enable-fpm \
