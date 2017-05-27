@@ -149,8 +149,8 @@ fi
 export LC_CTYPE=C 
 export LANG=C
 pkg_config_path_init
-check_soft_updates
-exit;
+#check_soft_updates
+#exit;
 compile_openssl
 compile_ImageMagick
 compile_redis
