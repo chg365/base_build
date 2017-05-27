@@ -6478,7 +6478,7 @@ function check_ftp_version()
     local pattern=$4
 
     if [ -z "$pattern" ]; then
-        pattern="s/^.\{1,\}>${soft}-\([0-9.]\{1,\}\)\.tar\.gz<.\{0,\}$/\1/p"
+        pattern="s/^.\{1,\}[> ]${soft}-\([0-9.]\{1,\}\)\.tar\.gz[< ]*.\{0,\}$/\1/p"
     fi
 
     local new_version=`curl -Lk "${url}" 2>/dev/null |sed -n "$pattern"|sort -urV|head -1`
