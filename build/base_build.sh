@@ -151,8 +151,8 @@ fi
 export LC_CTYPE=C 
 export LANG=C
 pkg_config_path_init
-#check_soft_updates
-#exit;
+check_soft_updates
+exit;
 compile_openssl
 compile_ImageMagick
 compile_redis
@@ -312,3 +312,6 @@ ldd /usr/local/chg/base/opt/php/lib/php/extensions/no-debug-zts-20151012/geoip.s
 
 http://www.rabbitmq.com/releases/rabbitmq-server/v3.6.5/rabbitmq-server-3.6.5.tar.xz
 wget --content-disposition --no-check-certificate https://github.com/phpDocumentor/phpDocumentor2/archive/v2.9.0.tar.gz
+
+
+#https://www.x.org/releases/individual/lib/libXft-2.3.2.tar.bz2
