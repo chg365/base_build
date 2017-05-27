@@ -5236,13 +5236,13 @@ function check_soft_updates()
     #which head
 
 
-    check_version zend
-    check_version jquery
-    check_version famous
-    check_version famous_framework
-    check_version famous_angular
-    check_version swfupload
-    exit;
+#    check_version zend
+#    check_version jquery
+#    check_version famous
+#    check_version famous_framework
+#    check_version famous_angular
+#check_version swfupload
+#    exit;
     check_version ckeditor
     check_version composer
     check_version memcached
