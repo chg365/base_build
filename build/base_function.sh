@@ -6915,7 +6915,12 @@ function deal_ld_library_path()
 function path_init()
 {
     PATH=""
-    local tmp_arr=( "/bin" "/usr/local/bin" "/usr/bin" );
+    local tmp_arr=( "/bin"
+            "/usr/local/bin"
+            "/usr/bin"
+            "/usr/local/opt/bison/bin"
+            "/usr/local/opt/coreutils/libexec/gnubin"
+            );
     local i=""
     for i in ${tmp_arr[@]}; do
     {

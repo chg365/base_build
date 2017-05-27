@@ -125,8 +125,6 @@ if [ "$OS_NAME" = "Darwin" ];then
 fi
 # }}}
 ###################################################################################################
-export PATH="$( [ "$OS_NAME" = 'Darwin' ] && [ -d "/usr/local/opt/bison/bin" ] && echo " -L/usr/local/opt/bison/bin" ):$CONTRIB_BASE/bin:$PATH"
-# PATH="$CONTRIB_BASE/bin:$PATH"
 
 mkdir -p $HOME/$project_abbreviation/pkgs
 cd $HOME/$project_abbreviation/pkgs
