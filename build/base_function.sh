@@ -455,6 +455,7 @@ function wget_base_library()
     wget_lib $IMAGICK_FILE_NAME       "http://pecl.php.net/get/$IMAGICK_FILE_NAME"
     wget_lib $PHP_LIBSODIUM_FILE_NAME "http://pecl.php.net/get/$PHP_LIBSODIUM_FILE_NAME"
     wget_lib $QRENCODE_FILE_NAME      "https://github.com/chg365/qrencode/archive/${QRENCODE_FILE_NAME#*-}"
+    wget_lib $COMPOSER_FILE_NAME      "https://github.com/composer/composer/archive/${COMPOSER_FILE_NAME#*-}"
 
     wget_lib $LARAVEL_FILE_NAME       "https://github.com/laravel/laravel/archive/v${LARAVEL_FILE_NAME#*-}"
     wget_lib $HIREDIS_FILE_NAME       "https://github.com/redis/hiredis/archive/v${HIREDIS_FILE_NAME#*-}"
@@ -4651,6 +4652,21 @@ function compile_smarty()
     /bin/rm -rf smarty-$SMARTY_VERSION
 }
 # }}}
+# {{{ function compile_composer()
+function compile_composer()
+{
+
+    echo_build_start composer
+    decompress $COMPOSER_FILE_NAME
+    mkdir -p $COMPOSER_BASE
+    cp -r composer-$COMPOSER_VERSION/src/Composer $COMPOSER_BASE/
+    cp composer-$COMPOSER_VERSION/bin/* $BIN_DIR/
+
+    # 需要sed 处理bin/目录下的文件中包含文件的行
+
+    /bin/rm -rf composer-$COMPOSER_VERSION
+}
+# }}}
 # {{{ function compile_ckeditor()
 function compile_ckeditor()
 {
@@ -5220,8 +5236,21 @@ function check_soft_updates()
     #which head
 
 
-    check_version libsodium
+    check_version zend
+    check_version jquery
+    check_version famous
+    check_version famous_framework
+    check_version famous_angular
+    check_version swfupload
     exit;
+    check_version ckeditor
+    check_version composer
+    check_version memcached
+    check_version apache
+    check_version apr
+    check_version apr_util
+    check_version postgresql
+    check_version libsodium
     check_version pango
     check_version poppler
     check_version fontconfig
@@ -5299,6 +5328,17 @@ function check_soft_updates()
     check_version fontforge
     check_version pdf2htmlEX
 
+    check_pecl_pthreads_version
+    check_pecl_solr_version
+    check_pecl_mailparse_version
+    check_pecl_amqp_version
+    check_pecl_http_version
+    check_pecl_propro_version
+    check_pecl_raphf_version
+    check_pecl_apcu_version
+    check_pecl_apcu_bc_version
+    check_pecl_libevent_version
+    check_pecl_event_version
     check_pecl_xdebug_version
     check_pecl_dio_version
     check_pecl_memcached_version
@@ -5309,6 +5349,7 @@ function check_soft_updates()
     check_pecl_imagick_version
     check_pecl_phalcon_version
     check_pecl_yaf_version
+    check_pecl_libsodium_version
 
     check_version smarty
     check_version rabbitmq
@@ -5701,6 +5742,12 @@ function check_fontforge_version()
     check_github_soft_version fontforge $FONTFORGE_VERSION "https://github.com/fontforge/fontforge/releases"
 }
 # }}}
+# {{{ function check_composer_version()
+function check_composer_version()
+{
+    check_github_soft_version composer $COMPOSER_VERSION "https://github.com/composer/composer/releases"
+}
+# }}}
 # {{{ function check_gearmand_version()
 function check_gearmand_version()
 {
@@ -5749,6 +5796,12 @@ function check_tidy_version()
 function check_smarty_version()
 {
     check_github_soft_version smarty $SMARTY_VERSION "https://github.com/smarty-php/smarty/releases"
+}
+# }}}
+# {{{ function check_ckeditor_version()
+function check_ckeditor_version()
+{
+    check_github_soft_version ckeditor $CKEDITOR_VERSION "https://github.com/ckeditor/ckeditor-dev/releases"
 }
 # }}}
 # {{{ function check_rabbitmq_version()
@@ -5823,6 +5876,72 @@ function check_hiredis_version()
     check_github_soft_version hiredis $HIREDIS_VERSION "https://github.com/redis/hiredis/releases"
 }
 # }}}
+# {{{ function check_pecl_pthreads_version()
+function check_pecl_pthreads_version()
+{
+    check_php_pecl_version pthreads $PTHREADS_VERSION
+}
+# }}}
+# {{{ function check_pecl_solr_version()
+function check_pecl_solr_version()
+{
+    check_php_pecl_version solr $SOLR_VERSION
+}
+# }}}
+# {{{ function check_pecl_mailparse_version()
+function check_pecl_mailparse_version()
+{
+    check_php_pecl_version mailparse $MAILPARSE_VERSION
+}
+# }}}
+# {{{ function check_pecl_amqp_version()
+function check_pecl_amqp_version()
+{
+    check_php_pecl_version amqp $AMQP_VERSION
+}
+# }}}
+# {{{ function check_pecl_http_version()
+function check_pecl_http_version()
+{
+    check_php_pecl_version pecl_http $PECL_HTTP_VERSION
+}
+# }}}
+# {{{ function check_pecl_propro_version()
+function check_pecl_propro_version()
+{
+    check_php_pecl_version propro $PROPRO_VERSION
+}
+# }}}
+# {{{ function check_pecl_raphf_version()
+function check_pecl_raphf_version()
+{
+    check_php_pecl_version raphf $RAPHF_VERSION
+}
+# }}}
+# {{{ function check_pecl_apcu_version()
+function check_pecl_apcu_version()
+{
+    check_php_pecl_version apcu $APCU_VERSION
+}
+# }}}
+# {{{ function check_pecl_apcu_bc_version()
+function check_pecl_apcu_bc_version()
+{
+    check_php_pecl_version apcu_bc $APCU_BC_VERSION
+}
+# }}}
+# {{{ function check_pecl_event_version()
+function check_pecl_event_version()
+{
+    check_php_pecl_version event $EVENT_VERSION
+}
+# }}}
+# {{{ function check_pecl_libevent_version()
+function check_pecl_libevent_version()
+{
+    check_php_pecl_version libevent $PHP_LIBEVENT_VERSION
+}
+# }}}
 # {{{ function check_pecl_dio_version()
 function check_pecl_dio_version()
 {
@@ -5834,6 +5953,12 @@ function check_pecl_dio_version()
 function check_pecl_xdebug_version()
 {
     check_php_pecl_version xdebug $XDEBUG_VERSION
+}
+# }}}
+# {{{ function check_pecl_libsodium_version()
+function check_pecl_libsodium_version()
+{
+    check_php_pecl_version libsodium $PHP_LIBSODIUM_VERSION
 }
 # }}}
 # {{{ function check_pecl_memcached_version()
@@ -6275,9 +6400,51 @@ function check_pango_version()
 {
     local tmpdir=`curl -Lk http://ftp.gnome.org/pub/GNOME/sources/pango/ 2>/dev/null|sed -n 's/^.*>\([0-9.-]\{1,\}\)\/<.*$/\1/p'|sort -rV | head -1`;
     if [ -z "$tmpdir" ];then
-         echo -e "探测${pango}的新版本\033[0;31m失败\033[0m" >&2
+        echo -e "探测pango的新版本\033[0;31m失败\033[0m" >&2
+        return 1;
     fi
     check_ftp_version pango ${PANGO_VERSION} http://ftp.gnome.org/pub/GNOME/sources/pango/${tmpdir}/ 's/^.\{1,\}>pango-\([0-9.]\{1,\}\)\.tar\.xz<.\{0,\}$/\1/p'
+}
+# }}}
+# {{{ function check_libsodium_version()
+function check_libsodium_version()
+{
+    check_ftp_version libsodium ${LIBSODIUM_VERSION} https://download.libsodium.org/libsodium/releases/
+}
+# }}}
+# {{{ function check_memcached_version()
+function check_memcached_version()
+{
+    check_ftp_version memcached ${MEMCACHED_VERSION} http://memcached.org/files/
+}
+# }}}
+# {{{ function check_apache_version()
+function check_apache_version()
+{
+    check_ftp_version httpd ${APACHE_VERSION} http://archive.apache.org/dist/httpd/
+}
+# }}}
+# {{{ function check_apr_version()
+function check_apr_version()
+{
+    check_ftp_version apr ${APR_VERSION} http://apr.apache.org/download.cgi
+}
+# }}}
+# {{{ function check_apr_util_version()
+function check_apr_util_version()
+{
+    check_ftp_version apr-util ${APR_UTIL_VERSION} http://apr.apache.org/download.cgi
+}
+# }}}
+# {{{ function check_postgresql_version()
+function check_postgresql_version()
+{
+    local tmpdir=`curl -Lk https://ftp.postgresql.org/pub/source/ 2>/dev/null|sed -n 's/^.*>v\([0-9.-]\{1,\}\)<.*$/\1/p'|sort -rV | head -1`;
+    if [ -z "$tmpdir" ];then
+        echo -e "探测postgresql的新版本\033[0;31m失败\033[0m" >&2
+        return 1;
+    fi
+    check_ftp_version postgresql ${POSTGRESQL_VERSION} https://ftp.postgresql.org/pub/source/v${tmpdir}/
 }
 # }}}
 # {{{ function check_ftp_gnu_org_version()
