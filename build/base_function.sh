@@ -4314,11 +4314,15 @@ function configure_php_ext_imap_command()
         local OPENSSL_BASE=$IMAP_OPENSSL_BASE
         local tmp_64=$IMAP_TMP_64
     fi
-    if is_new_version $OPENSSL_VERSION "1.1.0" && echo "$HOST_TYPE"|grep -q x86_64 ; then
+    if ! is_installed_imap && echo "$HOST_TYPE"|grep -q x86_64 ; then
         sed -i.bak$$ 's/str="$IMAP_DIR\/$PHP_LIBDIR/str="$IMAP_DIR\/${PHP_LIBDIR}64/' configure
     fi
+     #if test -r $i/${PHP_LIBDIR}64/libssl.a -o -r $i/${PHP_LIBDIR}64/libssl.$SHLIB_SUFFIX_NAME; then
+     #OPENSSL_LIBDIR=$i/${PHP_LIBDIR}64
+
+
     ./configure --with-php-config=$PHP_BASE/bin/php-config \
-                --with-imap$( if is_installed_imap ; then echo =$IMAP_BASE ; fi ) \
+                --with-imap$(is_installed_imap && echo "=$IMAP_BASE" ) \
                 --with-kerberos=$KERBEROS_BASE \
                 --with-imap-ssl=$OPENSSL_BASE
 
