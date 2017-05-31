@@ -1,6 +1,6 @@
 #!/bin/bash
 
-dir="/root/chg_base/pkgs/"
+dir="${HOME}/chg_base/pkgs/"
 
 type="z"
 for FILE_NAME in `find $dir -mindepth 1 -maxdepth 1 -type f `;

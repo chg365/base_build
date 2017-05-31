@@ -329,7 +329,7 @@ function compile()
 # {{{ function function_exists() 检测函数是否定义
 function function_exists()
 {
-    type "$1" 2>/dev/null|grep -q 'function'
+    type -t "$1" 2>/dev/null|grep -q 'function'
     if [ "$?" != "0" ];then
         return 1;
     fi
@@ -892,7 +892,7 @@ function is_installed_sphinx()
 # {{{ function is_installed_sphinxclient()
 function is_installed_sphinxclient()
 {
-    if [ ! -f "$SPHINX_CLIENT_BASE/lib/libsphinxclient.so" ];then
+    if [ ! -f "$SPHINX_CLIENT_BASE/include/sphinxclient.h" ];then
         return 1;
     fi
     # 没有版本比较
@@ -999,16 +999,16 @@ function is_installed_icu()
 # {{{ function is_installed_boost()
 function is_installed_boost()
 {
-    local ext='.so'
-    if [ "$OS_NAME" = "Darwin" ];then
-        ext=".dylib"
-    fi
-    local FILENAME="${BOOST_BASE}/lib/libboost_program_options${ext}"
+    local FILENAME="${BOOST_BASE}/include/boost/version.hpp"
     if [ ! -f "$FILENAME" ];then
         return 1;
     fi
 
-    local version=`find ${BOOST_BASE}/lib/ -name "libboost_program_options${ext}.[0-9]*.[0-9]*.[0-9]*"|sed -n "s/^.*${ext}.\([0-9]\{1,\}.[0-9]\{1,\}.[0-9]\{1,\}\)/\1/p"|tr . _`;
+    local version=`sed -n '/^#define BOOST_LIB_VERSION "\([0-9_.]\{1,\}\)"$/{ s//\1/p;}' ${FILENAME}`
+    if test `echo $version |awk -F_ "{print NF}"` = "2" ;then
+        version="${version}_0"
+    fi
+
     if [ "${version}" != "$BOOST_VERSION" ];then
         return 1;
     fi
@@ -1750,11 +1750,12 @@ function is_installed_libunwind()
 # {{{ function is_installed_rabbitmq_c()
 function is_installed_rabbitmq_c()
 {
-    local tmp_str=""
-    if echo "$HOST_TYPE"|grep -q x86_64 ; then
-        tmp_str="64"
+    local FILENAME=""
+
+    if [ -d "$RABBITMQ_C_BASE/" ];then
+        FILENAME=`find $RABBITMQ_C_BASE/ -name librabbitmq.pc|sed -n '1p'`
     fi
-    local FILENAME="$RABBITMQ_C_BASE/lib${tmp_str}/pkgconfig/librabbitmq.pc"
+
     if [ ! -f "$FILENAME" ];then
         return 1;
     fi
@@ -2079,7 +2080,7 @@ function compile_boost()
         exit 1;
         #return 1;
     fi
-    cd $FILE_DIR
+
     cd "boost_${BOOST_VERSION}"
     if [ "$?" != "0" ];then
         echo "cd boost_${BOOST_VERSION} failed." >&2;
@@ -2088,16 +2089,11 @@ function compile_boost()
 
     local COMMAND="./bootstrap.sh --with-icu=$ICU_BASE --prefix=$BOOST_BASE && ./b2 install --with-program_options"
     echo "configure command: "
-    echo ${!COMMAND}
+    echo ${COMMAND}
     echo ""
-    ${!COMMAND}
+    ./bootstrap.sh --with-icu=$ICU_BASE --prefix=$BOOST_BASE && ./b2 install --with-program_options
 
     if [ "$?" != "0" ];then
-        echo "Install boost failed." >&2;
-        exit 1;
-    fi
-
-    if [ $? -ne 0 ];then
         echo "Install boost failed." >&2;
         exit 1;
     fi
@@ -2269,7 +2265,7 @@ function compile_tidy()
 
     compile "tidy" "$TIDY_FILE_NAME" "tidy-html5-$TIDY_VERSION/build/cmake" "$TIDY_BASE" "TIDY_CONFIGURE"
     if [ "$OS_NAME" = "Darwin" ];then
-        repair_dynamic_shared_library $ICU_BASE/lib "lib*tidy*.dylib"
+        repair_dynamic_shared_library $TIDY_BASE/lib "lib*tidy*.dylib"
     fi
 }
 # }}}
@@ -2571,7 +2567,7 @@ function compile_gearmand()
 {
     compile_openssl
     compile_curl
-    #compile_boost
+    compile_boost
     #yum install boost boost-devel
 
     is_installed gearmand "$GEARMAND_BASE"
@@ -2638,11 +2634,11 @@ function configure_gearmand_command()
     CPPFLAGS="$(get_cppflags $CURL_BASE/include)" LDFLAGS="$(get_ldflags $CURL_BASE/lib)" \
     ./configure --prefix=$GEARMAND_BASE \
                 --enable-ssl \
-                --enable-cyassl \
                 --with-mysql=no \
-                --with-boost=$( if is_installed_boost ; then echo ${BOOST_BASE} ; else echo yes ; fi) \
+                --with-boost=$( is_installed_boost && echo ${BOOST_BASE} || echo yes ) \
                 --with-openssl=$OPENSSL_BASE \
 
+                #--enable-cyassl \
                 #--with-curl-prefix=$CURL_BASE # 加上后make时报错 Makefile:2138: *** missing separator. Stop.
                 #--with-boost-libdir=${BOOST_BASE}/lib \
                 #--enable-jobserver[=no/yes/#]
@@ -3127,6 +3123,7 @@ function compile_imap()
     #yum install pam pam-devel
 
     compile_kerberos
+
     # 不支持openssl-1.1.0 及以上版本
     local OPENSSL_BASE=$OPENSSL_BASE
     local tmp_64=""
@@ -3134,6 +3131,13 @@ function compile_imap()
         if [ -f "/usr/lib64/pkgconfig/libssl.pc" ]; then
             local OPENSSL_BASE="/usr"
             local tmp_64="64"
+        elif [ -d "/usr/local/Cellar/openssl" ]; then
+            local tmp=`find /usr/local/Cellar/openssl -name libssl.pc|sed -n '1p'`;
+            if [ ! -z "$tmp" -a -f "$tmp" ];then
+                tmp=`dirname "$tmp"|xargs dirname`;
+                tmp_64=$( basename $tmp|sed -n 's/lib//p')
+                local OPENSSL_BASE=`dirname $tmp`;
+            fi
         elif [ -f "/usr/lib/pkgconfig/libssl.pc" ]; then
             local OPENSSL_BASE="/usr"
             local tmp_64=""
@@ -3197,6 +3201,17 @@ function configure_imap_command()
 
     #IP6=4
     #make lr5 PASSWDTYPE=std SSLTYPE=unix.nopwd EXTRACFLAGS=-fPIC IP=4
+    if [ "$os_type" = "osx" -o "$os_type" = "lr5" ];then
+        sed -i.bak$$ "/^${os_type}:/{n;n;n; \
+                s/SSLINCLUDE=[^ \"]\{1,\}/SSLINCLUDE=$(sed_quote2 $OPENSSL_BASE/include/openssl )/; \
+                s/SSLLIB=[^ \"]\{1,\}/SSLLIB=$(sed_quote2 $OPENSSL_BASE/lib${tmp_64} )/; \
+                s/SSLCERTS=[^ \"]\{1,\}/SSLCERTS=$(sed_quote2 $OPENSSL_BASE/ssl/certs )/; \
+                s/SSLKEYS=[^ \"]\{1,\}/SSLKEYS=$(sed_quote2 $OPENSSL_BASE/ssl/private )/; \
+                s/GSSINCLUDE=[^ \"]\{1,\}/GSSINCLUDE=$(sed_quote2 $KERBEROS_BASE/include )/; \
+                s/GSSLIB=[^ \"]\{1,\}/GSSLIB=$(sed_quote2 $KERBEROS_BASE/lib )/; \
+                s/GSSDIR=[^ \"]\{1,\}/GSSDIR=$(sed_quote2 $KERBEROS_BASE )/; \
+            }" ./Makefile
+    fi
     echo "make command: "
     echo "make $os_type SSLINCLUDE=$OPENSSL_BASE/include/openssl SSLLIB=$OPENSSL_BASE/lib${tmp_64} SSLKEYS=$OPENSSL_BASE/ssl/private GSSDIR=$KERBEROS_BASE EXTRACFLAGS=-fPIC"
 
@@ -3208,9 +3223,9 @@ function configure_imap_command()
     fi
 
     mkdir -p $IMAP_BASE/{lib,include} && \
-    cp -rf c-client/*.h $IMAP_BASE/include/ && \
-    cp -rf c-client/*.c $IMAP_BASE/lib/ && \
-    cp -rf c-client/c-client.a $IMAP_BASE/lib/libc-client.a
+    cp -pf c-client/*.h $IMAP_BASE/include/ && \
+    cp -pf c-client/*.c $IMAP_BASE/lib/ && \
+    cp -pf c-client/c-client.a $IMAP_BASE/lib/libc-client.a
 
     if [ "$?" != "0" ]; then
         echo "Install imap failed." >&2;
@@ -3382,10 +3397,7 @@ function compile_rsyslog()
     export PATH
 
     RSYSLOG_CONFIGURE="
-    ./configure CC=\"gcc -arch i386 -arch x86_64\" \
-                CXX=\"g++ -arch i386 -arch x86_64\" \
-                CPP=\"gcc -E\" CXXCPP=\"g++ -E\" \
-                --prefix=$RSYSLOG_BASE \
+    ./configure --prefix=$RSYSLOG_BASE \
                 --enable-elasticsearch \
                 $(is_installed_mysql && echo --enable-mysql ) \
                 --enable-mail
@@ -3411,15 +3423,26 @@ function compile_liblogging()
         return;
     fi
 
+
     LIBLOGGING_CONFIGURE="
-        ./configure --prefix=$LIBLOGGING_BASE \
-                     --disable-man-pages
+    configure_liblogging_command
     "
-                    #    --enable-rfc3195
-                    #    --enable-journal
-                    #--enable-stdlog
 
     compile "liblogging" "$LIBLOGGING_FILE_NAME" "liblogging-$LIBLOGGING_VERSION" "$LIBLOGGING_BASE" "LIBLOGGING_CONFIGURE"
+}
+# }}}
+# {{{ function configure_liblogging_command()
+function configure_liblogging_command()
+{
+    local cmd="configure"
+    if [ ! -f "$cmd" -a -f ./autogen.sh ]; then
+        cmd="autogen.sh"
+    fi
+    ./${cmd} --prefix=$LIBLOGGING_BASE \
+                --disable-man-pages
+                #--enable-rfc3195
+                #--enable-journal
+                #--enable-stdlog
 }
 # }}}
 # {{{ function compile_libgcrypt()
@@ -3884,6 +3907,18 @@ function compile_php_extension_pecl_http()
     compile "php_extension_pecl_http" "$PECL_HTTP_FILE_NAME" "pecl_http-$PECL_HTTP_VERSION" "http.so" "PHP_EXTENSION_PECL_HTTP_CONFIGURE"
 
     /bin/rm -rf package.xml
+
+    if [ "$OS_NAME" = "Darwin" ];then
+        for i in `find $PHP_LIB_DIR -name "no-debug-*"`;
+        do
+        {
+            local file_name="${i}/http.so"
+            if [ -f "$file_name" ];then
+                repair_dynamic_shared_library $file_name
+            fi
+        }
+        done
+    fi
 }
 # }}}
 # {{{ function compile_php_extension_amqp()
@@ -7022,6 +7057,44 @@ function repair_dynamic_shared_library()
     done
 }
 # }}}
+function pthreads () {
+    local task_name=$1
+    local func_name=$2
+    local thread_num=$3
+    local params_name=$4
+
+    thread_num=5  # 最大可同时执行线程数量
+    job_num=100   # 任务总数
+
+
+    tmp_fifofile="/tmp/${task_name}_$$.fifo";
+    mkfifo $tmp_fifofile ;      # 新建一个fifo类型的文件
+    exec 6<>$tmp_fifofile ;     # 将fd6指向fifo类型
+    rm $tmp_fifofile ;   #删也可以
+
+
+    #根据线程总数量设置令牌个数
+    for ((i=0;i<${thread_num};i++));do
+        echo
+    done >&6
+
+    for ((i=0;i<${job_num};i++));do # 任务数量
+        # 一个read -u6命令执行一次，就从fd6中减去一个回车符，然后向下执行，
+        # fd6中没有回车符的时候，就停在这了，从而实现了线程数量控制
+        read -u6
+
+        #可以把具体的需要执行的命令封装成一个函数
+        {
+            my_cmd $i
+            echo >&6 # 当进程结束以后，再向fd6中加上一个回车符，即补上了read -u6减去的那个
+        } &
+
+    done
+
+    wait
+    exec 6>&- # 关闭fd6
+    return;
+}
 
 
 

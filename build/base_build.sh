@@ -313,3 +313,13 @@ wget --content-disposition --no-check-certificate https://github.com/phpDocument
 
 
 #https://www.x.org/releases/individual/lib/libXft-2.3.2.tar.bz2
+
+
+wget https://sourceforge.net/projects/libuuid/files/libuuid-1.0.3.tar.gz/download
+tar zxf libuuid-1.0.3.tar.gz 
+cd libuuid-1.0.3/
+./configure --prefix=/usr/local/chg/base/contrib/
+make
+make install
+cd ..
+rm -rf libuuid-1.0.3/
