@@ -3201,7 +3201,7 @@ function configure_imap_command()
     fi
 
     local tmp1_64=""
-    if [ -f "/usr/lib64/pkgconfig/krb5.pc" ]; then
+    if [ -f "/usr/lib64/libkrb5.so" ]; then
         KERBEROS_BASE="/usr"
         local tmp1_64="64"
     elif [ -d "/usr/local/Cellar/openssl" ]; then
@@ -3211,13 +3211,13 @@ function configure_imap_command()
             tmp1_64=$( basename $tmp|sed -n 's/lib//p')
             KERBEROS_BASE=`dirname $tmp`;
         fi
-    elif [ -f "/usr/lib/pkgconfig/krb5.pc" ]; then
+    elif [ -f "/usr/lib/libkrb5.so" ]; then
         KERBEROS_BASE="/usr"
         local tmp1_64=""
-    elif [ -f "/usr/local/lib64/pkgconfig/krb5.pc" ]; then
+    elif [ -f "/usr/local/lib64/libkrb5.so" ]; then
         KERBEROS_BASE="/usr/local"
         local tmp1_64="64"
-    elif [ -f "/usr/local/lib/pkgconfig/krb5.pc" ]; then
+    elif [ -f "/usr/local/lib/libkrb5.so" ]; then
         KERBEROS_BASE="/usr/local"
         local tmp1_64=""
     else
