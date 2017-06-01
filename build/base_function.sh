@@ -5219,7 +5219,9 @@ configure_php_swoole_command()
     ./configure --with-php-config=$PHP_BASE/bin/php-config \
                 --enable-sockets \
                 --enable-openssl \
-                $( [ `echo "$SWOOLE_VERSION 1.9.0"|tr " " "\n"|sort -rV|head -1` = "$SWOOLE_VERSION" ] && echo "--with-openssl$([ `echo "$SWOOLE_VERSION 2.0.0"|tr " " "\n"|sort -rV|head -1` != "2.0.0" ] && echo  "-dir" || echo "")=$OPENSSL_BASE" || echo " " ) \
+                $( [ `echo "$SWOOLE_VERSION 1.9.0"|tr " " "\n"|sort -rV|head -1` = "$SWOOLE_VERSION" ] \
+                && echo "--with-openssl$([ `echo "$SWOOLE_VERSION 2.0.0"|tr " " "\n"|sort -rV|head -1` != "2.0.0" ] \
+                && echo  "-dir" || echo "")=$OPENSSL_BASE" || echo " " ) \
                 --with-swoole \
                 --enable-swoole \
                 $( [ "$is_2" = "1" ] && echo "
