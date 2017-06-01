@@ -3,7 +3,7 @@
 # autoconf，automake，autopoint，pkg-config
 #wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-6.repo
 #yum install cmake gcc xz cmake texinfo bzip2 xz-devel gcc-c++ ncurses-devel ncurses byacc file re2c
-#yum update -y curl nss cyrus-sasl cyrus-sasl-devel
+#yum update -y curl nss cyrus-sasl cyrus-sasl-devel cyrus-sasl-lib libacl libacl-devel libattr libattr-devel gperf pam pam-devel krb5-devel krb5-libs
 
 #tar Jxf m4-1.4.17.tar.xz
 #cd m4-1.4.17
@@ -29,14 +29,23 @@
 #cd ..
 #rm -rf libtool-2.4.6
 
-
-
-
+re2c_version="0.13.4"
+which re2c 1>/dev/null 2>/dev/null
+if [ "$?" != "0" ];then
+    echo "You will need re2c ${re2c_version} or later" >&2
+    exit 1;
+fi
+re2c_version1=`re2c --version|awk '{print $2;}'`;
+re2c_version2=`echo "${re2c_version}" "${re2c_version1}"|tr " " "\n"|sort -V|head -1`
+if [ "$re2c_version2" != "$re2c_version" ];then
+    echo "You will need re2c ${re2c_version} or later" >&2
+    exit 1;
+fi
 
 autoconf_version=`autoconf --version|head -1|awk '{ print $NF; }'`
 if [ `echo "$autoconf_version 2.63"|tr " " "\n"|sort -rV|head -1` = "2.63" ] ; then
     echo "Autoconf version 2.64 or higher is required" >&2
-    exit;
+    exit 1;
 fi
 export LANG=C
 export LC_ALL=C
@@ -323,3 +332,8 @@ make
 make install
 cd ..
 rm -rf libuuid-1.0.3/
+
+
+ftp://ftp.cyrusimap.org/cyrus-sasl/
+ftp://ftp.cyrusimap.org/cyrus-imapd/
+https://www.cyrusimap.org/sasl/sasl/installation.html#quick-install-guide

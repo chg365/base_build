@@ -1648,7 +1648,6 @@ function is_installed_php()
     if [ "$version" != "$PHP_VERSION" ];then
         return 1;
     fi
-    return;
 }
 # }}}
 # {{{ function is_installed_php_extension()
@@ -2097,6 +2096,9 @@ function compile_boost()
         echo "Install boost failed." >&2;
         exit 1;
     fi
+
+    cd ..
+    /bin/rm -rf "boost_${BOOST_VERSION}"
 
 #    atomic
 #    chrono
@@ -2566,9 +2568,11 @@ function compile_redis()
 function compile_gearmand()
 {
     compile_openssl
+    compile_libevent
     compile_curl
     compile_boost
     #yum install boost boost-devel
+    #yum install gperf
 
     is_installed gearmand "$GEARMAND_BASE"
     if [ "$?" = "0" ];then
@@ -2631,7 +2635,8 @@ function configure_gearmand_command()
             return 1;
         fi
     fi
-    CPPFLAGS="$(get_cppflags $CURL_BASE/include)" LDFLAGS="$(get_ldflags $CURL_BASE/lib)" \
+    CPPFLAGS="$(get_cppflags $LIBEVENT_BASE/include $CURL_BASE/include $BOOST_BASE/include)" \
+    LDFLAGS="$(get_ldflags $LIBEVENT_BASE/lib $CURL_BASE/lib $BOOST_BASE/lib)" \
     ./configure --prefix=$GEARMAND_BASE \
                 --enable-ssl \
                 --with-mysql=no \
@@ -3122,7 +3127,7 @@ function compile_imap()
     #yum install kerberos-devel krb5-workstation
     #yum install pam pam-devel
 
-    compile_kerberos
+    #compile_kerberos
 
     # 不支持openssl-1.1.0 及以上版本
     local OPENSSL_BASE=$OPENSSL_BASE
@@ -3195,6 +3200,32 @@ function configure_imap_command()
         local os_type="osx"
     fi
 
+    local tmp1_64=""
+    if [ -f "/usr/lib64/pkgconfig/krb5.pc" ]; then
+        KERBEROS_BASE="/usr"
+        local tmp1_64="64"
+    elif [ -d "/usr/local/Cellar/openssl" ]; then
+        local tmp=`find /usr/local/Cellar/openssl -name libssl.pc|sed -n '1p'`;
+        if [ ! -z "$tmp" -a -f "$tmp" ];then
+            tmp=`dirname "$tmp"|xargs dirname`;
+            tmp1_64=$( basename $tmp|sed -n 's/lib//p')
+            KERBEROS_BASE=`dirname $tmp`;
+        fi
+    elif [ -f "/usr/lib/pkgconfig/krb5.pc" ]; then
+        KERBEROS_BASE="/usr"
+        local tmp1_64=""
+    elif [ -f "/usr/local/lib64/pkgconfig/krb5.pc" ]; then
+        KERBEROS_BASE="/usr/local"
+        local tmp1_64="64"
+    elif [ -f "/usr/local/lib/pkgconfig/krb5.pc" ]; then
+        KERBEROS_BASE="/usr/local"
+        local tmp1_64=""
+    else
+        echo "Please install krb5-devel krb5-libs first." >&2
+        exit 1;
+    fi
+
+
     #local old_str='SPECIALS="SSLINCLUDE=.* SSLLIB=.* SSLCERTS=.* SSLKEYS=.* GSSDIR=.*"'
     #local new_str="SPECIALS=\"SSLINCLUDE=${OPENSSL_BASE}/include/openssl SSLLIB=${OPENSSL_BASE}/lib${tmp_64} SSLCERTS=${OPENSSL_BASE}/ssl/certs SSLKEYS=${OPENSSL_BASE}/ssl/private GSSDIR=${KERBEROS_BASE}\""
     #sed -i "/lr5:/{n;n;n;s/$(sed_quote2 $old_str)/$(sed_quote2 $new_str)/}" ./Makefile
@@ -3208,7 +3239,7 @@ function configure_imap_command()
                 s/SSLCERTS=[^ \"]\{1,\}/SSLCERTS=$(sed_quote2 $OPENSSL_BASE/ssl/certs )/; \
                 s/SSLKEYS=[^ \"]\{1,\}/SSLKEYS=$(sed_quote2 $OPENSSL_BASE/ssl/private )/; \
                 s/GSSINCLUDE=[^ \"]\{1,\}/GSSINCLUDE=$(sed_quote2 $KERBEROS_BASE/include )/; \
-                s/GSSLIB=[^ \"]\{1,\}/GSSLIB=$(sed_quote2 $KERBEROS_BASE/lib )/; \
+                s/GSSLIB=[^ \"]\{1,\}/GSSLIB=$(sed_quote2 $KERBEROS_BASE/lib${tmp1_64} )/; \
                 s/GSSDIR=[^ \"]\{1,\}/GSSDIR=$(sed_quote2 $KERBEROS_BASE )/; \
             }" ./Makefile
     fi
@@ -4051,22 +4082,31 @@ function compile_php_extension_memcached()
         return;
     fi
 
-# yum install cyrus-sasl-devel or --disable-memcached-sasl
     PHP_EXTENSION_MEMCACHED_CONFIGURE="
+    configure_php_ext_memcached_command
+    "
+
+    compile "php_extension_memcached" "$PHP_MEMCACHED_FILE_NAME" "memcached-$PHP_MEMCACHED_VERSION" "memcached.so" "PHP_EXTENSION_MEMCACHED_CONFIGURE"
+
+    /bin/rm -rf package.xml
+}
+# }}}
+# {{{ function configure_php_ext_memcached_command()
+function configure_php_ext_memcached_command()
+{
+    # yum install cyrus-sasl-devel or --disable-memcached-sasl
+    CPPFLAGS="$(get_cppflags $OPENSSL_BASE/include)" LDFLAGS="$(get_ldflags $OPENSSL_BASE/lib)" \
     ./configure --with-php-config=$PHP_BASE/bin/php-config \
                 --with-libmemcached-dir=$LIBMEMCACHED_BASE \
                 --enable-memcached-json \
                 --with-zlib-dir=$ZLIB_BASE
-    "
+
                 # --enable-memcached-igbinary
                 # --enable-memcached
                 # --enable-memcached-protocol
                 # --disable-memcached-sasl
                 # --enable-memcached-msgpack
 
-    compile "php_extension_memcached" "$PHP_MEMCACHED_FILE_NAME" "memcached-$PHP_MEMCACHED_VERSION" "memcached.so" "PHP_EXTENSION_MEMCACHED_CONFIGURE"
-
-    /bin/rm -rf package.xml
 }
 # }}}
 # {{{ function compile_php_extension_pthreads()
@@ -4285,7 +4325,7 @@ function compile_php_extension_tidy()
 # {{{ function compile_php_extension_imap()
 function compile_php_extension_imap()
 {
-    compile_kerberos
+    #compile_kerberos
     compile_imap
     #yum install -y libc-client-devel libc-client
     compile_openssl
@@ -4317,9 +4357,19 @@ function configure_php_ext_imap_command()
     if ! is_installed_imap && echo "$HOST_TYPE"|grep -q x86_64 ; then
         sed -i.bak$$ 's/str="$IMAP_DIR\/$PHP_LIBDIR/str="$IMAP_DIR\/${PHP_LIBDIR}64/' configure
     fi
+    if [ ! -z "$tmp_64" ];then
+        sed -i.bak$$ 's/$PHP_LIBDIR\/libssl\./${PHP_LIBDIR}64\/libssl./g' ./configure
+    fi
+
+    local tmp_str=`find /usr/lib*/pkgconfig/ -name krb5.pc|sed -n '1p'`
+    if [ ! -z "$tmp_str" ] && echo $tmp_str|grep -q 'lib64' ;then
+        sed -i.bak$$ 's/$PHP_LIBDIR\/libkrb5\./${PHP_LIBDIR}64\/libkrb5./g' ./configure
+    fi
+
+    #which krb5-config
+
      #if test -r $i/${PHP_LIBDIR}64/libssl.a -o -r $i/${PHP_LIBDIR}64/libssl.$SHLIB_SUFFIX_NAME; then
      #OPENSSL_LIBDIR=$i/${PHP_LIBDIR}64
-
 
     ./configure --with-php-config=$PHP_BASE/bin/php-config \
                 --with-imap$(is_installed_imap && echo "=$IMAP_BASE" ) \
@@ -4374,13 +4424,27 @@ function compile_mysql()
     local version=`sed -n 's/^SET(BOOST_PACKAGE_NAME "boost_\(.\{1,\}\)")$/\1/p' $boost_cmake_file`
     if [ "$version" != "$BOOST_VERSION" ];then
         echo "Warning: BOOST VERSION ERROR: need $version, give $BOOST_VERSION" >&2
+
+        local old_version=$BOOST_VERSION
+        local old_file=$BOOST_FILE_NAME
+
         BOOST_VERSION=$version
-        BOOST_FILE_NAME="boost_$BOOST_VERSION.tar.bz2"
+        BOOST_FILE_NAME="boost_${BOOST_VERSION}.tar.bz2"
+        wget_lib_boost
+        if [ "$wget_fail" = "1" ];then
+            exit 1;
+        fi
+
+        BOOST_VERSION=$old_version
+        BOOST_FILE_NAME=$old_file
+
+        local BOOST_VERSION=$version
+        local BOOST_FILE_NAME="boost_${BOOST_VERSION}.tar.bz2"
     fi
 
     decompress $BOOST_FILE_NAME
     if [ "$?" != "0" ];then
-        exit;
+        exit 1;
     fi
 
     mysql_install=mysql_install
@@ -5155,7 +5219,7 @@ configure_php_swoole_command()
     ./configure --with-php-config=$PHP_BASE/bin/php-config \
                 --enable-sockets \
                 --enable-openssl \
-                $( [ `echo "$SWOOLE_VERSION 1.9.0"|tr " " "\n"|sort -rV|head -1` = "$SWOOLE_VERSION" ] && echo "--with-openssl$([ `echo "$SWOOLE_VERSION 2.0.0"|tr " " "\n"|sort -V|head -1` != "2.0.0" ] && echo  "-dir" || echo "")=$OPENSSL_BASE" || echo " " ) \
+                $( [ `echo "$SWOOLE_VERSION 1.9.0"|tr " " "\n"|sort -rV|head -1` = "$SWOOLE_VERSION" ] && echo "--with-openssl$([ `echo "$SWOOLE_VERSION 2.0.0"|tr " " "\n"|sort -rV|head -1` != "2.0.0" ] && echo  "-dir" || echo "")=$OPENSSL_BASE" || echo " " ) \
                 --with-swoole \
                 --enable-swoole \
                 $( [ "$is_2" = "1" ] && echo "
@@ -5163,9 +5227,12 @@ configure_php_swoole_command()
                 --enable-async-redis \
                 --enable-thread \
                 --enable-ringbuffer" || echo " ") \
-                $( [ `echo "$kernel_release 2.6.33" | tr " " "\n"|sort -rV|head -1 ` = "$kernel_release" ] && echo "--enable-hugepage" || echo "" )
+
                 #--enable-http2 \
                 #-enable-jemalloc \
+
+                # CentOS 7.1  php7.1.4 swoole2.0.7  php -m 报错 Segmentation fault
+                #$( [ `echo "$kernel_release 2.6.33" | tr " " "\n"|sort -rV|head -1 ` = "$kernel_release" ] && echo "--enable-hugepage" || echo "" )
 }
 # }}}
 # {{{ configure_php_amqp_command()
@@ -6955,8 +7022,10 @@ function path_init()
 {
     PATH=""
     local tmp_arr=( "/bin"
-            "/usr/local/bin"
             "/usr/bin"
+            "/usr/sbin"
+            "/usr/local/bin"
+            "/usr/sbin"
             "/usr/local/opt/bison/bin"
             "/usr/local/opt/coreutils/libexec/gnubin"
             );
