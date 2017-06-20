@@ -2071,11 +2071,16 @@ function compile_openssl()
         return;
     fi
 
+    local tmp_str=""
+    if [ "$OS_NAME" != "darwin" ];then
+        tmp_str="-Wl,--enable-new-dtags,-rpath,'\$(LIBRPATH)'"
+    fi
+
     OPENSSL_CONFIGURE="
     ./config --prefix=$OPENSSL_BASE \
              --openssldir=$SSL_CONFIG_DIR \
              --libdir=lib \
-             -Wl,--enable-new-dtags,-rpath,'\$(LIBRPATH)' \
+             $tmp_str \
              threads shared -fPIC
     "
     # -darwin-i386-cc
@@ -5093,7 +5098,7 @@ configure_libffi_command()
 # {{{ configure_icu_command()
 configure_icu_command()
 {
-    CPPFLAGS="-Wl,--enable-new-dtags,-rpath,'\$(LIBRPATH)'" \
+    $( [ "$OS_NAME" != "darwin" ] && echo "CPPFLAGS=\"-Wl,--enable-new-dtags,-rpath,'\$(LIBRPATH)'\"") \
     ./configure --prefix=$ICU_BASE
 }
 # }}}
