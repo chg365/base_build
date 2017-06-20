@@ -5,10 +5,11 @@ project_abbreviation="chg_base"
 
 #HOSTTYPE=x86_64
 #OSTYPE=linux-gnu
-declare -l OS_NAME
-declare -l HOST_TYPE
-OS_NAME=`uname -s`;   # Linux
-HOST_TYPE=`uname -m`; # x86_64
+# MAC 不支持 declare -l
+#declare -l OS_NAME
+#declare -l HOST_TYPE
+OS_NAME=`uname -s|tr '[A-Z]' '[a-z]'`;   # Linux
+HOST_TYPE=`uname -m|tr '[A-Z]' '[a-z]'`; # x86_64
 
 BASE_DIR=/usr/local/${project_abbreviation//_//}
 COMPILE_BASE=$(dirname $BASE_DIR)/compile
