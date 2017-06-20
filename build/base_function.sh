@@ -5098,7 +5098,7 @@ configure_libffi_command()
 # {{{ configure_icu_command()
 configure_icu_command()
 {
-    $( [ "$OS_NAME" != "darwin" ] && echo "CPPFLAGS=\"-Wl,--enable-new-dtags,-rpath,'\$(LIBRPATH)'\"") \
+    CPPFLAGS="$( [ \"$OS_NAME\" != \"darwin\" ] && echo '-Wl,--enable-new-dtags,-rpath,\$(LIBRPATH)')" \
     ./configure --prefix=$ICU_BASE
 }
 # }}}
