@@ -96,9 +96,9 @@ get_ldflags()
     do
     {
         if [ -d "${i}" ];then
-            if [ "$OS_NAME" = "Darwin" ];then
+            if [ "$OS_NAME" = "darwin" ];then
                 str="${str} -L${i}"
-            elif [ "$OS_NAME" = "Linux" ];then
+            elif [ "$OS_NAME" = "linux" ];then
                 str="${str} -L${i} -Wl,-R${i}"
             else
                 str="${str} -L${i} -Wl,-R${i}"
@@ -456,6 +456,7 @@ function wget_base_library()
     wget_lib $PHP_LIBSODIUM_FILE_NAME "http://pecl.php.net/get/$PHP_LIBSODIUM_FILE_NAME"
     wget_lib $QRENCODE_FILE_NAME      "https://github.com/chg365/qrencode/archive/${QRENCODE_FILE_NAME#*-}"
     wget_lib $COMPOSER_FILE_NAME      "https://github.com/composer/composer/archive/${COMPOSER_FILE_NAME#*-}"
+    wget_lib $PATCHELF_FILE_NAME      "https://github.com/NixOS/patchelf/archive/${PATCHELF_FILE_NAME##*-}"
 
     wget_lib $LARAVEL_FILE_NAME       "https://github.com/laravel/laravel/archive/v${LARAVEL_FILE_NAME#*-}"
     wget_lib $HIREDIS_FILE_NAME       "https://github.com/redis/hiredis/archive/v${HIREDIS_FILE_NAME#*-}"
@@ -481,13 +482,19 @@ function wget_base_library()
     wget_lib $GEOIPUPDATE_FILE_NAME   "https://github.com/maxmind/geoipupdate/releases/download/v${GEOIPUPDATE_VERSION}/$GEOIPUPDATE_FILE_NAME"
     wget_lib $ELECTRON_FILE_NAME      "https://github.com/electron/electron/archive/v${ELECTRON_FILE_NAME#*-}"
 
-    wget_lib $PHANTOMJS_FILE_NAME     "https://github.com/ariya/phantomjs/archive/${PHANTOMJS_FILE_NAME#*-}"
+    #wget_lib $PHANTOMJS_FILE_NAME     "https://github.com/ariya/phantomjs/archive/${PHANTOMJS_FILE_NAME#*-}"
+    wget_lib $PHANTOMJS_FILE_NAME     "https://bitbucket.org/ariya/phantomjs/downloads/${PHANTOMJS_FILE_NAME}"
 
     wget_lib $FAMOUS_FILE_NAME "https://github.com/Famous/famous/archive/${FAMOUS_FILE_NAME##*-}"
     wget_lib $FAMOUS_FRAMEWORK_FILE_NAME "https://github.com/Famous/framework/archive/v${FAMOUS_FRAMEWORK_FILE_NAME##*-}"
     wget_lib $FAMOUS_ANGULAR_FILE_NAME "https://github.com/Famous/famous-angular/archive/${FAMOUS_ANGULAR_FILE_NAME##*-}"
 
-#    if [ "$OS_NAME" = 'Darwin' ];then
+    wget_lib $NGINX_UPLOAD_PROGRESS_MODULE_FILE_NAME "https://github.com/masterzen/nginx-upload-progress-module/archive/v${NGINX_UPLOAD_PROGRESS_MODULE_FILE_NAME##*-}"
+    wget_lib $NGINX_PUSH_STREAM_MODULE_FILE_NAME "https://github.com/wandenberg/nginx-push-stream-module/archive/${NGINX_PUSH_STREAM_MODULE_FILE_NAME##*-}"
+    wget_lib $NGINX_UPLOAD_MODULE_FILE_NAME "https://github.com/vkholodkov/nginx-upload-module/archive/${NGINX_UPLOAD_MODULE_FILE_NAME##*-}"
+    wget_lib $NGINX_STICKY_MODULE_FILE_NAME "https://bitbucket.org/nginx-goodies/nginx-sticky-module-ng/get/${NGINX_STICKY_MODULE_FILE_NAME##*-}"
+
+#    if [ "$OS_NAME" = 'darwin' ];then
 
         wget_lib $KBPROTO_FILE_NAME          "https://www.x.org/archive/individual/proto/$KBPROTO_FILE_NAME"
         wget_lib $INPUTPROTO_FILE_NAME       "https://www.x.org/archive/individual/proto/$INPUTPROTO_FILE_NAME"
@@ -717,10 +724,15 @@ function init_nginx_conf()
     sed -i.bak.$$ "s/LOG_DIR/$(sed_quote2 $LOG_DIR)/g" $NGINX_CONFIG_DIR/nginx.conf
     sed -i.bak.$$ "s/RUN_DIR/$(sed_quote2 $BASE_DIR/run)/g" $NGINX_CONFIG_DIR/nginx.conf
     sed -i.bak.$$ "s/PROJECT_NAME/$(sed_quote2 $project_abbreviation)/g" $NGINX_CONFIG_DIR/nginx.conf
+    sed -i.bak.$$ "s/BODY_TEMP_PATH/$(sed_quote2 $TMP_DATA_DIR/nginx/client_body_temp )/g" $NGINX_CONFIG_DIR/nginx.conf
+    sed -i.bak.$$ "s/PROXY_TEMP_PATH/$(sed_quote2 $TMP_DATA_DIR/nginx/proxy_temp )/g" $NGINX_CONFIG_DIR/nginx.conf
+    sed -i.bak.$$ "s/FASTCGI_TEMP_PATH/$(sed_quote2 $TMP_DATA_DIR/nginx/fastcgi_temp )/g" $NGINX_CONFIG_DIR/nginx.conf
+    sed -i.bak.$$ "s/UWSGI_TEMP_PATH/$(sed_quote2 $TMP_DATA_DIR/nginx/uwsgi_temp )/g" $NGINX_CONFIG_DIR/nginx.conf
+    sed -i.bak.$$ "s/SCGI_TEMP_PATH/$(sed_quote2 $TMP_DATA_DIR/nginx/scgi_temp )/g" $NGINX_CONFIG_DIR/nginx.conf
 #    nobody
 
     # fastcgi_param  SERVER_SOFTWARE
-    sed -i.bak.$$ "s/^\(fastcgi_param \{1,\}SERVER_SOFTWARE \{1,\}\)nginx\/\$nginx_version;$/\1${project_name%% *}\/1.0;/" $NGINX_CONFIG_DIR/fastcgi.conf;
+    # sed -i.bak.$$ "s/^\(fastcgi_param \{1,\}SERVER_SOFTWARE \{1,\}\)nginx\/\$nginx_version;$/\1${project_name%% *}\/1.0;/" $NGINX_CONFIG_DIR/fastcgi.conf;
 }
 # }}}
 # function change_redis_conf() {{{
@@ -858,6 +870,20 @@ function is_installed_gearmand()
     fi
     local version=`pkg-config --modversion $FILENAME`
     if [ "$version" != "$GEARMAND_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
+# {{{ function is_installed_phantomjs()
+function is_installed_phantomjs()
+{
+    local FILENAME="$PHANTOMJS_BASE/bin/phantomjs"
+    if [ ! -f "$FILENAME" ];then
+        return 1;
+    fi
+    local version=`$FILENAME -v`
+    if [ "$version" != "$PHANTOMJS_VERSION" ];then
         return 1;
     fi
     return;
@@ -1086,6 +1112,20 @@ function is_installed_libevent()
     local version=`pkg-config --modversion $FILENAME`
     version=${version%-*}
     if [ "$version" != "$LIBEVENT_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
+# {{{ function is_installed_patchelf()
+function is_installed_patchelf()
+{
+    local FILENAME=$PATCHELF_BASE/bin/patchelf;
+    if [ ! -f "$FILENAME" ];then
+        return 1;
+    fi
+    local version=`$FILENAME --version|awk '{print $NF;}'`
+    if [ "$version" != "$PATCHELF_VERSION" ];then
         return 1;
     fi
     return;
@@ -2032,7 +2072,11 @@ function compile_openssl()
     fi
 
     OPENSSL_CONFIGURE="
-    ./config --prefix=$OPENSSL_BASE threads shared -fPIC
+    ./config --prefix=$OPENSSL_BASE \
+             --openssldir=$SSL_CONFIG_DIR \
+             --libdir=lib \
+             -Wl,--enable-new-dtags,-rpath,'\$(LIBRPATH)' \
+             threads shared -fPIC
     "
     # -darwin-i386-cc
 
@@ -2054,7 +2098,7 @@ function compile_icu()
 
     compile "icu" "$ICU_FILE_NAME" "icu/source" "$ICU_BASE" "ICU_CONFIGURE"
     export -n LD_LIBRARY_PATH
-    if [ "$OS_NAME" = "Darwin" ];then
+    if [ "$OS_NAME" = "darwin" ];then
         repair_dynamic_shared_library $ICU_BASE/lib "libicu*dylib"
     fi
 
@@ -2127,7 +2171,7 @@ function compile_boost()
 #    thread
 #    timer
 #    wave
-    if [ "$OS_NAME" = "Darwin" ];then
+    if [ "$OS_NAME" = "darwin" ];then
         repair_dynamic_shared_library $BOOST_BASE/lib "libboost*dylib"
     fi
 
@@ -2215,7 +2259,7 @@ function compile_libxml2()
     ./configure --prefix=$LIBXML2_BASE \
                 --with-iconv=$LIBICONV_BASE \
                 --with-zlib=$ZLIB_BASE \
-                $( [ "$OS_NAME" = "Darwin" ] && echo "--without-lzma") \
+                $( [ "$OS_NAME" = "darwin" ] && echo "--without-lzma") \
                 --without-python
     "
 # xmlIO.c:1450:52: error: use of undeclared identifier 'LZMA_OK' mac上2.9.3报错. 加 --without-lzma
@@ -2266,7 +2310,7 @@ function compile_tidy()
 
 
     compile "tidy" "$TIDY_FILE_NAME" "tidy-html5-$TIDY_VERSION/build/cmake" "$TIDY_BASE" "TIDY_CONFIGURE"
-    if [ "$OS_NAME" = "Darwin" ];then
+    if [ "$OS_NAME" = "darwin" ];then
         repair_dynamic_shared_library $TIDY_BASE/lib "lib*tidy*.dylib"
     fi
 }
@@ -2367,6 +2411,21 @@ function compile_libevent()
     compile "libevent" "$LIBEVENT_FILE_NAME" "libevent-release-${LIBEVENT_VERSION}-stable" "$LIBEVENT_BASE" "LIBEVENT_CONFIGURE"
 }
 # }}}
+# {{{ function compile_patchelf()
+function compile_patchelf()
+{
+    is_installed patchelf "$PATCHELF_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    PATCHELF_CONFIGURE="
+    configure_patchelf_command
+    "
+
+    compile "patchelf" "$PATCHELF_FILE_NAME" "patchelf-${PATCHELF_VERSION}" "$PATCHELF_BASE" "PATCHELF_CONFIGURE"
+}
+# }}}
 # {{{ function compile_jpeg()
 function compile_jpeg()
 {
@@ -2454,7 +2513,7 @@ function compile_cairo()
 {
     compile_libpng
     compile_pixman
-    [ "$OS_NAME" != "Darwin" ] && compile_glib
+    [ "$OS_NAME" != "darwin" ] && compile_glib
     compile_fontconfig
 
     is_installed cairo "$CAIRO_BASE"
@@ -2514,7 +2573,7 @@ function compile_fontforge()
 function compile_pango()
 {
     compile_cairo
-    [ "$OS_NAME" != "Darwin" ] && compile_glib
+    [ "$OS_NAME" != "darwin" ] && compile_glib
     compile_freetype
     compile_fontconfig
 
@@ -2602,7 +2661,7 @@ function configure_redis_command()
 
     # 3.2.7版本要编译报错 undefined reference to `clock_gettime'
     if [ "$REDIS_VERSION" = "3.2.7" ] ; then
-        if [ "$OS_NAME" = "Linux" ] ; then
+        if [ "$OS_NAME" = "linux" ] ; then
             local tmp_str=""
             if echo "$HOST_TYPE"|grep -q x86_64 ; then
                 tmp_str="64"
@@ -2778,7 +2837,7 @@ function compile_freetype()
 # {{{ function compile_harfbuzz()
 function compile_harfbuzz()
 {
-    [ "$OS_NAME" != "Darwin" ] && compile_glib
+    [ "$OS_NAME" != "darwin" ] && compile_glib
     compile_icu
 
     is_installed freetype "$FREETYPE_BASE"
@@ -2810,7 +2869,7 @@ function compile_glib()
     compile_libiconv
     compile_libffi
 
-    if [ "$OS_NAME" != "Darwin" ]; then
+    if [ "$OS_NAME" != "darwin" ]; then
         # 需要libmount,没有时，才编译
         pkg-config --modversion mount >/dev/null 2>&1
         if [ "$?" != "0" ]; then
@@ -3066,7 +3125,7 @@ function compile_libX11()
 # {{{ function compile_libXpm()
 function compile_libXpm()
 {
-#    if [ "$OS_NAME" = 'Darwin' ];then
+#    if [ "$OS_NAME" = 'darwin' ];then
         compile_xproto
         compile_libX11
 #    fi
@@ -3196,7 +3255,7 @@ function configure_imap_command()
     fi
 
     local os_type="lr5" #red hat linux 7.2以下
-    if [ "$OS_NAME" = "Darwin" ]; then
+    if [ "$OS_NAME" = "darwin" ]; then
         local os_type="osx"
     fi
 
@@ -3393,7 +3452,11 @@ function compile_nginx()
         configure_nginx_command
     "
 
-    decompress $PCRE_FILE_NAME && decompress $ZLIB_FILE_NAME && decompress $OPENSSL_FILE_NAME
+    decompress $PCRE_FILE_NAME && decompress $ZLIB_FILE_NAME && decompress $OPENSSL_FILE_NAME && \
+    decompress $NGINX_UPLOAD_PROGRESS_MODULE_FILE_NAME && \
+    decompress $NGINX_PUSH_STREAM_MODULE_FILE_NAME && \
+    #decompress $NGINX_STICKY_MODULE_FILE_NAME && \
+    #decompress $NGINX_UPLOAD_MODULE_FILE_NAME
     if [ "$?" != "0" ];then
         # return 1;
         exit 1;
@@ -3404,6 +3467,10 @@ function compile_nginx()
     /bin/rm -rf pcre-$PCRE_VERSION
     /bin/rm -rf zlib-$ZLIB_VERSION
     /bin/rm -rf openssl-$OPENSSL_VERSION
+    /bin/rm -rf nginx-upload-progress-module-${NGINX_UPLOAD_PROGRESS_MODULE_VERSION}
+    /bin/rm -rf nginx-push-stream-module-${NGINX_PUSH_STREAM_MODULE_VERSION}
+    #/bin/rm -rf nginx-upload-module-${NGINX_UPLOAD_MODULE_VERSION}
+    #/bin/rm -rf ${NGINX_STICKY_MODULE_FILE_NAME%%.*}
 
     init_nginx_conf
 }
@@ -3436,7 +3503,7 @@ function compile_rsyslog()
 # No package 'uuid' found
 # No package 'systemd' found
                # --enable-libgcrypt
-#$( [ \"$OS_NAME\" = \"Darwin\" ] && echo --disable-uuid ) \
+#$( [ \"$OS_NAME\" = \"darwin\" ] && echo --disable-uuid ) \
 
                # error: Net-SNMP is missing
                # --enable-snmp \
@@ -3543,8 +3610,8 @@ function compile_libgd()
         return;
     fi
 
-    # CPPFLAGS="$(get_cppflags ${ZLIB_BASE}/include ${LIBPNG_BASE}/include ${LIBICONV_BASE}/include ${FREETYPE_BASE}/include ${FONTCONFIG_BASE}/include ${JPEG_BASE}/include $([ "$OS_NAME" = 'Darwin' ] && echo " $LIBX11_BASE/include") )" \
-    # LDFLAGS="$(get_ldflags ${ZLIB_BASE}/lib ${LIBPNG_BASE}/lib ${LIBICONV_BASE}/lib ${FREETYPE_BASE}/lib ${FONTCONFIG_BASE}/lib ${JPEG_BASE}/lib $([ "$OS_NAME" = 'Darwin' ] && echo " $LIBX11_BASE/lib") )" \
+    # CPPFLAGS="$(get_cppflags ${ZLIB_BASE}/include ${LIBPNG_BASE}/include ${LIBICONV_BASE}/include ${FREETYPE_BASE}/include ${FONTCONFIG_BASE}/include ${JPEG_BASE}/include $([ "$OS_NAME" = 'darwin' ] && echo " $LIBX11_BASE/include") )" \
+    # LDFLAGS="$(get_ldflags ${ZLIB_BASE}/lib ${LIBPNG_BASE}/lib ${LIBICONV_BASE}/lib ${FREETYPE_BASE}/lib ${FONTCONFIG_BASE}/lib ${JPEG_BASE}/lib $([ "$OS_NAME" = 'darwin' ] && echo " $LIBX11_BASE/lib") )" \
     LIBGD_CONFIGURE="
     ./configure --prefix=$LIBGD_BASE --with-libiconv-prefix=$LIBICONV_BASE \
                 --with-zlib=$ZLIB_BASE \
@@ -3600,7 +3667,7 @@ function compile_libsodium()
 # {{{ function compile_zeromq()
 function compile_zeromq()
 {
-    if [ "$OS_NAME" != "Darwin" ]; then
+    if [ "$OS_NAME" != "darwin" ]; then
         compile_libunwind
     fi
     # compile_libsodium
@@ -3630,7 +3697,7 @@ function compile_hiredis()
     "
 
     compile "hiredis" "$HIREDIS_FILE_NAME" "hiredis-$HIREDIS_VERSION" "$HIREDIS_BASE" "HIREDIS_CONFIGURE"
-    if [ "$OS_NAME" = "Darwin" ];then
+    if [ "$OS_NAME" = "darwin" ];then
         repair_dynamic_shared_library $HIREDIS_BASE/lib "libhiredis*dylib"
     fi
 }
@@ -3665,7 +3732,8 @@ function compile_rabbitmq_c()
     # compile_libsodium
 
     RABBITMQ_C_CONFIGURE="
-    cmake -DCMAKE_INSTALL_PREFIX=$RABBITMQ_C_BASE
+    cmake -DCMAKE_INSTALL_PREFIX=$RABBITMQ_C_BASE \
+          -DCMAKE_INSTALL_LIBDIR=lib
     "
 
     compile "rabbitmq-c" "$RABBITMQ_C_FILE_NAME" "rabbitmq-c-${RABBITMQ_C_VERSION}" "$RABBITMQ_C_BASE" "RABBITMQ_C_CONFIGURE"
@@ -3759,7 +3827,7 @@ function compile_php_extension_intl()
                 --enable-intl --with-icu-dir=$ICU_BASE
     "
     compile "php_extension_intl" "$PHP_FILE_NAME" "php-$PHP_VERSION/ext/intl/" "intl.so" "PHP_EXTENSION_INTL_CONFIGURE"
-    if [ "$OS_NAME" = "Darwin" ];then
+    if [ "$OS_NAME" = "darwin" ];then
         for i in `find $PHP_LIB_DIR -name "no-debug-*"`;
         do
         {
@@ -3939,7 +4007,7 @@ function compile_php_extension_pecl_http()
 
     /bin/rm -rf package.xml
 
-    if [ "$OS_NAME" = "Darwin" ];then
+    if [ "$OS_NAME" = "darwin" ];then
         for i in `find $PHP_LIB_DIR -name "no-debug-*"`;
         do
         {
@@ -4309,7 +4377,7 @@ function compile_php_extension_tidy()
     compile "php_extension_tidy" "$PHP_FILE_NAME" "php-${PHP_VERSION}/ext/tidy" "tidy.so" "PHP_EXTENSION_TIDY_CONFIGURE"
 
     /bin/rm -rf package.xml
-    if [ "$OS_NAME" = "Darwin" ];then
+    if [ "$OS_NAME" = "darwin" ];then
         for i in `find $PHP_LIB_DIR -name "no-debug-*"`;
         do
         {
@@ -4342,7 +4410,7 @@ function compile_php_extension_imap()
     compile "php_extension_imap" "$PHP_FILE_NAME" "php-${PHP_VERSION}/ext/imap" "imap.so" "PHP_EXTENSION_IMAP_CONFIGURE"
 
     /bin/rm -rf package.xml
-    if [ "$OS_NAME" = "Darwin" ];then
+    if [ "$OS_NAME" = "darwin" ];then
         repair_dynamic_shared_library $PHP_EXTENSION_DIR/imap.so
     fi
 }
@@ -4727,7 +4795,7 @@ function install_geoip2_php()
 # {{{ function compile_zendFramework()
 function compile_zendFramework()
 {
-#    is_installed zendFramework
+#    is_installed zendFramework $ZEND_BASE
 #    if [ "$?" = "0" ];then
 #        return;
 #    fi
@@ -4743,7 +4811,7 @@ function compile_zendFramework()
 # {{{ function compile_smarty()
 function compile_smarty()
 {
-#    is_installed smarty
+#    is_installed smarty $SMARTY_BASE
 #    if [ "$?" = "0" ];then
 #        return;
 #    fi
@@ -4758,6 +4826,7 @@ function compile_smarty()
 # {{{ function compile_composer()
 function compile_composer()
 {
+    is_installed composer $COMPOSER_BASE
 
     echo_build_start composer
     decompress $COMPOSER_FILE_NAME
@@ -4773,7 +4842,7 @@ function compile_composer()
 # {{{ function compile_ckeditor()
 function compile_ckeditor()
 {
-#    is_installed ckeditor
+#    is_installed ckeditor $CKEDITOR_BASE
 #    if [ "$?" = "0" ];then
 #        return;
 #    fi
@@ -4802,7 +4871,7 @@ function compile_ckeditor()
 # {{{ function compile_jquery()
 function compile_jquery()
 {
-#    is_installed jquery
+#    is_installed jquery $JQUERY_BASE
 #    if [ "$?" = "0" ];then
 #        return;
 #    fi
@@ -4817,7 +4886,7 @@ function compile_jquery()
 # {{{ function compile_famous()
 function compile_famous()
 {
-    echo_build_start famous
+    echo_build_start famous $FAMOUS_BASE
     mkdir -p $FAMOUS_BASE
 
     decompress ${FAMOUS_FILE_NAME}
@@ -4862,7 +4931,7 @@ configure_fontforge_command()
     local tmp_arr=( "/usr/bin/autoconf" "/usr/local/bin/autoconf" "`which autoconf`" );
     local i=""
 
-    if [ "$OS_NAME" != "Darwin" ];then
+    if [ "$OS_NAME" != "darwin" ];then
         for i in ${tmp_arr[@]}; do
         {
             if [ -f "$i" ];then
@@ -4950,7 +5019,7 @@ configure_php_command()
                 --enable-maintainer-zts \
                 --with-gmp=$GMP_BASE \
                 --enable-fpm \
-                $( [ \"$OS_NAME\" != \"Darwin\" ] && echo --with-fpm-acl ) \
+                $( [ \"$OS_NAME\" != \"darwin\" ] && echo --with-fpm-acl ) \
                 --with-gd=$LIBGD_BASE \
                 --with-freetype-dir=$FREETYPE_BASE \
                 --enable-gd-native-ttf \
@@ -4990,7 +5059,7 @@ configure_libffi_command()
     local tmp_arr=( "/usr/bin/autoconf" "/usr/local/bin/autoconf" "`which autoconf`" );
     local i=""
 
-    if [ "$OS_NAME" != "Darwin" ];then
+    if [ "$OS_NAME" != "darwin" ];then
         for i in ${tmp_arr[@]}; do
         {
             if [ -f "$i" ];then
@@ -5011,7 +5080,8 @@ configure_libffi_command()
         PATH="${autoconf1%/*}:$PATH"
     fi
     PATH="$PATH" \
-    ./configure --prefix=$LIBFFI_BASE
+    ./configure --prefix=$LIBFFI_BASE \
+                --libdir=lib \
     local flag=$?
     PATH="$old_path"
     return $flag;
@@ -5020,6 +5090,7 @@ configure_libffi_command()
 # {{{ configure_icu_command()
 configure_icu_command()
 {
+    CPPFLAGS="-Wl,--enable-new-dtags,-rpath,'\$(LIBRPATH)'" \
     ./configure --prefix=$ICU_BASE
 }
 # }}}
@@ -5028,7 +5099,8 @@ configure_nginx_command()
 {
     ./configure --prefix=$NGINX_BASE \
                 --conf-path=$NGINX_CONFIG_DIR/nginx.conf \
-                $( is_new_version $NGINX_VERSION "1.12.0" && echo "--with-http_v2_module" || echo "--with-ipv6" ) \
+                $( is_new_version $NGINX_VERSION "1.9.5" && echo "--with-http_v2_module" ) \
+                --with-ipv6 \
                 --with-threads \
                 --with-http_mp4_module \
                 --with-http_sub_module \
@@ -5039,7 +5111,18 @@ configure_nginx_command()
                 --with-zlib=../zlib-$ZLIB_VERSION \
                 --with-openssl=../openssl-$OPENSSL_VERSION \
                 --with-http_gunzip_module \
+                --build=${project_name%% *} \
+                --with-http_addition_module \
+                --with-http_random_index_module \
+                --with-mail \
+                --with-mail_ssl_module \
+                --add-module=../nginx-upload-progress-module-${NGINX_UPLOAD_PROGRESS_MODULE_VERSION} \
+                --add-module=../nginx-push-stream-module-${NGINX_PUSH_STREAM_MODULE_VERSION} \
                 --with-http_gzip_static_module
+
+                #下面这个模块报错
+                #--add-module=../${NGINX_STICKY_MODULE_FILE_NAME%%.*} \
+                #--add-module=../nginx-upload-module-${NGINX_UPLOAD_MODULE_VERSION} \
 
     local flag="$?"
     if [ "$flag" != "0" ]; then
@@ -5047,7 +5130,7 @@ configure_nginx_command()
     fi
 
     # openssl编译不过去
-    [ "$OS_NAME" = "Darwin" ] && \
+    [ "$OS_NAME" = "darwin" ] && \
     sed -i.bak 's/config --prefix/Configure darwin64-x86_64-cc --prefix/' ./objs/Makefile || :
 
     local flag="$?"
@@ -5056,7 +5139,7 @@ configure_nginx_command()
     fi
 
     # openssl编译不过去, 这个不起作用
-    #$( [ \"$OS_NAME\" = \"Darwin\" ] && echo --with-openssl-opt=\"-darwin64-x86_64-cc\" ) \
+    #$( [ \"$OS_NAME\" = \"darwin\" ] && echo --with-openssl-opt=\"-darwin64-x86_64-cc\" ) \
 
 
                 # the HTTP image filter module requires the GD library.
@@ -5080,7 +5163,7 @@ configure_nginx_command()
 # {{{ configure_sphinxclient_command()
 configure_sphinxclient_command()
 {
-    if [ "$OS_NAME" = "Darwin" ];then
+    if [ "$OS_NAME" = "darwin" ];then
         CXXCPP="gcc -E" \
         ./configure --prefix=$SPHINX_CLIENT_BASE
     else
@@ -5099,7 +5182,7 @@ configure_libmemcached_command()
     #yum  install  gcc*
     #CC="gcc44" CXX="g++44"
 
-    if [ "$OS_NAME" = 'Darwin' ];then
+    if [ "$OS_NAME" = 'darwin' ];then
         # 1.0.18编译不过去时的处理
         if [ "$LIBMEMCACHED_VERSION" = "1.0.18" ]; then
             #在libmemcached/byteorder.cc的头部加上下面的代码即可：
@@ -5149,6 +5232,12 @@ configure_libevent_command()
     ./configure --prefix=$LIBEVENT_BASE --enable-openssl
 }
 # }}}
+# {{{ configure_patchelf_command()
+configure_patchelf_command()
+{
+    ./bootstrap.sh && ./configure --prefix=$PATCHELF_BASE
+}
+# }}}
 # {{{ configure_pdf2htmlEX_command()
 configure_pdf2htmlEX_command()
 {
@@ -5157,7 +5246,7 @@ configure_pdf2htmlEX_command()
     local curr_version=""
     local tmp_arr=( "/usr/bin/gcc" "/usr/local/bin/gcc" "`which gcc`" );
     local i=""
-    if [ "$OS_NAME" != "Darwin" ];then
+    if [ "$OS_NAME" != "darwin" ];then
         for i in ${tmp_arr[@]}; do
         {
             if [ -f "$i" ];then
@@ -5172,7 +5261,7 @@ configure_pdf2htmlEX_command()
         done
     fi
 
-    if [ "$OS_NAME" != 'Darwin' -a -z "$gcc" ];then
+    if [ "$OS_NAME" != 'darwin' -a -z "$gcc" ];then
         echo "please update your compiler." >&2
         return 1;
     fi
@@ -5182,7 +5271,7 @@ configure_pdf2htmlEX_command()
     #指定编译器,因为编译器版本太低，重新编译了编译器
 
      cmake ./ -DCMAKE_INSTALL_PREFIX=$PDF2HTMLEX_BASE \
-              $([ "$OS_NAME" != 'Darwin' ] && echo "
+              $([ "$OS_NAME" != 'darwin' ] && echo "
               -DCMAKE_CXX_COMPILER=$(dirname $gcc)/g++ \
               -DCMAKE_C_COMPILER=$gcc
               ")
@@ -5199,10 +5288,10 @@ configure_ImageMagick_command()
 {
     # ld: symbol(s) not found for architecture x86_64
     # 用下面的CPPFLAGS LDFLAGS 或 --without-png
-    CPPFLAGS="$(get_cppflags ${ZLIB_BASE}/include ${LIBPNG_BASE}/include ${FREETYPE_BASE}/include ${FONTCONFIG_BASE}/include ${JPEG_BASE}/include $([ "$OS_NAME" = 'Darwin' ] && echo " $LIBX11_BASE/include") )" \
-    LDFLAGS="$(get_ldflags ${ZLIB_BASE}/lib ${LIBPNG_BASE}/lib ${FREETYPE_BASE}/lib ${FONTCONFIG_BASE}/lib ${JPEG_BASE}/lib $([ "$OS_NAME" = 'Darwin' ] && echo " $LIBX11_BASE/lib") )" \
+    CPPFLAGS="$(get_cppflags ${ZLIB_BASE}/include ${LIBPNG_BASE}/include ${FREETYPE_BASE}/include ${FONTCONFIG_BASE}/include ${JPEG_BASE}/include $([ "$OS_NAME" = 'darwin' ] && echo " $LIBX11_BASE/include") )" \
+    LDFLAGS="$(get_ldflags ${ZLIB_BASE}/lib ${LIBPNG_BASE}/lib ${FREETYPE_BASE}/lib ${FONTCONFIG_BASE}/lib ${JPEG_BASE}/lib $([ "$OS_NAME" = 'darwin' ] && echo " $LIBX11_BASE/lib") )" \
     ./configure --prefix=$IMAGEMAGICK_BASE \
-                $( [ \"$OS_NAME\" != \"Darwin\" ] && echo '--enable-opencl' )
+                $( [ \"$OS_NAME\" != \"darwin\" ] && echo '--enable-opencl' )
                 #--without-png \
 }
 # }}}
@@ -5255,7 +5344,7 @@ configure_php_amqp_command()
 configure_php_tidy_command()
 {
     # sed -i.bak.$$ 's/\<buffio.h/tidybuffio.h/' tidy.c
-    sed $( [ "$OS_NAME" = "Darwin" ] && echo "-i ''" ||  echo '-i ' ) 's/\([^a-zA-Z0-9_-]\)buffio.h/\1tidybuffio.h/' tidy.c
+    sed $( [ "$OS_NAME" = "darwin" ] && echo "-i ''" ||  echo '-i ' ) 's/\([^a-zA-Z0-9_-]\)buffio.h/\1tidybuffio.h/' tidy.c
     ./configure --with-php-config=$PHP_BASE/bin/php-config --with-tidy=$TIDY_BASE
 }
 # }}}
@@ -5281,7 +5370,7 @@ function compile_rabbitmq()
 
     echo "compile_rabbitmq 未完成" >&2
     return 1;
-    is_installed rabbitmq
+    is_installed rabbitmq $RABBITMQ_BASE
     if [ "$?" = "0" ];then
         return;
     fi
@@ -5292,6 +5381,32 @@ function compile_rabbitmq()
     "
 
     compile "rabbitmq" "$RABBITMQ_FILE_NAME" "rabbitmq-$RABBITMQ_VERSION" "$RABBITMQ_BASE" "RABBITMQ_CONFIGURE"
+}
+# }}}
+# {{{ function compile_phantomjs()
+function compile_phantomjs()
+{
+    #这个编译太慢，不编译了
+    is_installed phantomjs ${PHANTOMJS_BASE}
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    echo_build_start phantomjs
+
+    local phantomjs_dir=${PHANTOMJS_FILE_NAME%.*}
+    phantomjs_dir=${phantomjs_dir%.tar}
+
+    mkdir -p ${PHANTOMJS_BASE}/bin && \
+      decompress $PHANTOMJS_FILE_NAME && \
+      cp ${phantomjs_dir}/bin/phantomjs $PHANTOMJS_BASE/bin/ && \
+      rm -rf $phantomjs_dir
+
+    if [ "$?" != "0" ]; then
+        echo "安装phantomjs失败" >&2
+        #return 1;
+        exit 1;
+    fi
 }
 # }}}
 # {{{ function compile_php_extension_rabbitmq()
@@ -5351,6 +5466,8 @@ function check_soft_updates()
 #    check_version famous_angular
 #check_version swfupload
 #    exit;
+    check_version phantomjs
+    check_version patchelf
     check_version ckeditor
     check_version composer
     check_version memcached
@@ -5470,6 +5587,11 @@ function check_soft_updates()
     check_version phantomjs
     check_version laravel
     check_version laravel_framework
+
+    check_version nginx_upload_progress_module
+    check_version nginx_upload_progress_module
+    check_version nginx_push_stream_module
+    check_version nginx_sticky_module
 }
 # }}}
 # {{{ check all soft version
@@ -5766,6 +5888,31 @@ function check_nginx_version()
 
     echo -e "nginx current version: \033[0;33m${NGINX_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 
+}
+# }}}
+# {{{ function check_nginx_upload_progress_module_version()
+function check_nginx_upload_progress_module_version()
+{
+    check_github_soft_version nginx-upload-progress-module $NGINX_UPLOAD_PROGRESS_MODULE_VERSION "https://github.com/masterzen/nginx-upload-progress-module/releases"
+}
+# }}}
+# {{{ function check_nginx_upload_progress_module_version()
+function check_nginx_upload_module_version()
+{
+    check_github_soft_version nginx-upload-module $NGINX_UPLOAD_MODULE_VERSION "https://github.com/vkholodkov/nginx-upload-module/releases"
+}
+# }}}
+# {{{ function check_nginx_push_stream_module_version()
+function check_nginx_push_stream_module_version()
+{
+    NGINX_STICKY_MODULE_VERSION="1.2.6"
+    check_github_soft_version nginx-push-stream-module $NGINX_PUSH_STREAM_MODULE_VERSION "https://github.com/wandenberg/nginx-push-stream-module/releases"
+}
+# }}}
+# {{{ function check_nginx_sticky_module_version()
+function check_nginx_sticky_module_version()
+{
+    check_ftp_version nginx-sticky-module ${NGINX_STICKY_MODULE_VERSION} "https://bitbucket.org/nginx-goodies/nginx-sticky-module-ng/downloads/?tab=tags" 's/^.\{1,\}="[^"]\{1,\}\/get\/v\([0-9.]\{1,\}\)\.tar\.bz2">.\{0,\}$/\1/p'
 }
 # }}}
 # {{{ function check_json_c_version()
@@ -6136,6 +6283,12 @@ function check_swoole_version()
 function check_libevent_version()
 {
     check_github_soft_version libevent $LIBEVENT_VERSION "https://github.com/libevent/libevent/releases" "release-\([0-9.]\{5,\}\)\(-stable\)\{0,1\}\.tar\.gz" 1
+}
+# }}}
+# {{{ function check_patchelf_version()
+function check_patchelf_version()
+{
+    check_github_soft_version patchelf $PATCHELF_VERSION "https://github.com/NixOS/patchelf/releases"
 }
 # }}}
 # {{{ function check_rsyslog_version()
@@ -7082,7 +7235,7 @@ function export_path()
 # {{{ function repair_dynamic_shared_library() mac下解决Library not loaded 问题
 function repair_dynamic_shared_library()
 {
-    if [ "$OS_NAME" != "Darwin" ];then
+    if [ "$OS_NAME" != "darwin" ];then
         echo "this funtion[repair_dynamic_shared_library] not support  current OS[$OS_NAME]." >&2
         return;
     fi
@@ -7132,6 +7285,103 @@ function repair_dynamic_shared_library()
     done
 }
 # }}}
+# {{{ repair elf file Linux下解决Library not loaded 问题
+# {{{ function repair_dir_elf_rpath
+function repair_dir_elf_rpath() {
+    local path="$1"
+    local i=""
+    local j=""
+    if [ -z "$path" -o ! -e "$path" ]; then
+        echo "要修复的目录不存在" >&2
+        return 1;
+    fi
+    path=`realpath $path`;
+    if [ ! -d "$path" ];then
+        echo "要修复的目录不存在" >&2
+        return 1;
+    fi
+
+    local path1=`find $path -type d \( -name lib -o -name -lib64 -o -name bin -o -name sbin \)`;
+    if [ -z "$path1" ];then
+        path1=$path
+    fi
+    for j in `echo "$path1"`;
+    do
+        for i in `find $j -type f`;
+        do
+            is_elf_file $i
+
+            if [ "$?" != "0" ];then
+                continue
+            fi
+            repair_elf_file_rpath $i
+        done &
+    done
+    wait
+}
+# }}}
+# {{{ function is_elf_file
+function is_elf_file() {
+    local filename="$1"
+    if [ -z "$filename" -o ! -e "$filename" ];then
+        echo "is_elf_file function: 文件[${filename}]不存在" >&2
+        return 1;
+    fi
+
+    file -b $filename |grep -q ELF
+}
+# }}}
+# {{{ function repair_elf_file_rpath
+function repair_file_rpath() {
+    local filename=$1
+    if [ -z "$filename" -o ! -e "$filename" ];then
+        echo "要修复的文件不存在" >&2
+        return 1;
+    fi
+
+    filename=`realpath $filename`;
+    if [ ! -f "$filename" ];then
+        echo "要修复的文件不存在" >&2
+        return 1;
+    fi
+
+    is_elf_file $filename
+
+    if [ "$?" != "0" ];then
+        return 1;
+    fi
+
+    local tmp_str=`ldd $filename 2>/dev/null`;
+    if echo "$tmp_str" |grep -q 'not found' ;then
+        # 查找链接的所有so文件的目录
+        local rpath=$(find_not_found_so_rpath "$tmp_str")$(find_found_so_rpath "$tmp_str")
+        rpath=${rpath%%:}
+        # 修复文件
+        # 相同目录
+        # --set-rpath '$ORIGIN/'
+        $PATCHELF_BASE/bin/patchelf --set-rpath $rpath $filename
+        $PATCHELF_BASE/bin/patchelf --shrink-rpath $filename
+    fi
+}
+# }}}
+# {{{ function find_not_found_so_rpath
+function find_not_found_so_rpath() {
+    local j=""
+    # 没找到的so，查找文件所在目录
+    for j in `echo "$@"|grep 'not found'|awk '{print $1;}'`;
+    do
+        find $BASE_DIR/ -name $j |xargs dirname
+    done | sort -u | tr "\n" ":"
+}
+# }}}
+# {{{ function find_found_so_rpath
+function find_found_so_rpath() {
+    # 能找到的so的目录
+    echo "$tmp_str"|grep '=>' | grep '/' |grep -v 'not found'|awk '{print $3;}'|xargs dirname | sort -u | tr "\n" ":"
+}
+# }}}
+# }}}
+# {{{ function pthreads ()  多进程实现
 function pthreads () {
     local task_name=$1
     local func_name=$2
@@ -7170,8 +7420,7 @@ function pthreads () {
     exec 6>&- # 关闭fd6
     return;
 }
-
-
+# }}}
 
 #wget --content-disposition --no-check-certificate https://github.com/vrtadmin/clamav-devel/archive/clamav-0.99.2.tar.gz
 #tar zxf clamav-devel-clamav-0.99.2.tar.gz
@@ -7214,10 +7463,26 @@ function pthreads () {
 
 # 每周三5点更新 (GeoIP2、GeoIP旧版国家及城市以及GeoIP旧版区域数据库每周二更新。所有其他数据库在每个月的第一个周二更新)
 # 时差
-#0 5 * * 3 /usr/local/eyou/mail/opt/bin/geoipupdate >/dev/null 2>&1 &
+#0 5 * * 3 $GEOIPUPDATE_BASE/bin/geoipupdate >/dev/null 2>&1 &
 
 # 问题，及解决方法
 #libtoolize --quiet
 #libtoolize: `COPYING.LIB' not found in `/usr/share/libtool/libltdl'
 #yum install libtool-ltdl-devel
 
+
+
+#https://imququ.com/post/letsencrypt-certificate.html
+# https://imququ.com/post/ecc-certificate.html
+#https://github.com/masterzen/nginx-upload-progress-module/releases
+# https://github.com/vkholodkov/nginx-upload-module/releases
+# http://nginx.org/en/docs/http/ngx_http_v2_module.html
+
+#https://imququ.com/post/letsencrypt-certificate.html
+#https://github.com/diafygi/acme-tiny
+
+#http://www.xunsearch.com/scws/
+# https://xapian.org/download
+# solr Sphinx Xapian,c++开发, 国内的 xunsearch 基于Xapian
+
+#https://github.com/exinnet/tclip

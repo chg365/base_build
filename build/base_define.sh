@@ -5,6 +5,8 @@ project_abbreviation="chg_base"
 
 #HOSTTYPE=x86_64
 #OSTYPE=linux-gnu
+declare -l OS_NAME
+declare -l HOST_TYPE
 OS_NAME=`uname -s`;   # Linux
 HOST_TYPE=`uname -m`; # x86_64
 
@@ -16,6 +18,7 @@ OPT_BASE=$BASE_DIR/opt
 
 # {{{ open source libray info
 # {{{ open source libray install base dir
+PATCHELF_BASE=$CONTRIB_BASE
 RE2C_BASE="$COMPILE_BASE"
 PCRE_BASE=$CONTRIB_BASE
 OPENSSL_BASE=$CONTRIB_BASE
@@ -72,7 +75,7 @@ POPPLER_BASE=$CONTRIB_BASE
 PANGO_BASE=$CONTRIB_BASE
 FONTFORGE_BASE=$CONTRIB_BASE
 PDF2HTMLEX_BASE=$CONTRIB_BASE
-#if [ "$OS_NAME" = 'Darwin' ];then
+#if [ "$OS_NAME" = 'darwin' ];then
 LIBX11_BASE=$CONTRIB_BASE
 XPROTO_BASE=$LIBX11_BASE
 MACROS_BASE=$LIBX11_BASE
@@ -126,6 +129,7 @@ PHANTOMJS_BASE=$CONTRIB_BASE
 # {{{ open source libray version info
 PKGCONFIG_VERSION="0.29.2" # http://pkgconfig.freedesktop.org/releases/
 RE2C_VERSION="0.16" # http://re2c.org/about/about.html#version
+PATCHELF_VERSION="0.9"
 
 PCRE_VERSION="8.40"
 #PCRE_VERSION="10.20" # pcre2 编译apache时报错
@@ -173,7 +177,7 @@ POPPLER_VERSION="0.55.0"
 PANGO_VERSION="1.40.6"
 FONTFORGE_VERSION="20161012"
 PDF2HTMLEX_VERSION="0.14.6" # https://github.com/coolwanglu/pdf2htmlEX
-#if [ "$OS_NAME" = 'Darwin' ];then
+#if [ "$OS_NAME" = 'darwin' ];then
 LIBX11_VERSION="1.6.5"
 XPROTO_VERSION="7.0.31"
 MACROS_VERSION="1.19.1"
@@ -210,7 +214,7 @@ LIBLOGGING_VERSION="1.0.6"
 LIBGCRYPT_VERSION="1.7.6"
 LIBGPG_ERROR_VERSION="1.27"
 LIBESTR_VERSION="0.1.10"
-PHP_VERSION="7.1.4" # 7.0.17
+PHP_VERSION="7.1.5" # 7.0.17
 COMPOSER_VERSION="1.4.2"
 
 MEMCACHED_VERSION="1.4.36"
@@ -263,8 +267,14 @@ GEOIPUPDATE_VERSION="2.4.0"
 ELECTRON_VERSION="1.7.2"
 PHANTOMJS_VERSION="2.1.1"
 
+NGINX_UPLOAD_PROGRESS_MODULE_VERSION="0.9.2"
+NGINX_PUSH_STREAM_MODULE_VERSION="0.5.2"
+NGINX_STICKY_MODULE_VERSION="1.2.6"
+NGINX_UPLOAD_MODULE_VERSION="2.2.0"
+
 # }}}
 # {{{ open source libray  file name
+PATCHELF_FILE_NAME="patchelf-${PATCHELF_VERSION}.tar.gz"
 RE2C_FILE_NAME="re2c-${RE2C_VERSION}.tar.gz"
 OPENSSL_FILE_NAME="openssl-${OPENSSL_VERSION}.tar.gz"
 HIREDIS_FILE_NAME="hiredis-${HIREDIS_VERSION}.tar.gz"
@@ -339,7 +349,7 @@ PECL_HTTP_FILE_NAME="pecl_http-${PECL_HTTP_VERSION}.tgz"
 AMQP_FILE_NAME="amqp-${AMQP_VERSION}.tgz"
 MAILPARSE_FILE_NAME="mailparse-${MAILPARSE_VERSION}.tgz"
 PHP_REDIS_FILE_NAME="redis-${PHP_REDIS_VERSION}.tgz"
-PHP_GEARMAN_FILE_NAME="$( [ "$OS_NAME" != "Darwin" ] && echo "pecl-gearman-" )gearman-${PHP_GEARMAN_VERSION}.tar.gz"
+PHP_GEARMAN_FILE_NAME="$( [ "$OS_NAME" != "darwin" ] && echo "pecl-gearman-" )gearman-${PHP_GEARMAN_VERSION}.tar.gz"
 PHP_MONGODB_FILE_NAME="mongodb-${PHP_MONGODB_VERSION}.tgz"
 SOLR_FILE_NAME="solr-${SOLR_VERSION}.tgz"
 MEMCACHED_FILE_NAME="memcached-${MEMCACHED_VERSION}.tar.gz"
@@ -369,7 +379,7 @@ FAMOUS_FRAMEWORK_FILE_NAME="framework-${FAMOUS_FRAMEWORK_VERSION}.tar.gz"
 SWFUPLOAD_FILE_NAME="SWFUpload v${SWFUPLOAD_VERSION} Core.zip"
 
 
-#if [ "$OS_NAME" = 'Darwin' ];then
+#if [ "$OS_NAME" = 'darwin' ];then
 KBPROTO_FILE_NAME="kbproto-${KBPROTO_VERSION}.tar.bz2"
 INPUTPROTO_FILE_NAME="inputproto-${INPUTPROTO_VERSION}.tar.bz2"
 XEXTPROTO_FILE_NAME="xextproto-${XEXTPROTO_VERSION}.tar.bz2"
@@ -392,7 +402,17 @@ WEB_SERVICE_COMMON_PHP_FILE_NAME="web-service-common-php-${WEB_SERVICE_COMMON_PH
 GEOIP2_PHP_FILE_NAME="GeoIP2-php-${GEOIP2_PHP_VERSION}.tar.gz"
 GEOIPUPDATE_FILE_NAME="geoipupdate-${GEOIPUPDATE_VERSION}.tar.gz"
 ELECTRON_FILE_NAME="electron-${ELECTRON_VERSION}.tar.gz"
-PHANTOMJS_FILE_NAME="phantomjs-${PHANTOMJS_VERSION}.tar.gz"
+#PHANTOMJS_FILE_NAME="phantomjs-${PHANTOMJS_VERSION}.tar.gz"
+if [ "$OS_NAME" = "darwin" ];then
+PHANTOMJS_FILE_NAME="phantomjs-${PHANTOMJS_VERSION}-macosx.zip"
+else
+PHANTOMJS_FILE_NAME="phantomjs-${PHANTOMJS_VERSION}-${OS_NAME}-${HOST_TYPE}.tar.bz2"
+fi
+NGINX_UPLOAD_PROGRESS_MODULE_FILE_NAME="nginx-upload-progress-module-${NGINX_UPLOAD_PROGRESS_MODULE_VERSION}.tar.gz"
+NGINX_PUSH_STREAM_MODULE_FILE_NAME="nginx-push-stream-module-${NGINX_PUSH_STREAM_MODULE_VERSION}.tar.gz"
+NGINX_STICKY_MODULE_FILE_NAME="nginx-sticky-module-${NGINX_STICKY_MODULE_VERSION}.tar.gz"
+NGINX_STICKY_MODULE_FILE_NAME="nginx-goodies-nginx-sticky-module-ng-c78b7dd79d0d.tar.gz"
+NGINX_UPLOAD_MODULE_FILE_NAME="nginx-upload-module-${NGINX_UPLOAD_MODULE_VERSION}.tar.gz"
 # }}}
 
 # }}}
@@ -411,6 +431,7 @@ RSYSLOG_CONFIG_DIR=$BASE_DIR/etc/rsyslog
 MYSQL_CONFIG_DIR=$BASE_DIR/etc/mysql
 PHP_FPM_CONFIG_DIR=$BASE_DIR/etc/php-fpm
 APACHE_CONFIG_DIR=$BASE_DIR/etc/apache
+SSL_CONFIG_DIR=$BASE_DIR/etc/ssl
 
 NGINX_LOG_DIR=$LOG_DIR/nginx
 rsyslog_LOG_DIR=$LOG_DIR/rsyslog
@@ -419,8 +440,9 @@ rsyslog_LOG_DIR=$LOG_DIR/rsyslog
 MYSQL_DATA_DIR=$DATA_DIR/mysql
 MYSQL_RUN_DIR=$BASE_DIR/run/mysql
 
-UPLOAD_TMP_DIR=$DATA_DIR/tmp/upload
-WSDL_CACHE_DIR=$DATA_DIR/tmp/wsdl/
+TMP_DATA_DIR=$DATA_DIR/tmp
+UPLOAD_TMP_DIR=$TMP_DATA_DIR/upload
+WSDL_CACHE_DIR=$TMP_DATA_DIR/wsdl/
 
 php_ini=$PHP_CONFIG_DIR/php.ini
 mysql_cnf=$MYSQL_CONFIG_DIR/my.cnf

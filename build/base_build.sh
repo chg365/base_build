@@ -83,7 +83,7 @@ if  sudo grep -q '^Defaults    requiretty' /etc/sudoers ;then
 fi;
 # }}}
 # {{{ cmake
-if [ "$OS_NAME" = 'Darwin' ];then
+if [ "$OS_NAME" = 'darwin' ];then
     which brew > /dev/null 2>&1
     if [ $? -ne 0 ];then
         echo "缺少工具brew."
@@ -93,7 +93,7 @@ fi
 which cmake > /dev/null 2>&1
 if [ $? -ne 0 ];then
     echo "缺少工具cmake."
-    if [ "$OS_NAME" = 'Linux' ];then
+    if [ "$OS_NAME" = 'linux' ];then
         echo "linux下执行： sudo yum install cmake 安装";
     else
         echo "执行: brew install cmake 安装";
@@ -105,12 +105,12 @@ fi
 # fontconfig需要工具
 function check_docbook2pdf()
 {
-    if [ "$OS_NAME" != 'Darwin' ];then
+    if [ "$OS_NAME" != 'darwin' ];then
         which docbook2pdf > /dev/null 2>&1;
 
         if [ $? -ne 0 ];then
             echo "缺少工具docbook2pdf." >&2
-            if [ "$OS_NAME" = 'Linux' ];then
+            if [ "$OS_NAME" = 'linux' ];then
                 echo "linux下执行： sudo yum install docbook-utils-pdf 安装";
             else
                 echo "需要安装 docbook-utils-pdf";
@@ -125,7 +125,7 @@ function check_docbook2pdf()
 # 以下方式没有实现，先用 -i.bak.$$的方式实现，最后删除这些备份
 sed_ver="GNU"
 sed_i="-i"
-if [ "$OS_NAME" = "Darwin" ];then
+if [ "$OS_NAME" = "darwin" ];then
     sed --versioin > /dev/null 2>&1
     if [ "$?" = "1" ];then
         sed_ver="BSD"
@@ -160,6 +160,7 @@ export LANG=C
 pkg_config_path_init
 #check_soft_updates
 #exit;
+compile_patchelf
 compile_openssl
 compile_ImageMagick
 compile_redis
@@ -174,7 +175,13 @@ compile_mysql
 compile_nginx
 compile_sqlite
 compile_rsyslog
-#compile_pdf2htmlEX
+compile_phantomjs
+gcc_minimum_version="4.7.99"
+gcc_version=`gcc --version 2>/dev/null|head -1|awk '{ print $3;}'`;
+gcc_new_version=`echo $gcc_version $gcc_minimum_version|tr " " "\n"|sort -rV|head`;
+if [ "$gcc_new_version" != "$gcc_minimum_version" ]; then
+    compile_pdf2htmlEX
+fi
 compile_php_extension_gearman
 compile_php_extension_dio
 compile_php_extension_pthreads
@@ -191,7 +198,8 @@ compile_php_extension_phalcon
 compile_php_extension_xdebug
 compile_php_extension_raphf
 compile_php_extension_propro
-compile_php_extension_pecl_http
+# 编译上这个后，pthreads 报 段错误  3.1.0
+#compile_php_extension_pecl_http
 compile_php_extension_amqp
 compile_php_extension_mailparse
 compile_php_extension_redis
@@ -222,6 +230,8 @@ end_time=`date +%s`
 echo "used times: $((end_time - start_time))s"
 
 echo $LD_LIBRARY_PATH
+[ "$OS_NAME" != "linux" ] && repair_dir_elf_rpath $BASE_DIR
+#repair_file_rpath $LIBICU_BASE/lib/libicutu.so
 exit;
 cp $php_ini $PHP_CONFIG_DIR/php-cli.ini
 
@@ -291,10 +301,7 @@ sed -i '/extension=pthreads.so/d' $php_ini
 
 
 wget http://pecl.php.net/get/geoip-1.1.0.tgz
-
-
-http://stock.qq.com/a/20160718/005704.htm
-
+https://github.com/leev/ngx_http_geoip2_module
 wget --content-disposition --no-check-certificate https://github.com/maxmind/geoip-api-c/releases/download/v1.6.9/GeoIP-1.6.9.tar.gz
 wget --content-disposition --no-check-certificate  https://github.com/maxmind/geoip-api-c/archive/v1.6.9.tar.gz
 tar zxf geoip-api-c-1.6.9.tar.gz
