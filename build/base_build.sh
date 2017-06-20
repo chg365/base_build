@@ -174,7 +174,6 @@ compile_sphinx
 compile_mysql
 compile_nginx
 compile_sqlite
-compile_rsyslog
 compile_phantomjs
 gcc_minimum_version="4.7.99"
 gcc_version=`gcc --version 2>/dev/null|head -1|awk '{ print $3;}'`;
@@ -182,7 +181,10 @@ gcc_new_version=`echo $gcc_version $gcc_minimum_version|tr " " "\n"|sort -rV|hea
 if [ "$gcc_new_version" != "$gcc_minimum_version" ]; then
     compile_pdf2htmlEX
 fi
+if [ "$OS_NAME" != 'darwin' ];then
+compile_rsyslog
 compile_php_extension_gearman
+fi
 compile_php_extension_dio
 compile_php_extension_pthreads
 compile_php_extension_qrencode
