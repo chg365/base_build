@@ -5468,132 +5468,132 @@ function check_soft_updates()
 #    check_version famous_angular
 #check_version swfupload
 #    exit;
-    check_version phantomjs
-    check_version patchelf
-    check_version ckeditor
-    check_version composer
-    check_version memcached
-    check_version apache
-    check_version apr
-    check_version apr_util
-    check_version postgresql
-    check_version libsodium
-    check_version pango
-    check_version poppler
-    check_version fontconfig
-    check_version expat
-    check_version cairo
-    check_version pixman
-    check_version jpeg
-    check_version libgd
-    check_version qrencode
-    check_version libmemcached
-    check_version kerberos
-    check_version imap
-    check_version inputproto
-    check_version xextproto
-    check_version xproto
-    check_version xtrans
-    check_version libXau
-    check_version libX11
-    check_version libpthread_stubs
-    check_version libxcb
-    check_version xcb_proto
-    check_version macros
-    check_version xf86bigfontproto
-    check_version kbproto
-    check_version libXpm
-    check_version libmcrypt
-    check_version libxslt
-    check_version libxml2
-    check_version gettext
-    check_version libiconv
-    check_version libjpeg
-    check_version pcre
-    check_version boost
-    check_version gearman
-    check_version gearmand
-    check_version libevent
-    check_version curl
-    check_version fontforge
-    check_version libpng
-    check_version util_linux
-    check_version glib
-    check_version freetype
-    check_version harfbuzz
-    check_version nasm
-    check_version json_c
-    check_version libfastjson
-    check_version nginx
-    check_version rsyslog
-    check_version liblogging
-    check_version libgcrypt
-    check_version libgpg_error
-    check_version libestr
-    check_version hiredis
-    check_version redis
-    check_version libunwind
-    check_version zeromq
-    check_version sqlite
-    check_version swoole
-    check_version openssl
-    check_version icu
-    check_version zlib
-    check_version libzip
-    check_version gmp
-    check_version php
-    check_version mysql
-    check_version imagemagick
-    check_version pkgconfig
+    local array=(
+            patchelf
+            ckeditor
+            composer
+            memcached
+            apache
+            apr
+            apr_util
+            postgresql
+            libsodium
+            pango
+            poppler
+            fontconfig
+            expat
+            cairo
+            pixman
+            jpeg
+            libgd
+            qrencode
+            libmemcached
+            kerberos
+            imap
+            inputproto
+            xextproto
+            xproto
+            xtrans
+            libXau
+            libX11
+            libpthread_stubs
+            libxcb
+            xcb_proto
+            macros
+            xf86bigfontproto
+            kbproto
+            libXpm
+            libmcrypt
+            libxslt
+            libxml2
+            gettext
+            libiconv
+            libjpeg
+            pcre
+            boost
+            gearman
+            gearmand
+            libevent
+            curl
+            fontforge
+            libpng
+            util_linux
+            glib
+            freetype
+            harfbuzz
+            nasm
+            json_c
+            libfastjson
+            nginx
+            rsyslog
+            liblogging
+            libgcrypt
+            libgpg_error
+            libestr
+            hiredis
+            redis
+            libunwind
+            zeromq
+            sqlite
+            swoole
+            openssl
+            icu
+            zlib
+            libzip
+            gmp
+            php
+            mysql
+            imagemagick
+            pkgconfig
+            re2c
+            tidy
+            sphinx
+            pecl_sphinx
+            openjpeg
+            pdf2htmlEX
 
-    # github
-    check_version re2c
-    check_version tidy
-    check_version sphinx
-    check_version pecl_sphinx
-    check_version openjpeg
-    check_version fontforge
-    check_version pdf2htmlEX
+            pecl_pthreads
+            pecl_solr
+            pecl_mailparse
+            pecl_amqp
+            pecl_http
+            pecl_propro
+            pecl_raphf
+            pecl_apcu
+            pecl_apcu_bc
+            pecl_libevent
+            pecl_event
+            pecl_xdebug
+            pecl_dio
+            pecl_memcached
+            pecl_qrencode
+            pecl_mongodb
+            pecl_zmq
+            pecl_redis
+            pecl_imagick
+            pecl_phalcon
+            pecl_yaf
+            pecl_libsodium
 
-    check_pecl_pthreads_version
-    check_pecl_solr_version
-    check_pecl_mailparse_version
-    check_pecl_amqp_version
-    check_pecl_http_version
-    check_pecl_propro_version
-    check_pecl_raphf_version
-    check_pecl_apcu_version
-    check_pecl_apcu_bc_version
-    check_pecl_libevent_version
-    check_pecl_event_version
-    check_pecl_xdebug_version
-    check_pecl_dio_version
-    check_pecl_memcached_version
-    check_pecl_qrencode_version
-    check_pecl_mongodb_version
-    check_pecl_zmq_version
-    check_pecl_redis_version
-    check_pecl_imagick_version
-    check_pecl_phalcon_version
-    check_pecl_yaf_version
-    check_pecl_libsodium_version
+            smarty
+            rabbitmq
+            libmaxminddb
+            maxmind_db_reader_php
+            web_service_common_php
+            geoip2_php
+            geoipupdate
+            electron
+            phantomjs
+            laravel
+            laravel_framework
 
-    check_version smarty
-    check_version rabbitmq
-    check_version libmaxminddb
-    check_version maxmind_db_reader_php
-    check_version web_service_common_php
-    check_version geoip2_php
-    check_version geoipupdate
-    check_version electron
-    check_version phantomjs
-    check_version laravel
-    check_version laravel_framework
+            nginx_upload_progress_module
+            nginx_upload_progress_module
+            nginx_push_stream_module
+            nginx_sticky_module
 
-    check_version nginx_upload_progress_module
-    check_version nginx_upload_progress_module
-    check_version nginx_push_stream_module
-    check_version nginx_sticky_module
+            );
+    multi_process check_version check_version 15 "${array[@]}"
 }
 # }}}
 # {{{ check all soft version
@@ -7383,44 +7383,37 @@ function find_found_so_rpath() {
 }
 # }}}
 # }}}
-# {{{ function pthreads ()  多进程实现
-function pthreads () {
+# {{{ function multi_process() 多进程实现
+function multi_process() {
     local task_name=$1
     local func_name=$2
-    local thread_num=$3
-    local params_name=$4
-
-    thread_num=5  # 最大可同时执行线程数量
-    job_num=100   # 任务总数
-
+    local thread_num=$3 # 最大可同时执行线程数量
+    local job_num=$(($# - 3))    # 任务总数
 
     tmp_fifofile="/tmp/${task_name}_$$.fifo";
     mkfifo $tmp_fifofile ;      # 新建一个fifo类型的文件
     exec 6<>$tmp_fifofile ;     # 将fd6指向fifo类型
     rm $tmp_fifofile ;   #删也可以
 
-
     #根据线程总数量设置令牌个数
     for ((i=0;i<${thread_num};i++));do
         echo
     done >&6
 
-    for ((i=0;i<${job_num};i++));do # 任务数量
+    for ((i=4;i<=${job_num} + 4 - 1;i++));do # 任务数量
         # 一个read -u6命令执行一次，就从fd6中减去一个回车符，然后向下执行，
         # fd6中没有回车符的时候，就停在这了，从而实现了线程数量控制
         read -u6
 
         #可以把具体的需要执行的命令封装成一个函数
         {
-            my_cmd $i
+            $func_name ${!i}
             echo >&6 # 当进程结束以后，再向fd6中加上一个回车符，即补上了read -u6减去的那个
         } &
-
     done
 
     wait
     exec 6>&- # 关闭fd6
-    return;
 }
 # }}}
 
