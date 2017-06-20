@@ -145,8 +145,8 @@ if [ "$OS_NAME" != 'darwin' ];then
     gcc_new_version=`echo $gcc_version $gcc_minimum_version|tr " " "\n"|sort -rV|head`;
     if [ "$gcc_new_version" = "$gcc_minimum_version" ]; then
         ICU_VERSION="58.2"
-    if
-if
+    fi
+fi
 LIBZIP_VERSION="1.2.0" # http://www.nih.at/libzip/index.html
 GETTEXT_VERSION="0.19.8.1" # http://ftp.gnu.org/gnu/gettext/
 LIBICONV_VERSION="1.15" # http://ftp.gnu.org/gnu/libiconv/
