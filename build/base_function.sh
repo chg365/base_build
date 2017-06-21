@@ -4993,6 +4993,16 @@ configure_harfbuzz_command()
 # {{{ configure_php_command()
 configure_php_command()
 {
+    if [ "$PHP_VERSION" = "7.1.5" ];then
+        sed -i.bak$$ '38311{/^ \{0,\}LDFLAGS=$O_LDFLAGS \{0,\}/d;}' ./configure
+        sed -i.bak$$ '37700a\
+            LDFLAGS=$O_LDFLAGS' ./configure
+    elif [ "$PHP_VERSION" = "7.1.6" ];then
+        sed -i.bak$$ '38312{/^ \{0,\}LDFLAGS=$O_LDFLAGS \{0,\}$/d;}' ./configure
+        sed -i.bak$$ '37701a\
+            LDFLAGS=$O_LDFLAGS' ./configure
+    fi
+
     # EXTRA_LIBS="-lresolv" \
     ./configure --prefix=$PHP_BASE \
                 --sysconfdir=$PHP_FPM_CONFIG_DIR \
