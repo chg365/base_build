@@ -5083,7 +5083,8 @@ configure_libffi_command()
     fi
     PATH="$PATH" \
     ./configure --prefix=$LIBFFI_BASE \
-                --libdir=$LIBFFI_BASE/lib
+                # --libdir=$LIBFFI_BASE/lib
+
     local flag=$?
     PATH="$old_path"
     return $flag;
