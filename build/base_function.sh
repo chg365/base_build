@@ -1542,7 +1542,7 @@ function is_installed_nginx()
     if [ ! -f "$NGINX_BASE/sbin/nginx" ];then
         return 1;
     fi
-    local version=`$NGINX_BASE/sbin/nginx -v 2>&1|awk -F/ '{ print $NF; }'`
+    local version=`$NGINX_BASE/sbin/nginx -v 2>&1|awk -F'[ /]' '{ print $4; }'`
     if [ "$version" != "$NGINX_VERSION" ];then
         return 1;
     fi
@@ -5362,7 +5362,7 @@ configure_php_amqp_command()
 configure_php_tidy_command()
 {
     # sed -i.bak.$$ 's/\<buffio.h/tidybuffio.h/' tidy.c
-    sed $( [ "$OS_NAME" = "darwin" ] && echo "-i ''" ||  echo '-i ' ) 's/\([^a-zA-Z0-9_-]\)buffio.h/\1tidybuffio.h/' tidy.c
+    #sed $( [ "$OS_NAME" = "darwin" ] && echo "-i ''" ||  echo '-i ' ) 's/\([^a-zA-Z0-9_-]\)buffio.h/\1tidybuffio.h/' tidy.c
     ./configure --with-php-config=$PHP_BASE/bin/php-config --with-tidy=$TIDY_BASE
 }
 # }}}
