@@ -224,6 +224,8 @@ function decompress()
         tar zxf $FILE_NAME
     elif [ "${FILE_NAME%%.tar.lz}" != "$FILE_NAME" ];then
         tar --lzip -xf $FILE_NAME
+    elif [ "${FILE_NAME%%.zip}" != "$FILE_NAME" ];then
+        unzip -q $FILE_NAME
     else
         return 1;
     fi
@@ -2096,15 +2098,16 @@ function compile_icu()
         return;
     fi
 
-    export LD_LIBRARY_PATH
+    #export LD_LIBRARY_PATH
     ICU_CONFIGURE="
         configure_icu_command
     "
 
     compile "icu" "$ICU_FILE_NAME" "icu/source" "$ICU_BASE" "ICU_CONFIGURE"
-    export -n LD_LIBRARY_PATH
+    #export -n LD_LIBRARY_PATH
     if [ "$OS_NAME" = "darwin" ];then
-        repair_dynamic_shared_library $ICU_BASE/lib "libicu*dylib"
+        echo ""
+        #repair_dynamic_shared_library $ICU_BASE/lib "libicu*dylib"
     fi
 
 }
@@ -2860,6 +2863,10 @@ function compile_harfbuzz()
     "
 
     compile "harfbuzz" "$HARFBUZZ_FILE_NAME" "harfbuzz-$HARFBUZZ_VERSION" "$HARFBUZZ_BASE" "HARFBUZZ_CONFIGURE"
+    if [ "$OS_NAME" = "darwin" ];then
+        :
+        #repair_dynamic_shared_library $HARFBUZZ_BASE/lib "libharfbuzz*dylib"
+    fi
 
     #安装完成后，强制重新装备freetype
     compile_freetype 1
@@ -3809,6 +3816,10 @@ function after_php_make_install()
         echo "copy file error. commamnd: cp $PHP_FPM_CONFIG_DIR/php-fpm.conf.default $PHP_FPM_CONFIG_DIR/php-fpm.conf" >&2
         return 1;
     fi
+
+    cp sapi/fpm/init.d.php-fpm $SBIN_DIR/php-fpm.sh
+
+    chmod u+x $SBIN_DIR/php-fpm.sh
 
     PHP_EXTENSION_DIR="$( find $PHP_LIB_DIR -name "no-debug-*" )"
 
@@ -5108,8 +5119,13 @@ configure_libffi_command()
 # {{{ configure_icu_command()
 configure_icu_command()
 {
-    CPPFLAGS="$( [ \"$OS_NAME\" != \"darwin\" ] && echo '-Wl,--enable-new-dtags,-rpath,\$(LIBRPATH)')" \
-    ./configure --prefix=$ICU_BASE
+#CPPFLAGS="$( [ \"$OS_NAME\" != \"darwin\" ] && echo '-Wl,--enable-new-dtags,-rpath,\$(LIBRPATH)')" \
+#LDFLAGS="$( [ \"$OS_NAME\" = \"darwin\" ] && echo '-headerpad_max_install_names')" \
+    ./configure --prefix=/usr/local/chg/icu --enable-rpath
+    ./configure --prefix=$ICU_BASE \
+                --enable-rpath \
+                #$( [ "$OS_NAME" = "darwin" ] && echo 'LDFLAGS="-headerpad_max_install_names"')
+
 }
 # }}}
 # {{{ configure_nginx_command()
@@ -7262,39 +7278,57 @@ function repair_dynamic_shared_library()
     local filepattern="$2"
     local i=""
     local j=""
-    for i in `find ${dir1} $( [ "$filepattern" != "" ] && echo "-name $filepattern" || echo "-type f")`;
+    for i in `find ${dir1} -type f $( [ "$filepattern" != "" ] && echo "-name $filepattern -type f")`;
     do
     {
         # 跳过软链接
-        if [ -L $i ]; then
+        if [ -L "$i" ]; then
             continue;
         fi
         local filename="${i##*/}"
-        for j in `otool -L $i|awk '{print $1; }' |grep -v '^/'`;
+        for j in `otool -L $i|awk '{print $1; }' |grep -v '^/'|grep -v '^@'`;
         do
         {
             local filename1="${j##*/}"
             if [ "$filename" = "${filename1}" ];then
                 if [ "${i%%/*}" != "" ];then
                     echo "file not is absolute path. file: $i " >&2
-                    return 1;
+                    continue;
                 fi
                 install_name_tool -id $i $i;
                 if [ "$?" != "0" ];then
-                    return 1;
+                    echo "install_name_tool failed. file: $i " >&2
+                    continue;
                 fi
             else
                 local num=`find $BASE_DIR -name ${filename1} |wc -l`;
                 if [ "$num" = "0" ];then
                     echo "cant find file. filename: $j    file: $i" >&2 
-                    return;
+                    continue;
                 elif [ "$num" != "1" ];then
                     echo "find more file with the same name. filename: $j  file: $i" >&2
+                    continue;
                 fi
-                local f=`find $BASE_DIR -name ${filename1}`;
+
+                local f=`find $BASE_DIR -name ${filename1}|head -1`;
+
+                local real_file=`realpath $f`
+
+                local real_name=${real_file##*/}
+
+                if [ "$filename" = "${real_name}" ];then
+                    continue;
+                fi
+
+                repair_dynamic_shared_library $real_file
+                if [ "$?" != "0" ];then
+                    continue;
+                fi
+
                 install_name_tool -change  $j $f $i ;
                 if [ "$?" != "0" ];then
-                    return 1;
+                    echo "install_name_tool -change failed. filename: $j  file: $i replacefie: $f" >&2
+                    continue;
                 fi
             fi
         }
@@ -7344,6 +7378,11 @@ function is_elf_file() {
     if [ -z "$filename" -o ! -e "$filename" ];then
         echo "is_elf_file function: 文件[${filename}]不存在" >&2
         return 1;
+    fi
+
+    local signatures="ELF"
+    if [ "$OS_NAME" = "darwin" ];then
+        signatures="Mach-O"
     fi
 
     file -b $filename |grep -q ELF
