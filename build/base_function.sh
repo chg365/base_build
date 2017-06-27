@@ -354,6 +354,7 @@ function wget_base_library()
     wget_lib $JSON_FILE_NAME          "https://s3.amazonaws.com/json-c_releases/releases/$JSON_FILE_NAME"
     # http://sourceforge.net/projects/mcrypt/files/MCrypt/2.6.8/mcrypt-2.6.8.tar.gz/download
     wget_lib $LIBMCRYPT_FILE_NAME     "http://sourceforge.net/projects/mcrypt/files/Libmcrypt/$LIBMCRYPT_VERSION/$LIBMCRYPT_FILE_NAME/download"
+    wget_lib $LIBUUID_FILE_NAME       "https://sourceforge.net/projects/libuuid/files/$LIBUUID_FILE_NAME/download"
     wget_lib $SQLITE_FILE_NAME        "http://www.sqlite.org/2017/$SQLITE_FILE_NAME"
     wget_lib $CURL_FILE_NAME          "http://curl.haxx.se/download/$CURL_FILE_NAME"
     # http://downloads.mysql.com/archives/mysql-${MYSQL_VERSION%.*}/$MYSQL_FILE_NAME
@@ -1564,6 +1565,20 @@ function is_installed_rsyslog()
     return;
 }
 # }}}
+# {{{ function is_installed_libuuid()
+function is_installed_libuuid()
+{
+    local FILENAME="$LIBUUID_BASE/lib/pkgconfig/uuid.pc"
+    if [ ! -f "$FILENAME" ];then
+        return 1;
+    fi
+    local version=`pkg-config --modversion $FILENAME`
+    if [ "$version" != "$LIBUUID_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
 # {{{ function is_installed_liblogging()
 function is_installed_liblogging()
 {
@@ -2116,6 +2131,7 @@ function compile_icu()
 function compile_boost()
 {
     compile_icu
+    compile_libuuid
 
     is_installed boost "$BOOST_BASE"
     if [ "$?" = "0" ];then
@@ -2123,7 +2139,7 @@ function compile_boost()
     fi
 
     #yum install python-devel bzip2-devel
-    #yum install gperf libevent-devel libuuid-devel
+    #yum install gperf libevent-devel
 
     decompress $BOOST_FILE_NAME
     if [ "$?" != "0" ];then
@@ -3489,9 +3505,25 @@ function compile_nginx()
     init_nginx_conf
 }
 # }}}
+# {{{ function compile_libuuid()
+function compile_libuuid()
+{
+    is_installed libuuid "$LIBUUID_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    LIBUUID_CONFIGURE="
+    ./configure --prefix=$LIBUUID_BASE
+                "
+
+    compile "libuuid" "$LIBUUID_FILE_NAME" "libuuid-$LIBUUID_VERSION" "$LIBUUID_BASE" "LIBUUID_CONFIGURE"
+}
+# }}}
 # {{{ function compile_rsyslog()
 function compile_rsyslog()
 {
+    compile_libuuid
     compile_liblogging
     compile_libgcrypt
     compile_libestr
@@ -3509,22 +3541,40 @@ function compile_rsyslog()
     export PATH
 
     RSYSLOG_CONFIGURE="
-    ./configure --prefix=$RSYSLOG_BASE \
-                --enable-elasticsearch \
-                $(is_installed_mysql && echo --enable-mysql ) \
-                --enable-mail
-                "
-# No package 'uuid' found
-# No package 'systemd' found
-               # --enable-libgcrypt
-#$( [ \"$OS_NAME\" = \"darwin\" ] && echo --disable-uuid ) \
+        configure_rsyslog_command
+    "
 
-               # error: Net-SNMP is missing
-               # --enable-snmp \
+    # No package 'systemd' found
+
+    # --enable-libgcrypt
 
     compile "rsyslog" "$RSYSLOG_FILE_NAME" "rsyslog-$RSYSLOG_VERSION" "$RSYSLOG_BASE" "RSYSLOG_CONFIGURE"
 
     init_rsyslog_conf
+}
+# }}}
+# {{{ function configure_rsyslog_command()
+function configure_rsyslog_command()
+{
+    if [ "$OS_NAME" = "darwin" ];then
+        for i in `grep -rl 'whole-archive' ./`;
+        do
+            sed -i.bak$$ -e 's/--whole-archive/-all_load/g' $i;
+            sed -i.bak$$ -e 's/--no-whole-archive/-noall_load/g' $i;
+            sed -i.bak$$ -e 's/no-whole-archive/noall_load/g' $i;
+        done
+        find . -name "*.bak*" -delete
+    fi
+    #PATH="/usr/local/chg/base/contrib/bin:$PATH" \
+    #PKG_CONFIG_PATH="/usr/local/chg/base/contrib/lib/pkgconfig"
+    ./configure --prefix=$RSYSLOG_BASE \
+                --sysconfdir=$RSYSLOG_CONFIG_DIR \
+                --enable-elasticsearch \
+                $(is_installed_mysql && echo --enable-mysql ) \
+                --enable-mail
+
+        # error: Net-SNMP is missing
+        # --enable-snmp \
 }
 # }}}
 # {{{ function compile_liblogging()
@@ -5558,6 +5608,7 @@ function check_soft_updates()
             libfastjson
             nginx
             rsyslog
+            libuuid
             liblogging
             libgcrypt
             libgpg_error
@@ -6329,6 +6380,12 @@ function check_patchelf_version()
 function check_rsyslog_version()
 {
     check_github_soft_version rsyslog $RSYSLOG_VERSION "https://github.com/rsyslog/rsyslog/releases" "v\([0-9.]\{5,\}\)\(-stable\)\{0,1\}\.tar\.gz" 1
+}
+# }}}
+# {{{ function check_libuuid_version()
+function check_libuuid_version()
+{
+    check_sourceforge_soft_version libuuid ${LIBUUID_VERSION//_/.} 's/^.\{0,\}<tr title="libuuid-\([0-9.]\{1,\}\).tar.gz" class="file \{0,\}[^"]\{1,\}"> \{0,\}$/\1/p' "0"
 }
 # }}}
 # {{{ function check_liblogging_version()

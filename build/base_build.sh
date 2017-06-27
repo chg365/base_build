@@ -182,9 +182,9 @@ gcc_new_version=`echo $gcc_version $gcc_minimum_version|tr " " "\n"|sort -rV|hea
 if [ "$gcc_new_version" != "$gcc_minimum_version" ]; then
     compile_pdf2htmlEX
 fi
-compile_rsyslog
 compile_php_extension_gearman
 fi
+compile_rsyslog
 compile_php_extension_dio
 compile_php_extension_pthreads
 compile_php_extension_qrencode
@@ -331,17 +331,6 @@ wget --content-disposition --no-check-certificate https://github.com/phpDocument
 
 
 #https://www.x.org/releases/individual/lib/libXft-2.3.2.tar.bz2
-
-
-wget https://sourceforge.net/projects/libuuid/files/libuuid-1.0.3.tar.gz/download
-tar zxf libuuid-1.0.3.tar.gz 
-cd libuuid-1.0.3/
-./configure --prefix=/usr/local/chg/base/contrib/
-make
-make install
-cd ..
-rm -rf libuuid-1.0.3/
-
 
 ftp://ftp.cyrusimap.org/cyrus-sasl/
 ftp://ftp.cyrusimap.org/cyrus-imapd/
