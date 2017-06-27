@@ -13,20 +13,29 @@ do
         type="j"
     elif [ "${FILE_NAME%%.tar.gz}" != "$FILE_NAME" ];then
         type="z"
+    elif [ "${FILE_NAME%%.gz}" != "$FILE_NAME" ];then
+        gunzip -t $FILE_NAME >/dev/null 2>&1
+        if [ "$?" != "0" ];then
+            echo "${FILE_NAME}文件可能已经损坏!" >&2
+        fi
+        continue;
     elif [ "${FILE_NAME%%.tgz}" != "$FILE_NAME" ];then
         type="z"
     elif [ "${FILE_NAME%%.tar.lz}" != "$FILE_NAME" ];then
         type="lzip"
+    elif [ "${FILE_NAME%%.zip}" != "$FILE_NAME" ];then
+        unzip -qqt $FILE_NAME >/dev/null 2>&1
+        if [ "$?" != "0" ];then
+            echo "${FILE_NAME} 文件可能已经损坏." >&2
+        fi
+        continue;
     else
         echo "$FILE_NAME 未知文件类型"
         continue;
     fi
 
-    echo "--------------------------"
-    echo $FILE_NAME
-    tar -$type -tf $FILE_NAME >/dev/null
+    tar -$type -tf $FILE_NAME >/dev/null 2>&1
     if [ "$?" != "0" ];then
-        echo "$FILE_NAME 文件可能损坏."
+        echo "${FILE_NAME} 文件可能已经损坏." >&2
     fi
-    echo "=========================="
 done;
