@@ -498,6 +498,7 @@ function wget_base_library()
     wget_lib $NGINX_PUSH_STREAM_MODULE_FILE_NAME "https://github.com/wandenberg/nginx-push-stream-module/archive/${NGINX_PUSH_STREAM_MODULE_FILE_NAME##*-}"
     wget_lib $NGINX_UPLOAD_MODULE_FILE_NAME "https://github.com/vkholodkov/nginx-upload-module/archive/${NGINX_UPLOAD_MODULE_FILE_NAME##*-}"
     wget_lib $NGINX_STICKY_MODULE_FILE_NAME "https://bitbucket.org/nginx-goodies/nginx-sticky-module-ng/get/${NGINX_STICKY_MODULE_FILE_NAME##*-}"
+    wget_lib $NGINX_HTTP_GEOIP2_MODULE_FILE_NAME "https://github.com/leev/ngx_http_geoip2_module/archive/${NGINX_HTTP_GEOIP2_MODULE_FILE_NAME##*-}"
 
 #    if [ "$OS_NAME" = 'darwin' ];then
 
@@ -720,24 +721,31 @@ function init_mysql_cnf()
 # function init_nginx_conf() {{{
 function init_nginx_conf()
 {
-    mkdir -p $NGINX_CONFIG_DIR
-    cp $curr_dir/nginx/nginx.conf $NGINX_CONFIG_DIR/nginx.conf
+    mkdir -p $NGINX_CONFIG_DIR/
+    local NGINX_CONF_FILE="$NGINX_CONFIG_DIR/conf/nginx.conf"
+    cp -r $curr_dir/nginx/* $NGINX_CONFIG_DIR/
 
-
-    sed -i.bak.$$ "s/WEB_ROOT_DIR/$(sed_quote2 $BASE_DIR/web)/g" $NGINX_CONFIG_DIR/nginx.conf
-    sed -i.bak.$$ "s/GEOIP2_DATA_DIR/$(sed_quote2 $GEOIP2_DATA_DIR)/g" $NGINX_CONFIG_DIR/nginx.conf
-    sed -i.bak.$$ "s/LOG_DIR/$(sed_quote2 $LOG_DIR)/g" $NGINX_CONFIG_DIR/nginx.conf
-    sed -i.bak.$$ "s/RUN_DIR/$(sed_quote2 $BASE_DIR/run)/g" $NGINX_CONFIG_DIR/nginx.conf
-    sed -i.bak.$$ "s/PROJECT_NAME/$(sed_quote2 $project_abbreviation)/g" $NGINX_CONFIG_DIR/nginx.conf
-    sed -i.bak.$$ "s/BODY_TEMP_PATH/$(sed_quote2 $TMP_DATA_DIR/nginx/client_body_temp )/g" $NGINX_CONFIG_DIR/nginx.conf
-    sed -i.bak.$$ "s/PROXY_TEMP_PATH/$(sed_quote2 $TMP_DATA_DIR/nginx/proxy_temp )/g" $NGINX_CONFIG_DIR/nginx.conf
-    sed -i.bak.$$ "s/FASTCGI_TEMP_PATH/$(sed_quote2 $TMP_DATA_DIR/nginx/fastcgi_temp )/g" $NGINX_CONFIG_DIR/nginx.conf
-    sed -i.bak.$$ "s/UWSGI_TEMP_PATH/$(sed_quote2 $TMP_DATA_DIR/nginx/uwsgi_temp )/g" $NGINX_CONFIG_DIR/nginx.conf
-    sed -i.bak.$$ "s/SCGI_TEMP_PATH/$(sed_quote2 $TMP_DATA_DIR/nginx/scgi_temp )/g" $NGINX_CONFIG_DIR/nginx.conf
-#    nobody
+    for i in `find $NGINX_CONFIG_DIR/ -type f|grep -v '\.bak\.'`;
+    do
+        sed -i.bak.$$ "s/WEB_ROOT_DIR/$(sed_quote2 $BASE_DIR/web)/g" $i
+        sed -i.bak.$$ "s/GEOIP2_DATA_DIR/$(sed_quote2 $GEOIP2_DATA_DIR)/g" $i
+        sed -i.bak.$$ "s/LOG_DIR/$(sed_quote2 $LOG_DIR)/g" $i
+        sed -i.bak.$$ "s/RUN_DIR/$(sed_quote2 $BASE_DIR/run)/g" $i
+        sed -i.bak.$$ "s/PROJECT_NAME/$(sed_quote2 $project_abbreviation)/g" $i
+        sed -i.bak.$$ "s/BODY_TEMP_PATH/$(sed_quote2 $TMP_DATA_DIR/nginx/client_body_temp )/g" $i
+        sed -i.bak.$$ "s/PROXY_TEMP_PATH/$(sed_quote2 $TMP_DATA_DIR/nginx/proxy_temp )/g" $i
+        sed -i.bak.$$ "s/FASTCGI_TEMP_PATH/$(sed_quote2 $TMP_DATA_DIR/nginx/fastcgi_temp )/g" $i
+        sed -i.bak.$$ "s/UWSGI_TEMP_PATH/$(sed_quote2 $TMP_DATA_DIR/nginx/uwsgi_temp )/g" $i
+        sed -i.bak.$$ "s/SCGI_TEMP_PATH/$(sed_quote2 $TMP_DATA_DIR/nginx/scgi_temp )/g" $i
+        sed -i.bak.$$ "s/NGINX_CONF_DIR/$(sed_quote2 $NGINX_CONFIG_DIR )/g" $i
+    done
+    if is_new_version $NGINX_VERSION "1.13.0" ; then
+        sed -i.bak.$$ "s/\(^.\{1,\}ssl_protocols.\{1,\}\) \{0,\}; \{0,\}$/\1  TLSv1.3;/g" $NGINX_CONF_FILE
+    fi
+    #    nobody
 
     # fastcgi_param  SERVER_SOFTWARE
-    # sed -i.bak.$$ "s/^\(fastcgi_param \{1,\}SERVER_SOFTWARE \{1,\}\)nginx\/\$nginx_version;$/\1${project_name%% *}\/1.0;/" $NGINX_CONFIG_DIR/fastcgi.conf;
+    # sed -i.bak.$$ "s/^\(fastcgi_param \{1,\}SERVER_SOFTWARE \{1,\}\)nginx\/\$nginx_version;$/\1${project_name%% *}\/1.0;/" $NGINX_CONFIG_DIR/conf/fastcgi.conf;
 }
 # }}}
 # function change_redis_conf() {{{
@@ -3547,6 +3555,8 @@ function compile_nginx()
         return;
     fi
 
+    compile_libmaxminddb
+
     NGINX_CONFIGURE="
         configure_nginx_command
     "
@@ -3554,6 +3564,7 @@ function compile_nginx()
     decompress $PCRE_FILE_NAME && decompress $ZLIB_FILE_NAME && decompress $OPENSSL_FILE_NAME && \
     decompress $NGINX_UPLOAD_PROGRESS_MODULE_FILE_NAME && \
     decompress $NGINX_PUSH_STREAM_MODULE_FILE_NAME && \
+    decompress $NGINX_HTTP_GEOIP2_MODULE_FILE_NAME && \
     #decompress $NGINX_STICKY_MODULE_FILE_NAME && \
     #decompress $NGINX_UPLOAD_MODULE_FILE_NAME
     if [ "$?" != "0" ];then
@@ -3568,6 +3579,7 @@ function compile_nginx()
     /bin/rm -rf openssl-$OPENSSL_VERSION
     /bin/rm -rf nginx-upload-progress-module-${NGINX_UPLOAD_PROGRESS_MODULE_VERSION}
     /bin/rm -rf nginx-push-stream-module-${NGINX_PUSH_STREAM_MODULE_VERSION}
+    /bin/rm -rf ngx_http_geoip2_module-${NGINX_HTTP_GEOIP2_MODULE_VERSION}
     #/bin/rm -rf nginx-upload-module-${NGINX_UPLOAD_MODULE_VERSION}
     #/bin/rm -rf ${NGINX_STICKY_MODULE_FILE_NAME%%.*}
 
@@ -3617,9 +3629,16 @@ function compile_rsyslog()
 
     # --enable-libgcrypt
 
-    compile "rsyslog" "$RSYSLOG_FILE_NAME" "rsyslog-$RSYSLOG_VERSION" "$RSYSLOG_BASE" "RSYSLOG_CONFIGURE"
+    compile "rsyslog" "$RSYSLOG_FILE_NAME" "rsyslog-$RSYSLOG_VERSION" "$RSYSLOG_BASE" "RSYSLOG_CONFIGURE" "after_rsyslog_make_install"
 
     init_rsyslog_conf
+}
+# }}}
+# {{{ function after_rsyslog_make_install()
+function after_rsyslog_make_install()
+{
+    mkdir -p $RSYSLOG_CONFIG_DIR
+    cp ./platform/redhat/rsyslog.conf $RSYSLOG_CONFIG_DIR/
 }
 # }}}
 # {{{ function configure_rsyslog_command()
@@ -3936,6 +3955,7 @@ function after_php_make_install()
         return 1;
     fi
 
+    mkdir -p $SBIN_DIR
     cp sapi/fpm/init.d.php-fpm $SBIN_DIR/php-fpm.sh
 
     chmod u+x $SBIN_DIR/php-fpm.sh
@@ -5093,7 +5113,7 @@ configure_fontforge_command()
 
     ./bootstrap && \
     LIBPNG_CFLAGS="$(get_cppflags $LIBPNG_BASE/include /usr/local/include )" \
-    LIBPNG_LIBS="$(get_ldflags $LIBPNG_BASE/lib /usr//local/lib )" \
+    LIBPNG_LIBS="$(get_ldflags $LIBPNG_BASE/lib /usr/local/lib )" \
     ./configure --prefix=$FONTFORGE_BASE \
                 --disable-python-scripting \
                 --disable-python-extension \
@@ -5251,9 +5271,9 @@ configure_icu_command()
 configure_nginx_command()
 {
     ./configure --prefix=$NGINX_BASE \
-                --conf-path=$NGINX_CONFIG_DIR/nginx.conf \
+                --conf-path=$NGINX_CONFIG_DIR/conf/nginx.conf \
                 $( is_new_version $NGINX_VERSION "1.9.5" && echo "--with-http_v2_module" ) \
-                --with-ipv6 \
+                $( is_new_version $NGINX_VERSION "1.12.0" || echo "--with-ipv6" ) \
                 --with-threads \
                 --with-http_mp4_module \
                 --with-http_sub_module \
@@ -5271,7 +5291,10 @@ configure_nginx_command()
                 --with-mail_ssl_module \
                 --add-module=../nginx-upload-progress-module-${NGINX_UPLOAD_PROGRESS_MODULE_VERSION} \
                 --add-module=../nginx-push-stream-module-${NGINX_PUSH_STREAM_MODULE_VERSION} \
-                --with-http_gzip_static_module
+                --with-http_gzip_static_module \
+                --with-cc-opt="$(get_cppflags $LIBMAXMINDDB_BASE/include)" \
+                --with-ld-opt="$(get_ldflags $LIBMAXMINDDB_BASE/lib)" \
+                --add-module=../ngx_http_geoip2_module-${NGINX_HTTP_GEOIP2_MODULE_VERSION}
 
                 #下面这个模块报错
                 #--add-module=../${NGINX_STICKY_MODULE_FILE_NAME%%.*} \
@@ -5298,7 +5321,7 @@ configure_nginx_command()
                 # the HTTP image filter module requires the GD library.
                 # --with-http_image_filter_module \
                 # --add-module=../nginx-accesskey-2.0.3 \
-                # --add-module=../ngx_http_geoip2_module \
+                # --add-dynamic-module
                 # --with-poll_module \
                 # --with-http_auth_request_module    enable ngx_http_auth_request_module
                 # --with-http_random_index_module    enable ngx_http_random_index_module
@@ -5741,9 +5764,10 @@ function check_soft_updates()
             laravel
             laravel_framework
 
-            nginx_upload_progress_module
+            nginx_upload_module
             nginx_upload_progress_module
             nginx_push_stream_module
+            nginx_http_geoip2_module
             nginx_sticky_module
 
             );
@@ -6052,7 +6076,7 @@ function check_nginx_upload_progress_module_version()
     check_github_soft_version nginx-upload-progress-module $NGINX_UPLOAD_PROGRESS_MODULE_VERSION "https://github.com/masterzen/nginx-upload-progress-module/releases"
 }
 # }}}
-# {{{ function check_nginx_upload_progress_module_version()
+# {{{ function check_nginx_upload_module_version()
 function check_nginx_upload_module_version()
 {
     check_github_soft_version nginx-upload-module $NGINX_UPLOAD_MODULE_VERSION "https://github.com/vkholodkov/nginx-upload-module/releases"
@@ -6061,8 +6085,13 @@ function check_nginx_upload_module_version()
 # {{{ function check_nginx_push_stream_module_version()
 function check_nginx_push_stream_module_version()
 {
-    NGINX_STICKY_MODULE_VERSION="1.2.6"
     check_github_soft_version nginx-push-stream-module $NGINX_PUSH_STREAM_MODULE_VERSION "https://github.com/wandenberg/nginx-push-stream-module/releases"
+}
+# }}}
+# {{{ function check_nginx_http_geoip2_module_version()
+function check_nginx_http_geoip2_module_version()
+{
+    check_github_soft_version ngx_http_geoip2_module $NGINX_HTTP_GEOIP2_MODULE_VERSION "https://github.com/leev/ngx_http_geoip2_module/releases"
 }
 # }}}
 # {{{ function check_nginx_sticky_module_version()
