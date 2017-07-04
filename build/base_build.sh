@@ -2,7 +2,7 @@
 
 # autoconf，automake，autopoint，pkg-config
 #wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-6.repo
-#yum install cmake gcc xz cmake texinfo bzip2 xz-devel gcc-c++ ncurses-devel ncurses byacc file re2c
+#yum install cmake gcc xz texinfo bzip2 xz-devel gcc-c++ ncurses-devel ncurses byacc file re2c
 #yum update -y curl nss cyrus-sasl cyrus-sasl-devel cyrus-sasl-lib libacl libacl-devel libattr libattr-devel gperf pam pam-devel krb5-devel krb5-libs
 
 #tar Jxf m4-1.4.17.tar.xz

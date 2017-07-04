@@ -420,7 +420,8 @@ function wget_base_library()
     #wget_lib $IMAGEMAGICK_FILE_NAME  "https://github.com/ImageMagick/ImageMagick/archive/${IMAGEMAGICK_FILE_NAME#*-}"
     wget_lib $IMAGEMAGICK_FILE_NAME  "http://www.imagemagick.org/download/releases/${IMAGEMAGICK_FILE_NAME}"
     wget_lib $GMP_FILE_NAME           "ftp://ftp.gmplib.org/pub/gmp/$GMP_FILE_NAME"
-    wget_lib $IMAP_FILE_NAME          "ftp://ftp.cac.washington.edu/imap/$IMAP_FILE_NAME"
+    #wget_lib $IMAP_FILE_NAME          "ftp://ftp.cac.washington.edu/imap/$IMAP_FILE_NAME"
+    wget_lib $IMAP_FILE_NAME          "https://www.mirrorservice.org/sites/ftp.cac.washington.edu/imap/$IMAP_FILE_NAME"
     wget_lib $KERBEROS_FILE_NAME      "http://web.mit.edu/kerberos/dist/krb5/${KERBEROS_VERSION%.*}/$KERBEROS_FILE_NAME"
     wget_lib $LIBMEMCACHED_FILE_NAME  "https://launchpad.net/libmemcached/${LIBMEMCACHED_VERSION%.*}/$LIBMEMCACHED_VERSION/+download/$LIBMEMCACHED_FILE_NAME"
     wget_lib $MEMCACHED_FILE_NAME     "http://memcached.org/files/${MEMCACHED_FILE_NAME}"
@@ -430,7 +431,7 @@ function wget_base_library()
     wget_lib $LIBEVENT_FILE_NAME      "https://github.com/libevent/libevent/archive/${LIBEVENT_FILE_NAME#*-}"
     wget_lib $GEARMAND_FILE_NAME       "https://github.com/gearman/gearmand/releases/download/${GEARMAND_VERSION}/${GEARMAND_FILE_NAME}"
     #wget_lib $GEARMAND_FILE_NAME      "https://github.com/gearman/gearmand/archive/${GEARMAND_FILE_NAME#*-}"
-    wget_lib $PHP_GEARMAN_FILE_NAME   "https://github.com/wcgallego/pecl-gearman/archive/${PHP_GEARMAN_FILE_NAME}"
+    wget_lib $PHP_GEARMAN_FILE_NAME   "https://github.com/wcgallego/pecl-gearman/archive/gearman-${PHP_GEARMAN_VERSION}.tar.gz"
     wget_lib $LIBQRENCODE_FILE_NAME   "http://fukuchi.org/works/qrencode/$LIBQRENCODE_FILE_NAME"
     wget_lib $POSTGRESQL_FILE_NAME    "https://ftp.postgresql.org/pub/source/v$POSTGRESQL_VERSION/$POSTGRESQL_FILE_NAME"
     wget_lib $APR_FILE_NAME           "http://mirrors.cnnic.cn/apache//apr/$APR_FILE_NAME"
@@ -2790,12 +2791,19 @@ function compile_libpng()
     fi
 
     LIBPNG_CONFIGURE="
-    ./configure --prefix=$LIBPNG_BASE \
-                --with-zlib-prefix=$ZLIB_BASE
+        configure_libpng_command
     "
     # --with-libpng-prefix
 
     compile "libpng" "$LIBPNG_FILE_NAME" "libpng-$LIBPNG_VERSION" "$LIBPNG_BASE" "LIBPNG_CONFIGURE"
+}
+# }}}
+# {{{ configure_libpng_command()
+configure_libpng_command()
+{
+    CPPFLAGS="$(get_cppflags $ZLIB_BASE/include)" LDFLAGS="$(get_ldflags $ZLIB_BASE/lib)" \
+    ./configure --prefix=$LIBPNG_BASE \
+                # --with-zlib-prefix=$ZLIB_BASE
 }
 # }}}
 # {{{ function compile_sqlite()
