@@ -415,6 +415,7 @@ function wget_base_library()
     wget_lib $PDF2HTMLEX_FILE_NAME    "https://github.com/coolwanglu/pdf2htmlEX/archive/v${PDF2HTMLEX_FILE_NAME#*-}"
     wget_lib $PANGO_FILE_NAME         "http://ftp.gnome.org/pub/GNOME/sources/pango/${PANGO_VERSION%.*}/$PANGO_FILE_NAME"
     wget_lib $LIBXPM_FILE_NAME        "https://www.x.org/releases/individual/lib/$LIBXPM_FILE_NAME"
+    wget_lib $LIBXEXT_FILE_NAME       "https://www.x.org/releases/individual/lib/$LIBXEXT_FILE_NAME"
     # wget_lib $LIBGD_FILE_NAME       "https://bitbucket.org/libgd/gd-libgd/downloads/$LIBGD_FILE_NAME"
     wget_lib $LIBGD_FILE_NAME         "http://fossies.org/linux/www/$LIBGD_FILE_NAME"
     #wget_lib $IMAGEMAGICK_FILE_NAME  "https://github.com/ImageMagick/ImageMagick/archive/${IMAGEMAGICK_FILE_NAME#*-}"
@@ -1409,6 +1410,20 @@ function is_installed_libXpm()
     fi
     local version=`pkg-config --modversion $FILENAME`
     if [ "${version}" != "$LIBXPM_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
+# {{{ function is_installed_libXext()
+function is_installed_libXext()
+{
+    local FILENAME="$LIBXEXT_BASE/lib/pkgconfig/xext.pc"
+    if [ ! -f "$FILENAME" ];then
+        return 1;
+    fi
+    local version=`pkg-config --modversion $FILENAME`
+    if [ "${version}" != "$LIBXEXT_VERSION" ];then
         return 1;
     fi
     return;
@@ -2494,7 +2509,6 @@ function compile_poppler()
     compile_cairo
     compile_fontforge
 #    compile_curl
-#    compile_libcurl
 #    compile_libtiff
 #complie_nss
 
@@ -2526,18 +2540,29 @@ function compile_poppler()
 
 
     POPPLER_CONFIGURE="
-     ./configure --prefix=$POPPLER_BASE \
-                 --enable-xpdf-headers
+        configure_poppler_command
     "
 
     compile "poppler" "$POPPLER_FILE_NAME" "poppler-$POPPLER_VERSION" "$POPPLER_BASE" "POPPLER_CONFIGURE"
 }
 # }}}
+# {{{ configure_poppler_command()
+configure_poppler_command()
+{
+    CPPFLAGS="$(get_cppflags $ZLIB_BASE/include $LIBPNG_BASE/include $LIBJPEG_BASE/include $OPENJPEG_BASE/include $CAIRO_BASE/include $FONTFORGE_BASE/include)" \
+    LDFLAGS="$(get_ldflags $ZLIB_BASE/lib $LIBPNG_BASE/lib $LIBJPEG_BASE/lib $OPENJPEG_BASE/lib $CAIRO_BASE/lib $FONTFORGE_BASE/lib)" \
+    ./configure --prefix=$POPPLER_BASE \
+                --enable-xpdf-headers
+}
+# }}}
 # {{{ function compile_cairo()
 function compile_cairo()
 {
+    compile_zlib
     compile_libpng
     compile_pixman
+    compile_libX11
+    compile_libXext
     [ "$OS_NAME" != "darwin" ] && compile_glib
     compile_fontconfig
 
@@ -2547,11 +2572,18 @@ function compile_cairo()
     fi
 
     CAIRO_CONFIGURE="
-     ./configure --prefix=$CAIRO_BASE \
-                 --disable-dependency-tracking
+        configure_cairo_command
     "
 
     compile "cairo" "$CAIRO_FILE_NAME" "cairo-$CAIRO_VERSION" "$CAIRO_BASE" "CAIRO_CONFIGURE"
+}
+# }}}
+# {{{ configure_cairo_command()
+configure_cairo_command()
+{
+    CPPFLAGS="$(get_cppflags $ZLIB_BASE/include)" LDFLAGS="$(get_ldflags $ZLIB_BASE/lib)" \
+     ./configure --prefix=$CAIRO_BASE \
+                 --disable-dependency-tracking
 }
 # }}}
 # {{{ function compile_openjpeg()
@@ -2567,6 +2599,13 @@ function compile_openjpeg()
     "
 
     compile "openjpeg" "$OPENJPEG_FILE_NAME" "openjpeg-$OPENJPEG_VERSION" "$OPENJPEG_BASE" "OPENJPEG_CONFIGURE"
+
+    if [ "$OS_NAME" = "linux" ]; then
+        for i in `find $OPENJPEG_BASE/bin/ -name "opj_*" -type f`;
+        do
+            repair_elf_file_rpath $i;
+        done
+    fi
 }
 # }}}
 # {{{ function compile_fontforge()
@@ -2838,6 +2877,13 @@ function compile_curl()
     # --disable-debug --enable-optimize
 
     compile "curl" "$CURL_FILE_NAME" "curl-$CURL_VERSION" "$CURL_BASE" "CURL_CONFIGURE"
+
+    if [ "$OS_NAME" = "linux" ]; then
+        for i in `find $CURL_BASE/lib/libcurl*.so* -type f`;
+        do
+            repair_elf_file_rpath $i;
+        done
+    fi
 }
 # }}}
 # {{{ function compile_freetype()
@@ -3176,6 +3222,21 @@ function compile_libXpm()
     "
 
     compile "libXpm" "$LIBXPM_FILE_NAME" "libXpm-$LIBXPM_VERSION" "$LIBXPM_BASE" "LIBXPM_CONFIGURE"
+}
+# }}}
+# {{{ function compile_libXext()
+function compile_libXext()
+{
+    is_installed libXext "$LIBXEXT_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    LIBXEXT_CONFIGURE="
+    ./configure --prefix=$LIBXEXT_BASE
+    "
+
+    compile "libXext" "$LIBXEXT_FILE_NAME" "libXext-$LIBXEXT_VERSION" "$LIBXEXT_BASE" "LIBXEXT_CONFIGURE"
 }
 # }}}
 # {{{ function compile_fontconfig()
@@ -5499,6 +5560,7 @@ function compile_phantomjs()
         #return 1;
         exit 1;
     fi
+    [ "$OS_NAME" = "linux" ] && repair_elf_file_rpath ${PHANTOMJS_BASE}/bin/phantomjs
 }
 # }}}
 # {{{ function compile_php_extension_rabbitmq()
@@ -5593,6 +5655,7 @@ function check_soft_updates()
             xf86bigfontproto
             kbproto
             libXpm
+            libXext
             libmcrypt
             libxslt
             libxml2
@@ -6659,6 +6722,12 @@ function check_libXpm_version()
     check_freedesktop_soft_version libXpm ${LIBXPM_VERSION} https://www.x.org/releases/individual/lib/
 }
 # }}}
+# {{{ function check_libXext_version()
+function check_libXext_version()
+{
+    check_freedesktop_soft_version libXext ${LIBXEXT_VERSION} https://www.x.org/releases/individual/lib/
+}
+# }}}
 # {{{ function check_kbproto_version()
 function check_kbproto_version()
 {
@@ -7454,7 +7523,7 @@ function is_elf_file() {
 }
 # }}}
 # {{{ function repair_elf_file_rpath
-function repair_file_rpath() {
+function repair_elf_file_rpath() {
     local filename=$1
     if [ -z "$filename" -o ! -e "$filename" ];then
         echo "要修复的文件不存在" >&2
