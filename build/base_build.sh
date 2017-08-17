@@ -1,8 +1,15 @@
 #!/bin/bash
 
+#shopt | grep huponexit
+#disown
+# screen tmux
 # autoconf，automake，autopoint，pkg-config
 #wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-6.repo
+<<<<<<< HEAD
 #yum install cmake gcc xz texinfo bzip2 xz-devel gcc-c++ ncurses-devel ncurses byacc file re2c libtool-ltdl-devel
+=======
+#yum install cmake gcc xz cmake texinfo bzip2 xz-devel gcc-c++ ncurses-devel ncurses byacc file re2c popt-devel
+>>>>>>> mod
 #yum update -y curl nss cyrus-sasl cyrus-sasl-devel cyrus-sasl-lib libacl libacl-devel libattr libattr-devel gperf pam pam-devel krb5-devel krb5-libs
 
 #tar Jxf m4-1.4.17.tar.xz
@@ -160,6 +167,11 @@ export LANG=C
 pkg_config_path_init
 #check_soft_updates
 #exit;
+compile_nodejs
+compile_gitbook_cli
+compile_gitbook_pdf
+compile_calibre
+compile_logrotate
 compile_patchelf
 compile_openssl
 compile_ImageMagick
@@ -168,6 +180,7 @@ compile_redis
 compile_zeromq
 compile_zlib
 compile_libgd
+#compile_apache
 compile_php
 compile_memcached
 compile_sphinx
@@ -217,6 +230,7 @@ compile_libmaxminddb
 compile_php_extension_maxminddb
 compile_geoipupdate
 compile_php_extension_imap
+install_dehydrated
 cp_GeoLite2_data
 install_web_service_common_php
 install_geoip2_php
@@ -232,7 +246,9 @@ end_time=`date +%s`
 echo "used times: $((end_time - start_time))s"
 
 echo $LD_LIBRARY_PATH
-[ "$OS_NAME" = "linux" ] && repair_dir_elf_rpath $BASE_DIR
+#[ "$OS_NAME" = "linux" ] && repair_dir_elf_rpath $BASE_DIR
+[ "$OS_NAME" != "linux" ] || repair_dir_elf_rpath $BASE_DIR
+#repair_file_rpath $LIBICU_BASE/lib/libicutu.so
 #repair_elf_file_rpath $LIBICU_BASE/lib/libicutu.so
 exit;
 cp $php_ini $PHP_CONFIG_DIR/php-cli.ini

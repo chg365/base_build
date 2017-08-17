@@ -203,29 +203,51 @@ function wget_lib_boost()
     wget_lib $BOOST_FILE_NAME "https://sourceforge.net/projects/boost/files/boost/${BOOST_VERSION//_/.}/$BOOST_FILE_NAME/download"
 }
 # }}}
+# function rm_bak_file() {{{
+function rm_bak_file()
+{
+    for i in `find $1 -type f | grep '\.bak\.'`;
+    do
+        if [ -f "$i" ];then
+            rm -rf "$i"
+        fi
+    done
+}
+# }}}
 # {{{ function decompress()
 function decompress()
 {
     local FILE_NAME="$1"
+    local exdir="$2"
+
+    local tmp_str="";
+    if [ "$exdir" != "" -a -d "$exdir" ];then
+        tmp_str="-C $exdir"
+    fi
 
     if [ -z "$FILE_NAME" ] || [ ! -f "$FILE_NAME" ] ;then
         return 1;
     fi
 
     if [ "${FILE_NAME%%.tar.xz}" != "$FILE_NAME" ];then
-        tar Jxf $FILE_NAME
+        tar Jxf $FILE_NAME $tmp_str
+    elif [ "${FILE_NAME%%.txz}" != "$FILE_NAME" ];then
+        tar Jxf $FILE_NAME $tmp_str
     elif [ "${FILE_NAME%%.tar.Z}" != "$FILE_NAME" ];then
-        tar jxf $FILE_NAME
+        tar jxf $FILE_NAME $tmp_str
     elif [ "${FILE_NAME%%.tar.bz2}" != "$FILE_NAME" ];then
-        tar jxf $FILE_NAME
+        tar jxf $FILE_NAME $tmp_str
     elif [ "${FILE_NAME%%.tar.gz}" != "$FILE_NAME" ];then
-        tar zxf $FILE_NAME
+        tar zxf $FILE_NAME $tmp_str
     elif [ "${FILE_NAME%%.tgz}" != "$FILE_NAME" ];then
-        tar zxf $FILE_NAME
+        tar zxf $FILE_NAME $tmp_str
     elif [ "${FILE_NAME%%.tar.lz}" != "$FILE_NAME" ];then
-        tar --lzip -xf $FILE_NAME
+        tar --lzip -xf $FILE_NAME $tmp_str
     elif [ "${FILE_NAME%%.zip}" != "$FILE_NAME" ];then
-        unzip -q $FILE_NAME
+        if [ "$tmp_str" != "" ];then
+            tmp_str="-d $exdir"
+        fi
+        unzip -q $FILE_NAME $tmp_str
     else
         return 1;
     fi
@@ -343,8 +365,8 @@ function wget_base_library()
 {
     wget_fail=0;
     wget_lib $OPENSSL_FILE_NAME       "http://www.openssl.org/source/$OPENSSL_FILE_NAME"
-    # http://download.icu-project.org/files/icu4c/$ICU_VERSION/$ICU_FILE_NAME
-    wget_lib $ICU_FILE_NAME           "https://fossies.org/linux/misc/$ICU_FILE_NAME"
+    wget_lib $ICU_FILE_NAME           "http://download.icu-project.org/files/icu4c/$ICU_VERSION/$ICU_FILE_NAME"
+    #wget_lib $ICU_FILE_NAME           "https://fossies.org/linux/misc/$ICU_FILE_NAME"
     # http://cdnetworks-kr-2.dl.sourceforge.net/project/libpng/zlib/$ZLIB_VERSION/$ZLIB_FILE_NAME
     wget_lib $ZLIB_FILE_NAME          "http://zlib.net/$ZLIB_FILE_NAME"
     wget_lib $LIBZIP_FILE_NAME        "http://www.nih.at/libzip/$LIBZIP_FILE_NAME"
@@ -363,6 +385,10 @@ function wget_base_library()
     wget_lib_boost
     wget_lib $PCRE_FILE_NAME          "http://sourceforge.net/projects/pcre/files/pcre/$PCRE_VERSION/$PCRE_FILE_NAME/download"
     wget_lib $NGINX_FILE_NAME         "http://nginx.org/download/$NGINX_FILE_NAME"
+    wget_lib $NODEJS_FILE_NAME        "https://nodejs.org/dist/v${NODEJS_VERSION}/${NODEJS_FILE_NAME}"
+    wget_lib $CALIBRE_FILE_NAME       "https://github.com/kovidgoyal/calibre/releases/download/v${CALIBRE_VERSION}/${CALIBRE_FILE_NAME}"
+    wget_lib $GITBOOK_FILE_NAME       "https://github.com/GitbookIO/gitbook/archive/${GITBOOK_FILE_NAME##*-}"
+    wget_lib $GITBOOK_CLI_FILE_NAME   "https://github.com/GitbookIO/gitbook-cli/archive/${GITBOOK_CLI_FILE_NAME##*-}"
     wget_lib $PHP_FILE_NAME           "http://cn2.php.net/distributions/$PHP_FILE_NAME"
     wget_lib $PTHREADS_FILE_NAME      "http://pecl.php.net/get/$PTHREADS_FILE_NAME"
     wget_lib $SWOOLE_FILE_NAME        "http://pecl.php.net/get/$SWOOLE_FILE_NAME"
@@ -371,6 +397,7 @@ function wget_base_library()
     wget_lib $SPHINX_FILE_NAME        "https://github.com/sphinxsearch/sphinx/archive/${SPHINX_FILE_NAME#*-}"
     wget_lib $PHP_SPHINX_FILE_NAME    "https://github.com/php/pecl-search_engine-sphinx/archive/${PHP_SPHINX_FILE_NAME##*-}"
     wget_lib $RSYSLOG_FILE_NAME       "http://www.rsyslog.com/files/download/rsyslog/${RSYSLOG_FILE_NAME}"
+    wget_lib $LOGROTATE_FILE_NAME     "https://github.com/logrotate/logrotate/releases/download/$LOGROTATE_VERSION/$LOGROTATE_FILE_NAME"
     #wget_lib $LIBFASTJSON_FILE_NAME   "https://github.com/rsyslog/libfastjson/archive/v${LIBFASTJSON_FILE_NAME##*-}"
     wget_lib $LIBFASTJSON_FILE_NAME   "http://download.rsyslog.com/libfastjson/${LIBFASTJSON_FILE_NAME}"
     #wget_lib $LIBLOGGING_FILE_NAME    "https://github.com/rsyslog/liblogging/archive/v${LIBLOGGING_FILE_NAME##*-}"
@@ -413,6 +440,7 @@ function wget_base_library()
     wget_lib $POPPLER_FILE_NAME       "https://poppler.freedesktop.org/$POPPLER_FILE_NAME"
     wget_lib $FONTFORGE_FILE_NAME     "https://github.com/fontforge/fontforge/archive/${FONTFORGE_FILE_NAME#*-}"
     wget_lib $PDF2HTMLEX_FILE_NAME    "https://github.com/coolwanglu/pdf2htmlEX/archive/v${PDF2HTMLEX_FILE_NAME#*-}"
+    wget_lib $DEHYDRATED_FILE_NAME    "https://github.com/lukas2511/dehydrated/archive/v${DEHYDRATED_FILE_NAME#*-}"
     wget_lib $PANGO_FILE_NAME         "http://ftp.gnome.org/pub/GNOME/sources/pango/${PANGO_VERSION%.*}/$PANGO_FILE_NAME"
     wget_lib $LIBXPM_FILE_NAME        "https://www.x.org/releases/individual/lib/$LIBXPM_FILE_NAME"
     wget_lib $LIBXEXT_FILE_NAME       "https://www.x.org/releases/individual/lib/$LIBXEXT_FILE_NAME"
@@ -580,6 +608,7 @@ extension=$1
     #sed -i "/^;\{0,1\}extension=/h;\${x;a\\
     #    extension=$1
     #    ;x;}" $php_ini
+    rm_bak_file ${php_ini}.bak.*
 }
 # }}}
 # function write_zend_extension_info_to_php_ini() {{{ 把单独编译的php扩展写入php.ini
@@ -593,6 +622,7 @@ zend_extension=$1
     #sed -i "/^;\{0,1\}zend_extension=/h;\${x;a\\
     #    extension=$1
     #    ;x;}" $php_ini
+    rm_bak_file ${php_ini}.bak.*
 }
 # }}}
 # function change_php_ini() {{{
@@ -615,6 +645,7 @@ function change_php_ini()
         echo "在${php_ini}文件中执行替换失败. pattern($1) ($2)";
         exit 1;
     fi
+    rm_bak_file ${php_ini}.bak.*
 }
 # }}}
 # function init_php_ini() {{{
@@ -668,17 +699,19 @@ function init_php_ini()
 # function change_php_fpm_ini() {{{
 function change_php_fpm_ini()
 {
-    local num=`sed -n "/$1/=" $3`;
+    local fpm_ini=$3;
+    local num=`sed -n "/$1/=" $fpm_ini`;
     if [ "$num" = "" ];then
-        echo "从${3}文件中查找pattern($1)失败";
+        echo "从${fpm_ini}文件中查找pattern($1)失败";
         exit 1;
     fi
 
-    sed -i.bak.$$ "${num[0]}s/$1/${2//\//\\/}/" $3
+    sed -i.bak.$$ "${num[0]}s/$1/${2//\//\\/}/" $fpm_ini
     if [ $? != "0" ];then
-        echo "在${3}文件中执行替换失败. pattern($1) ($2)";
+        echo "在${fpm_ini}文件中执行替换失败. pattern($1) ($2)";
         exit 1;
     fi
+    rm_bak_file ${fpm_ini}.bak.*
 }
 # }}}
 # function init_php_fpm_ini() {{{
@@ -716,6 +749,8 @@ function init_mysql_cnf()
     sed -i.bak.$$ "s/\<MYSQL_RUN_DIR\>/$( echo $MYSQL_RUN_DIR|sed 's/\//\\\//g' )/" $mysql_cnf;
     sed -i.bak.$$ "s/\<MYSQL_CONFIG_DIR\>/$( echo $MYSQL_CONFIG_DIR|sed 's/\//\\\//g' )/" $mysql_cnf;
     sed -i.bak.$$ "s/\<MYSQL_DATA_DIR\>/$( echo $MYSQL_DATA_DIR|sed 's/\//\\\//g' )/" $mysql_cnf;
+
+    rm_bak_file ${mysql_cnf}.bak.*
 }
 # }}}
 # function init_nginx_conf() {{{
@@ -723,29 +758,49 @@ function init_nginx_conf()
 {
     mkdir -p $NGINX_CONFIG_DIR/
     local NGINX_CONF_FILE="$NGINX_CONFIG_DIR/conf/nginx.conf"
-    cp -r $curr_dir/nginx/* $NGINX_CONFIG_DIR/
+    cp -r $curr_dir/conf/nginx/* $NGINX_CONFIG_DIR/
 
     for i in `find $NGINX_CONFIG_DIR/ -type f|grep -v '\.bak\.'`;
     do
         sed -i.bak.$$ "s/WEB_ROOT_DIR/$(sed_quote2 $BASE_DIR/web)/g" $i
         sed -i.bak.$$ "s/GEOIP2_DATA_DIR/$(sed_quote2 $GEOIP2_DATA_DIR)/g" $i
         sed -i.bak.$$ "s/LOG_DIR/$(sed_quote2 $LOG_DIR)/g" $i
-        sed -i.bak.$$ "s/RUN_DIR/$(sed_quote2 $BASE_DIR/run)/g" $i
-        sed -i.bak.$$ "s/PROJECT_NAME/$(sed_quote2 $project_abbreviation)/g" $i
+        sed -i.bak.$$ "s/RUN_DIR/$(sed_quote2 $NGINX_RUN_DIR)/g" $i
+        #sed -i.bak.$$ "s/PROJECT_NAME/$(sed_quote2 $project_abbreviation)/g" $i
         sed -i.bak.$$ "s/BODY_TEMP_PATH/$(sed_quote2 $TMP_DATA_DIR/nginx/client_body_temp )/g" $i
         sed -i.bak.$$ "s/PROXY_TEMP_PATH/$(sed_quote2 $TMP_DATA_DIR/nginx/proxy_temp )/g" $i
         sed -i.bak.$$ "s/FASTCGI_TEMP_PATH/$(sed_quote2 $TMP_DATA_DIR/nginx/fastcgi_temp )/g" $i
         sed -i.bak.$$ "s/UWSGI_TEMP_PATH/$(sed_quote2 $TMP_DATA_DIR/nginx/uwsgi_temp )/g" $i
         sed -i.bak.$$ "s/SCGI_TEMP_PATH/$(sed_quote2 $TMP_DATA_DIR/nginx/scgi_temp )/g" $i
         sed -i.bak.$$ "s/NGINX_CONF_DIR/$(sed_quote2 $NGINX_CONFIG_DIR )/g" $i
+        sed -i.bak.$$ "s/TMP_DATA_DIR/$(sed_quote2 $TMP_DATA_DIR )/g" $i
+        sed -i.bak.$$ "s/DEHYDRATED_CONFIG_DIR/$(sed_quote2 $DEHYDRATED_CONFIG_DIR )/g" $i
+
+        rm_bak_file ${i}.bak.*
     done
     if is_new_version $NGINX_VERSION "1.13.0" ; then
         sed -i.bak.$$ "s/\(^.\{1,\}ssl_protocols.\{1,\}\) \{0,\}; \{0,\}$/\1  TLSv1.3;/g" $NGINX_CONF_FILE
     fi
-    #    nobody
+
+    # nginx user
+    sed -i.bak.$$ "s/^ \{0,\}\(user \{1,\}\)[^ ]\{1,\} \{1,\}[^ ]\{1,\} \{0,\};$/user  $NGINX_USER  ${NGINX_GROUP};/" $NGINX_CONFIG_DIR/conf/  nginx.conf
+    rm_bak_file ${NGINX_CONF_FILE}.bak.*
 
     # fastcgi_param  SERVER_SOFTWARE
     # sed -i.bak.$$ "s/^\(fastcgi_param \{1,\}SERVER_SOFTWARE \{1,\}\)nginx\/\$nginx_version;$/\1${project_name%% *}\/1.0;/" $NGINX_CONFIG_DIR/conf/fastcgi.conf;
+}
+# }}}
+# function init_dehydrated_conf() {{{
+function init_dehydrated_conf()
+{
+    sed -i.bak.$$ "s/^ \{0,\}#\{0,\} \{0,\}\(BASEDIR=\).\{,\}$/\1\"$(sed_quote2 $DEHYDRATED_CONFIG_DIR )\"/g" $DEHYDRATED_CONFIG_DIR/config
+    sed -i.bak.$$ "s/^ \{0,\}#\{0,\} \{0,\}\(WELLKNOWN=\).\{,\}$/\1\"$(sed_quote2 $TMP_DATA_DIR/dehydrated )\"/g" $DEHYDRATED_CONFIG_DIR/config
+    sed -i.bak.$$ "s/^ \{0,\}#\{0,\} \{0,\}\(OPENSSL_CNF=\).\{,\}$/\1\"$(sed_quote2 $SSL_CONFIG_DIR/openssl.cnf )\"/g" $DEHYDRATED_CONFIG_DIR/config
+    sed -i.bak.$$ "s/^ \{0,\}#\{0,\} \{0,\}\(LOCKFILE=\).\{,\}$/\1\"$(sed_quote2 $BASE_DIR/run/dehydrated.lock )\"/g" $DEHYDRATED_CONFIG_DIR/config
+
+    rm_bak_file $DEHYDRATED_CONFIG_DIR/config.bak.*
+
+    cp -r $curr_dir/conf/dehydrated/certs $DEHYDRATED_CONFIG_DIR/
 }
 # }}}
 # function change_redis_conf() {{{
@@ -763,6 +818,7 @@ function change_redis_conf()
         echo "在${redis_conf}文件中执行替换失败. pattern($1) ($2)";
         exit 1;
     fi
+    rm_bak_file ${redis_conf}.bak.*
 }
 # }}}
 # function init_redis_conf() {{{
@@ -802,6 +858,18 @@ function init_redis_conf()
 #    list-max-ziplist-value 64
 #    tcp-keepalive 0 #tcp-keepalive 300
 
+}
+# }}}
+# function init_rsyslog_conf() {{{
+function init_rsyslog_conf()
+{
+    :
+}
+# }}}
+# function init_logrotate_conf() {{{
+function init_logrotate_conf()
+{
+    :
 }
 # }}}
 # }}}
@@ -897,6 +965,86 @@ function is_installed_phantomjs()
     fi
     local version=`$FILENAME -v`
     if [ "$version" != "$PHANTOMJS_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
+# {{{ function is_installed_nodejs()
+function is_installed_nodejs()
+{
+    local FILENAME="$NODEJS_BASE/bin/node"
+    if [ ! -f "$FILENAME" ];then
+        return 1;
+    fi
+    local version=`$FILENAME -v`
+    if [ "$version" != "v${NODEJS_VERSION}" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
+# {{{ function is_installed_calibre()
+function is_installed_calibre()
+{
+    local FILENAME="$CALIBRE_BASE/calibre"
+    if [ ! -f "$FILENAME" ];then
+        return 1;
+    fi
+    local version=`$FILENAME --version|awk '{print $3;}'|tr -d ')'`
+    if [ "$version" != "${CALIBRE_VERSION%.0}" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
+# {{{ function is_installed_gitbook()
+function is_installed_gitbook()
+{
+    is_installed nodejs $NODEJS_BASE || return 1;
+
+    #local FILENAME="$GITBOOK_BASE/book.js"
+    #if [ ! -f "$FILENAME" ];then
+    #    return 1;
+    #fi
+
+    PATH="$NODEJS_BASE/bin:$PATH"
+    local version=`npm list gitbook -g -depth 1| sed -n '/@/p'|awk -F@ '{print $2}'|tr -d ' '`
+    if [ "${version}" != "${GITBOOK_VERSION}" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
+# {{{ function is_installed_gitbook_cli()
+function is_installed_gitbook_cli()
+{
+    is_installed nodejs $NODEJS_BASE || return 1;
+
+    #local FILENAME="$GITBOOK_CLI_BASE/bin/book.js"
+    #if [ ! -f "$FILENAME" ];then
+    #    return 1;
+    #fi
+
+    local version=`npm list gitbook-cli -g -depth 1| sed -n '/@/p'|awk -F@ '{print $2;}'|tr -d ' '`
+    if [ "$version" != "${GITBOOK_CLI_VERSION}" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
+# {{{ function is_installed_gitbook_pdf()
+function is_installed_gitbook_pdf()
+{
+    is_installed nodejs $NODEJS_BASE || return 1;
+
+    local version=`npm list gitbook-pdf -g -depth 1| sed -n '/@/p'|awk -F@ '{print $2;}'|tr -d ' '`
+    if [ "$version" != "" ];then
+        return;
+    fi
+    return 1;
+
+    if [ "$version" != "${GITBOOK_PDF_VERSION}" ];then
         return 1;
     fi
     return;
@@ -1584,6 +1732,20 @@ function is_installed_rsyslog()
     fi
     local version=`$RSYSLOG_BASE/sbin/rsyslogd -v 2>&1|sed -n '1{s/^rsyslogd \([0-9.]\{5,\}\),.\{0,\}$/\1/p;}'`
     if [ "$version" != "$RSYSLOG_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
+# {{{ function is_installed_logrotate()
+function is_installed_logrotate()
+{
+    local FILENAME="$LOGROTATE_BASE/sbin/logrotate"
+    if [ ! -f "$FILENAME" ];then
+        return 1;
+    fi
+    local version=`$FILENAME --version 2>&1|awk '{print $NF;}'`
+    if [ "$version" != "$LOGROTATE_VERSION" ];then
         return 1;
     fi
     return;
@@ -2955,7 +3117,7 @@ function compile_glib()
 {
     compile_zlib
     # 使用这个，报错 checking for Unicode support in PCRE... no , 只能使用内部自己的
-    #compile_pcre
+    compile_pcre
     compile_libiconv
     compile_libffi
 
@@ -3631,7 +3793,6 @@ function compile_rsyslog()
 
     compile "rsyslog" "$RSYSLOG_FILE_NAME" "rsyslog-$RSYSLOG_VERSION" "$RSYSLOG_BASE" "RSYSLOG_CONFIGURE" "after_rsyslog_make_install"
 
-    init_rsyslog_conf
 }
 # }}}
 # {{{ function after_rsyslog_make_install()
@@ -3639,6 +3800,7 @@ function after_rsyslog_make_install()
 {
     mkdir -p $RSYSLOG_CONFIG_DIR
     cp ./platform/redhat/rsyslog.conf $RSYSLOG_CONFIG_DIR/
+    init_rsyslog_conf
 }
 # }}}
 # {{{ function configure_rsyslog_command()
@@ -3663,6 +3825,44 @@ function configure_rsyslog_command()
 
         # error: Net-SNMP is missing
         # --enable-snmp \
+}
+# }}}
+# {{{ function compile_logrotate()
+function compile_logrotate()
+{
+    is_installed logrotate "$LOGROTATE_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    LOGROTATE_CONFIGURE="
+        configure_logrotate_command
+    "
+
+    compile "logrotate" "$LOGROTATE_FILE_NAME" "logrotate-$LOGROTATE_VERSION" "$LOGROTATE_BASE" "LOGROTATE_CONFIGURE" "after_logrotate_make_install"
+}
+# }}}
+# {{{ function after_logrotate_make_install()
+function after_logrotate_make_install()
+{
+    mkdir -p $LOGROTATE_CONFIG_DIR
+    init_logrotate_conf
+}
+# }}}
+# {{{ function configure_logrotate_command()
+function configure_logrotate_command()
+{
+    ./configure --prefix=$LOGROTATE_BASE \
+                --sysconfdir=$LOGROTATE_CONFIG_DIR \
+                --with-state-file-path=$LOGROTATE_STATE_FILE
+
+                #--with-state-file-path=PATH path to state file (/var/lib/logrotate.status by default)
+                #--with-default-mail-command=COMMAND default mail command (e.g. /bin/mail -s)
+                #--with-compress-command=COMMAND compress command (default: /bin/gzip)
+                #--with-uncompress-command=COMMAND uncompress command (default: /bin/gunzip)
+                #--with-compress-extension=EXTENSION compress extension (default: .gz)
+
+                # --with-acl
 }
 # }}}
 # {{{ function compile_liblogging()
@@ -4108,6 +4308,7 @@ function compile_php_extension_xdebug()
     "
     compile "php_extension_xdebug" "$XDEBUG_FILE_NAME" "xdebug-$XDEBUG_VERSION" "xdebug.so" "PHP_EXTENSION_XDEBUG_CONFIGURE"
     sed -i.bak.$$ 's/^\(extension=xdebug\.so\)$/zend_\1/' $php_ini
+    rm_bak_file ${php_ini}.bak.*
 
     /bin/rm -rf package.xml
 }
@@ -4509,10 +4710,9 @@ function compile_php_extension_libsodium()
     fi
 
     PHP_EXTENSION_LIBSODIUM_CONFIGURE="
-    ./configure --with-php-config=$PHP_BASE/bin/php-config --with-libsodium=$LIBSODIUM_BASE
+    ./configure --with-php-config=$PHP_BASE/bin/php-config --with-$( is_new_version 1.9.9 $LIBSODIUM_VERSION && echo 'lib')sodium=$LIBSODIUM_BASE
     "
-
-    compile "php_extension_libsodium" "$PHP_LIBSODIUM_FILE_NAME" "libsodium-$PHP_LIBSODIUM_VERSION" "libsodium.so" "PHP_EXTENSION_LIBSODIUM_CONFIGURE"
+    compile "php_extension_libsodium" "$PHP_LIBSODIUM_FILE_NAME" "libsodium-$PHP_LIBSODIUM_VERSION" "$( is_new_version 1.9.9 $LIBSODIUM_VERSION && echo 'lib')sodium.so" "PHP_EXTENSION_LIBSODIUM_CONFIGURE"
 
     /bin/rm -rf package.xml
 }
@@ -4705,8 +4905,7 @@ function compile_mysql()
     /bin/rm -rf $mysql_install
     /bin/rm -rf boost_$BOOST_VERSION
 
-    mkdir -p $MYSQL_CONFIG_DIR
-    cp $curr_dir/my.cnf $mysql_cnf
+    mkdir -p $MYSQL_CONFIG_DIR && cp $curr_dir/conf/my.cnf $mysql_cnf
     if [ "$?" != "0" ];then
         exit;
     fi
@@ -4846,6 +5045,7 @@ function compile_geoipupdate()
         echo "mod $BASE_DIR/etc/GeoIP.conf faild." >&2;
         return 1;
     fi
+    rm_bak_file $BASE_DIR/etc/GeoIP.conf.bak.*
 }
 # }}}
 # }}}
@@ -4880,6 +5080,41 @@ function cp_GeoLite2_data()
         fi
     fi
     return 0;
+}
+# }}}
+# {{{ function install_dehydrated()
+function install_dehydrated()
+{
+    echo_build_start "install_dehydrated"
+
+    decompress $DEHYDRATED_FILE_NAME
+    if [ "$?" != "0" ];then
+        echo "decompress file error. file_name: $DEHYDRATED_FILE_NAME" >&2
+        exit 1;
+    fi
+
+    mkdir -p $DEHYDRATED_CONFIG_DIR $DEHYDRATED_BASE/sbin $TMP_DATA_DIR/dehydrated
+    if [ "$?" != "0" ];then
+        echo "mkdir faild. command: mkdir -p $DEHYDRATED_CONFIG_DIR $DEHYDRATED_BASE/sbin $TMP_DATA_DIR/dehydrated" >&2
+        exit 1;
+    fi
+
+    cp -f dehydrated-${DEHYDRATED_VERSION}/dehydrated $DEHYDRATED_BASE/sbin/ && \
+    cp -f dehydrated-${DEHYDRATED_VERSION}/docs/examples/config $DEHYDRATED_CONFIG_DIR/ && \
+    cp -f dehydrated-${DEHYDRATED_VERSION}/docs/examples/domains.txt $DEHYDRATED_CONFIG_DIR/ && \
+    if [ "$?" != "0" ];then
+        echo "copy file faild. command: cp ...." >&2
+        # return 1;
+        exit 1;
+    fi
+
+    rm -rf dehydrated-${DEHYDRATED_VERSION}
+    if [ "$?" != "0" ];then
+        echo "delete dir faild. command: rm -rf dehydrated-${DEHYDRATED_VERSION}" >&2
+        # return 1;
+        exit 1;
+    fi
+    init_dehydrated_conf
 }
 # }}}
 # {{{ function install_web_service_common_php()
@@ -5258,11 +5493,10 @@ configure_libffi_command()
 # {{{ configure_icu_command()
 configure_icu_command()
 {
-#CPPFLAGS="$( [ \"$OS_NAME\" != \"darwin\" ] && echo '-Wl,--enable-new-dtags,-rpath,\$(LIBRPATH)')" \
-#LDFLAGS="$( [ \"$OS_NAME\" = \"darwin\" ] && echo '-headerpad_max_install_names')" \
-    ./configure --prefix=/usr/local/chg/icu --enable-rpath
-    ./configure --prefix=$ICU_BASE \
-                --enable-rpath \
+    #CPPFLAGS="$( [ \"$OS_NAME\" != \"darwin\" ] && echo '-Wl,--enable-new-dtags,-rpath,\$(LIBRPATH)')" \
+    #LDFLAGS="$( [ \"$OS_NAME\" = \"darwin\" ] && echo '-headerpad_max_install_names')" \
+    ./configure --prefix=$ICU_BASE
+                #--enable-rpath
                 #$( [ "$OS_NAME" = "darwin" ] && echo 'LDFLAGS="-headerpad_max_install_names"')
 
 }
@@ -5270,6 +5504,17 @@ configure_icu_command()
 # {{{ configure_nginx_command()
 configure_nginx_command()
 {
+    # vim nginx配置文件语法支持
+    #cp -r contrib/vim ~/.vim/bundle/nginx
+
+    if [ "$HIDE_NGINX" = "1" ];then
+        sed -i.bak.$$ "s/Server: nginx/Server: ${NGINX_CUSTOMIZE_NAME}\/${NGINX_CUSTOMIZE_VERSION}/" ./src/http/ngx_http_header_filter_module.c
+        sed -i.bak.$$ "s/<hr><center>nginx<\/center>/<hr><center>${NGINX_CUSTOMIZE_NAME}\/${NGINX_CUSTOMIZE_VERSION}<\/center>/" ./src/http/ngx_http_special_response.c
+        #local len=`echo ${NGINX_CUSTOMIZE_NAME_HUFFMAN}|awk -F'\\' '{print NF -1 ; }'`
+        local len=${#NGINX_CUSTOMIZE_NAME};
+        sed -n "s/nginx\[5\] = \"$(sed_quote2 '\x84\xaa\x63\x55\xe7' )\"/nginx[${len}] = \"$(sed_quote2 ${NGINX_CUSTOMIZE_NAME_HUFFMAN})\"/p" ./src/http/v2/ngx_http_v2_filter_module.c
+    fi
+
     ./configure --prefix=$NGINX_BASE \
                 --conf-path=$NGINX_CONFIG_DIR/conf/nginx.conf \
                 $( is_new_version $NGINX_VERSION "1.9.5" && echo "--with-http_v2_module" ) \
@@ -5289,13 +5534,14 @@ configure_nginx_command()
                 --with-http_random_index_module \
                 --with-mail \
                 --with-mail_ssl_module \
-                --add-module=../nginx-upload-progress-module-${NGINX_UPLOAD_PROGRESS_MODULE_VERSION} \
-                --add-module=../nginx-push-stream-module-${NGINX_PUSH_STREAM_MODULE_VERSION} \
+                --add-dynamic-module=../nginx-upload-progress-module-${NGINX_UPLOAD_PROGRESS_MODULE_VERSION} \
+                --add-dynamic-module=../nginx-push-stream-module-${NGINX_PUSH_STREAM_MODULE_VERSION} \
                 --with-http_gzip_static_module \
                 --with-cc-opt="$(get_cppflags $LIBMAXMINDDB_BASE/include)" \
                 --with-ld-opt="$(get_ldflags $LIBMAXMINDDB_BASE/lib)" \
-                --add-module=../ngx_http_geoip2_module-${NGINX_HTTP_GEOIP2_MODULE_VERSION}
+                --add-dynamic-module=../ngx_http_geoip2_module-${NGINX_HTTP_GEOIP2_MODULE_VERSION}
 
+                # 用add-module 编译成功后，upload 和push stream模块没作用。不知道是怎么回事
                 #下面这个模块报错
                 #--add-module=../${NGINX_STICKY_MODULE_FILE_NAME%%.*} \
                 #--add-module=../nginx-upload-module-${NGINX_UPLOAD_MODULE_VERSION} \
@@ -5538,7 +5784,6 @@ configure_libmaxminddb_command()
 }
 # }}}
 # }}}
-
 # {{{ function compile_rabbitmq()
 function compile_rabbitmq()
 {
@@ -5584,6 +5829,149 @@ function compile_phantomjs()
         exit 1;
     fi
     [ "$OS_NAME" = "linux" ] && repair_elf_file_rpath ${PHANTOMJS_BASE}/bin/phantomjs
+}
+# }}}
+# {{{ function compile_nodejs()
+function compile_nodejs()
+{
+    #这个编译太慢，不编译了
+    is_installed nodejs ${NODEJS_BASE}
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    echo_build_start nodejs
+
+    local nodejs_dir=${NODEJS_FILE_NAME%.*}
+    nodejs_dir=${nodejs_dir%.tar}
+
+    mkdir -p ${NODEJS_BASE} && \
+      rm -rf  ${NODEJS_BASE}/* && \
+      decompress $NODEJS_FILE_NAME && \
+      cp -r ${nodejs_dir}/* $NODEJS_BASE/ && \
+      rm -rf $nodejs_dir
+
+    if [ "$?" != "0" ]; then
+        echo "安装nodejs失败" >&2
+        #return 1;
+        exit 1;
+    fi
+    ping_usable registry.npm.org 100 || npm config set registry http://registry.npm.taobao.org
+}
+# }}}
+# {{{ function compile_calibre()
+function compile_calibre()
+{
+    is_installed calibre ${CALIBRE_BASE}
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    echo_build_start calibre
+
+    mkdir -p ${CALIBRE_BASE} && \
+      rm -rf  ${CALIBRE_BASE}/* && \
+      decompress $CALIBRE_FILE_NAME $CALIBRE_BASE
+
+    if [ "$?" != "0" ]; then
+        echo "安装calibre失败" >&2
+        #return 1;
+        exit 1;
+    fi
+    [ "$OS_NAME" != "linux" ] || repair_dir_elf_rpath $CALIBRE_BASE
+}
+# }}}
+# {{{ function compile_gitbook_cli()
+function compile_gitbook_cli()
+{
+    is_installed gitbook_cli ${GITBOOK_CLI_BASE}
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    compile_nodejs
+    compile_gitbook
+
+    echo_build_start gitbook-cli
+
+    local gitbook_cli_dir=${GITBOOK_CLI_FILE_NAME%.*}
+    gitbook_cli_dir=${gitbook_cli_dir%.tar}
+
+    #mkdir -p ${GITBOOK_CLI_BASE} && \
+    #  rm -rf  ${GITBOOK_CLI_BASE}/* && \
+    #  decompress $GITBOOK_CLI_FILE_NAME && \
+    #  cp -r ${gitbook_cli_dir}/* $GITBOOK_CLI_BASE/ && \
+    #  rm -rf $gitbook_cli_dir && \
+    #  $(cd $NODEJS_BASE/bin && ln -s ../lib/node_modules/gitbook-cli/bin/gitbook.js gitbook)
+
+    npm install gitbook-cli@${GITBOOK_CLI_VERSION} -g
+
+
+    if [ "$?" != "0" ]; then
+        echo "安装gitbook-cli失败" >&2
+        #return 1;
+        exit 1;
+    fi
+    compile_gitbook_pdf
+}
+# }}}
+# {{{ function compile_gitbook()
+function compile_gitbook()
+{
+    is_installed gitbook ${GITBOOK_BASE}
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    compile_nodejs
+
+    echo_build_start gitbook
+
+    local gitbook_dir=${GITBOOK_FILE_NAME%.*}
+    gitbook_dir=${gitbook_dir%.tar}
+
+    #mkdir -p ${GITBOOK_BASE} && \
+    #  rm -rf  ${GITBOOK_BASE}/* && \
+    #  decompress $GITBOOK_FILE_NAME && \
+    #  cp -r ${gitbook_dir}/* $GITBOOK_BASE/ && \
+    #  rm -rf $gitbook_dir && \
+    ##  $(cd $NODEJS_BASE/bin && ln -s ../lib/node_modules/gitbook/bin/gitbook.js gitbook)
+
+    npm install gitbook@${GITBOOK_VERSION} -g
+
+    if [ "$?" != "0" ]; then
+        echo "安装gitbook失败" >&2
+        #return 1;
+        exit 1;
+    fi
+}
+# }}}
+# {{{ function compile_gitbook_pdf()
+function compile_gitbook_pdf()
+{
+    is_installed gitbook_pdf ${GITBOOK_BASE}
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    compile_nodejs
+    compile_gitbook_cli
+
+    echo_build_start gitbook-pdf
+
+    #PHANTOMJS_CDNURL=http://npm.taobao.org/dist/phantomjs npm install phantomjs
+    #PHANTOMJS_CDNURL=http://cnpmjs.org/downloads npm install phantomjs
+    #npm config set registry http://registry.npm.taobao.org -g
+
+    ping_usable cdn.bitbucket.org || npm config set registry http://registry.npm.taobao.org
+    npm install gitbook-pdf -g
+
+
+    if [ "$?" != "0" ]; then
+        echo "安装gitbook-pdf失败" >&2
+        #return 1;
+        exit 1;
+    fi
 }
 # }}}
 # {{{ function compile_php_extension_rabbitmq()
@@ -5635,6 +6023,7 @@ function check_soft_updates()
     #which sort 
     #which head
 
+    is_echo_latest=0
 
 #    check_version zend
 #    check_version jquery
@@ -5644,6 +6033,12 @@ function check_soft_updates()
 #check_version swfupload
 #    exit;
     local array=(
+            calibre
+            gitbook
+            gitbook_cli
+            nodejs
+            logrotate
+            dehydrated
             patchelf
             ckeditor
             composer
@@ -5811,6 +6206,7 @@ function check_openssl_version()
 
     is_new_version $OPENSSL_VERSION $new_version
     if [ "$?" = "0" ];then
+        [ "$is_echo_latest" = "" -o "$is_echo_latest" != "0" ] && \
         echo -e "openssl version is \033[0;32mthe latest.\033[0m"
         return 0;
     fi
@@ -5839,6 +6235,7 @@ function check_redis_version()
 
     is_new_version $REDIS_VERSION $new_version
     if [ "$?" = "0" ];then
+        [ "$is_echo_latest" = "" -o "$is_echo_latest" != "0" ] && \
         echo -e "redis version is \033[0;32mthe latest.\033[0m"
         return 0;
     fi
@@ -5858,6 +6255,7 @@ function check_icu_version()
 
     is_new_version $ICU_VERSION ${new_version//_/.}
     if [ "$?" = "0" ];then
+        [ "$is_echo_latest" = "" -o "$is_echo_latest" != "0" ] && \
         echo -e "icu version is \033[0;32mthe latest.\033[0m"
         return 0;
     fi
@@ -5876,6 +6274,7 @@ function check_curl_version()
 
     is_new_version $CURL_VERSION ${new_version//_/.}
     if [ "$?" = "0" ];then
+        [ "$is_echo_latest" = "" -o "$is_echo_latest" != "0" ] && \
         echo -e "curl version is \033[0;32mthe latest.\033[0m"
         return 0;
     fi
@@ -5894,6 +6293,7 @@ function check_zlib_version()
 
     is_new_version $ZLIB_VERSION ${new_version//_/.}
     if [ "$?" = "0" ];then
+        [ "$is_echo_latest" = "" -o "$is_echo_latest" != "0" ] && \
         echo -e "zlib version is \033[0;32mthe latest.\033[0m"
         return 0;
     fi
@@ -5912,6 +6312,7 @@ function check_libunwind_version()
 
     is_new_version $LIBUNWIND_VERSION ${new_version//_/.}
     if [ "$?" = "0" ];then
+        [ "$is_echo_latest" = "" -o "$is_echo_latest" != "0" ] && \
         echo -e "libunwind version is \033[0;32mthe latest.\033[0m"
         return 0;
     fi
@@ -5930,6 +6331,7 @@ function check_freetype_version()
 
     is_new_version $FREETYPE_VERSION ${new_version//_/.}
     if [ "$?" = "0" ];then
+        [ "$is_echo_latest" = "" -o "$is_echo_latest" != "0" ] && \
         echo -e "freetype version is \033[0;32mthe latest.\033[0m"
         return 0;
     fi
@@ -5964,6 +6366,7 @@ function check_libzip_version()
 
     is_new_version $LIBZIP_VERSION ${new_version//_/.}
     if [ "$?" = "0" ];then
+        [ "$is_echo_latest" = "" -o "$is_echo_latest" != "0" ] && \
         echo -e "libzip version is \033[0;32mthe latest.\033[0m"
         return 0;
     fi
@@ -6002,6 +6405,7 @@ function check_php_version()
 
     is_new_version $PHP_VERSION $new_version
     if [ "$?" = "0" ];then
+        [ "$is_echo_latest" = "" -o "$is_echo_latest" != "0" ] && \
         echo -e "php version is \033[0;32mthe latest.\033[0m"
         return 0;
     fi
@@ -6020,6 +6424,7 @@ function check_gmp_version()
 
     is_new_version $GMP_VERSION $new_version
     if [ "$?" = "0" ];then
+        [ "$is_echo_latest" = "" -o "$is_echo_latest" != "0" ] && \
         echo -e "gmp version is \033[0;32mthe latest.\033[0m"
         return 0;
     fi
@@ -6039,6 +6444,7 @@ function check_mysql_version()
 
     is_new_version $MYSQL_VERSION $new_version
     if [ "$?" = "0" ];then
+        [ "$is_echo_latest" = "" -o "$is_echo_latest" != "0" ] && \
         echo -e "mysql version is \033[0;32mthe latest.\033[0m"
         return 0;
     fi
@@ -6062,12 +6468,39 @@ function check_nginx_version()
 
     is_new_version $NGINX_VERSION $new_version
     if [ "$?" = "0" ];then
+        [ "$is_echo_latest" = "" -o "$is_echo_latest" != "0" ] && \
         echo -e "nginx version is \033[0;32mthe latest.\033[0m"
         return 0;
     fi
 
     echo -e "nginx current version: \033[0;33m${NGINX_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 
+}
+# }}}
+# {{{ function check_nodejs_version()
+function check_nodejs_version()
+{
+    #https://nodejs.org/en/download/
+    check_ftp_version nodejs ${NODEJS_VERSION} https://nodejs.org/en/download/ 's/^.\{1,\}[> ]node-v\([0-9.]\{1,\}\)\.tar\.gz[< ]*.\{0,\}$/\1/p'
+    check_ftp_version nodejs ${NODEJS_VERSION} https://nodejs.org/en/download/current/ 's/^.\{1,\}[> ]node-v\([0-9.]\{1,\}\)\.tar\.gz[< ]*.\{0,\}$/\1/p'
+}
+# }}}
+# {{{ function check_calibre_version()
+function check_calibre_version()
+{
+    check_github_soft_version calibre ${CALIBRE_VERSION} https://github.com/kovidgoyal/calibre/releases
+}
+# }}}
+# {{{ function check_gitbook_version()
+function check_gitbook_version()
+{
+    check_github_soft_version gitbook $GITBOOK_VERSION "https://github.com/GitbookIO/gitbook/releases"
+}
+# }}}
+# {{{ function check_gitbook_cli_version()
+function check_gitbook_cli_version()
+{
+    check_github_soft_version gitbook-cli $GITBOOK_CLI_VERSION "https://github.com/GitbookIO/gitbook-cli/releases"
 }
 # }}}
 # {{{ function check_nginx_upload_progress_module_version()
@@ -6133,6 +6566,7 @@ function check_imagemagick_version()
 
     is_new_version ${IMAGEMAGICK_VERSION} ${new_version}
     if [ "$?" = "0" ];then
+        [ "$is_echo_latest" = "" -o "$is_echo_latest" != "0" ] && \
         echo -e "imagemagick version is \033[0;32mthe latest.\033[0m"
         return 0;
     fi
@@ -6151,6 +6585,7 @@ function check_pkgconfig_version()
 
     is_new_version $PKGCONFIG_VERSION $new_version
     if [ "$?" = "0" ];then
+        [ "$is_echo_latest" = "" -o "$is_echo_latest" != "0" ] && \
         echo -e "pkgconfig version is \033[0;32mthe latest.\033[0m"
         return 0;
     fi
@@ -6206,6 +6641,12 @@ function check_pdf2htmlEX_version()
     check_github_soft_version pdf2htmlEX $PDF2HTMLEX_VERSION "https://github.com/coolwanglu/pdf2htmlEX/releases"
 }
 # }}}
+# {{{ function check_dehydrated_version()
+function check_dehydrated_version()
+{
+    check_github_soft_version dehydrated $DEHYDRATED_VERSION "https://github.com/lukas2511/dehydrated/releases"
+}
+# }}}
 # {{{ function check_nasm_version()
 function check_nasm_version()
 {
@@ -6218,6 +6659,7 @@ function check_nasm_version()
 
     is_new_version $NASM_VERSION $new_version
     if [ "$?" = "0" ];then
+        [ "$is_echo_latest" = "" -o "$is_echo_latest" != "0" ] && \
         echo -e "nasm version is \033[0;32mthe latest.\033[0m"
         return 0;
     fi
@@ -6398,7 +6840,11 @@ function check_pecl_xdebug_version()
 # {{{ function check_pecl_libsodium_version()
 function check_pecl_libsodium_version()
 {
-    check_php_pecl_version libsodium $PHP_LIBSODIUM_VERSION
+    if is_new_version "7.1.99" $PHP_VERSION ;then
+        check_github_soft_version libsodium-php $PHP_LIBSODIUM_VERSION "https://github.com/jedisct1/libsodium-php/releases" "\(1\.[0-9.]\{1,\}\).tar.gz" 1
+    else
+        check_php_pecl_version libsodium $PHP_LIBSODIUM_VERSION
+    fi
 }
 # }}}
 # {{{ function check_pecl_memcached_version()
@@ -6482,6 +6928,12 @@ function check_rsyslog_version()
     check_github_soft_version rsyslog $RSYSLOG_VERSION "https://github.com/rsyslog/rsyslog/releases" "v\([0-9.]\{5,\}\)\(-stable\)\{0,1\}\.tar\.gz" 1
 }
 # }}}
+# {{{ function check_logrotate_version()
+function check_logrotate_version()
+{
+    check_github_soft_version logrotate $LOGROTATE_VERSION "https://github.com/logrotate/logrotate/releases"
+}
+# }}}
 # {{{ function check_libuuid_version()
 function check_libuuid_version()
 {
@@ -6505,6 +6957,7 @@ function check_libgcrypt_version()
 
     is_new_version $LIBGCRYPT_VERSION $new_version
     if [ "$?" = "0" ];then
+        [ "$is_echo_latest" = "" -o "$is_echo_latest" != "0" ] && \
         echo -e "libgcrypt version is \033[0;32mthe latest.\033[0m"
         return 0;
     fi
@@ -6523,6 +6976,7 @@ function check_libgpg_error_version()
 
     is_new_version $LIBGPG_ERROR_VERSION $new_version
     if [ "$?" = "0" ];then
+        [ "$is_echo_latest" = "" -o "$is_echo_latest" != "0" ] && \
         echo -e "libgpg-error version is \033[0;32mthe latest.\033[0m"
         return 0;
     fi
@@ -6553,6 +7007,7 @@ function check_glib_version()
 
     is_new_version $GLIB_VERSION $new_version
     if [ "$?" = "0" ];then
+        [ "$is_echo_latest" = "" -o "$is_echo_latest" != "0" ] && \
         echo -e "glib version is \033[0;32mthe latest.\033[0m"
         return 0;
     fi
@@ -6597,6 +7052,7 @@ function check_kerberos_version()
 
     is_new_version $KERBEROS_VERSION $new_version
     if [ "$?" = "0" ];then
+        [ "$is_echo_latest" = "" -o "$is_echo_latest" != "0" ] && \
         echo -e "kerberos version is \033[0;32mthe latest.\033[0m"
         return 0;
     fi
@@ -6616,6 +7072,7 @@ function check_sqlite_version()
 
     is_new_version $SQLITE_VERSION $new_version
     if [ "$?" = "0" ];then
+        [ "$is_echo_latest" = "" -o "$is_echo_latest" != "0" ] && \
         echo -e "sqlite version is \033[0;32mthe latest.\033[0m"
         return 0;
     fi
@@ -6634,6 +7091,7 @@ function check_imap_version()
 
     is_new_version $IMAP_VERSION $new_version
     if [ "$?" = "0" ];then
+        [ "$is_echo_latest" = "" -o "$is_echo_latest" != "0" ] && \
         echo -e "imap version is \033[0;32mthe latest.\033[0m"
         return 0;
     fi
@@ -6652,6 +7110,7 @@ function check_libmemcached_version()
 
     is_new_version $LIBMEMCACHED_VERSION $new_version
     if [ "$?" = "0" ];then
+        [ "$is_echo_latest" = "" -o "$is_echo_latest" != "0" ] && \
         echo -e "libmemcached version is \033[0;32mthe latest.\033[0m"
         return 0;
     fi
@@ -6670,6 +7129,7 @@ function check_qrencode_version()
 
     is_new_version $LIBQRENCODE_VERSION $new_version
     if [ "$?" = "0" ];then
+        [ "$is_echo_latest" = "" -o "$is_echo_latest" != "0" ] && \
         echo -e "qrencode version is \033[0;32mthe latest.\033[0m"
         return 0;
     fi
@@ -6688,6 +7148,7 @@ function check_jpeg_version()
 
     is_new_version $JPEG_VERSION $new_version
     if [ "$?" = "0" ];then
+        [ "$is_echo_latest" = "" -o "$is_echo_latest" != "0" ] && \
         echo -e "jpeg version is \033[0;32mthe latest.\033[0m"
         return 0;
     fi
@@ -6947,6 +7408,7 @@ function check_ftp_version()
 
     is_new_version $current_version $new_version
     if [ "$?" = "0" ];then
+        [ "$is_echo_latest" = "" -o "$is_echo_latest" != "0" ] && \
         echo -e "${soft} version is \033[0;32mthe latest.\033[0m"
         return 0;
     fi
@@ -6995,6 +7457,7 @@ function check_github_soft_version()
     if [ "$current_version" = "php7" -o "$current_version" = "master" ];then
         if [ "$soft" = "pecl-search_engine-sphinx" ];then
             if [ "$new_version" = "1_3_3" ];then
+                [ "$is_echo_latest" = "" -o "$is_echo_latest" != "0" ] && \
                 echo -e "${soft} version is \033[0;32mthe latest.\033[0m"
                 return;
             else
@@ -7003,6 +7466,7 @@ function check_github_soft_version()
             fi
         elif [ "$soft" = "php-memcached" ];then
             if [ "$new_version" = "2.2.0" ];then
+                [ "$is_echo_latest" = "" -o "$is_echo_latest" != "0" ] && \
                 echo -e "${soft} version is \033[0;32mthe latest.\033[0m"
                 return;
             else
@@ -7011,6 +7475,7 @@ function check_github_soft_version()
             fi
         elif [ "$soft" = "php-zmq" ];then
             if [ "$new_version" = "1.1.2" ];then
+                [ "$is_echo_latest" = "" -o "$is_echo_latest" != "0" ] && \
                 echo -e "${soft} version is \033[0;32mthe latest.\033[0m"
                 return;
             else
@@ -7025,6 +7490,7 @@ function check_github_soft_version()
 
     is_new_version $current_version $new_version
     if [ "$?" = "0" ];then
+        [ "$is_echo_latest" = "" -o "$is_echo_latest" != "0" ] && \
         echo -e "${soft} version is \033[0;32mthe latest.\033[0m"
         return 0;
     elif [ "$?" = "11" ] ; then
@@ -7060,6 +7526,7 @@ function check_php_pecl_version()
     if [ "$current_version" = "php7" ];then
         if [ "$ext" = "sphinx" ];then
             if [ "$new_version" = "1.3.3" ];then
+                [ "$is_echo_latest" = "" -o "$is_echo_latest" != "0" ] && \
                 echo -e "PHP extension ${ext} version is \033[0;32mthe latest.\033[0m"
                 return;
             else
@@ -7068,6 +7535,7 @@ function check_php_pecl_version()
             fi
         elif [ "$ext" = "memcached" ];then
             if [ "$new_version" = "2.2.0" ];then
+                [ "$is_echo_latest" = "" -o "$is_echo_latest" != "0" ] && \
                 echo -e "PHP extension ${ext} version is \033[0;32mthe latest.\033[0m"
                 return;
             else
@@ -7082,6 +7550,7 @@ function check_php_pecl_version()
 
     is_new_version $current_version $new_version
     if [ "$?" = "0" ];then
+        [ "$is_echo_latest" = "" -o "$is_echo_latest" != "0" ] && \
         echo -e "PHP extension ${ext} version is \033[0;32mthe latest.\033[0m"
         return 0;
     elif [ "$?" = "11" ] ; then
@@ -7107,20 +7576,21 @@ function check_sourceforge_soft_version()
         pattern="s/^.\{1,\}Download \{1,\}${soft}-\([0-9.]\{1,\}\).tar\..\{1,\}$/\1/p"
     fi
     local new_version=`curl -Lk https://sourceforge.net/projects/${soft}/files/$( [ "${soft1}" = "0" ] || echo "${soft1}/" ) 2>/dev/null|sed -n "$pattern"|sort -rV|head -1`;
-     if [ -z "$new_version" ];then
-         echo -e "探测${soft}的新版本\033[0;31m失败\033[0m" >&2
-         return 1;
-     fi
+    if [ -z "$new_version" ];then
+        echo -e "探测${soft}的新版本\033[0;31m失败\033[0m" >&2
+        return 1;
+    fi
 
-     is_new_version $current_version $new_version
-     if [ "$?" = "0" ];then
-         echo -e "${soft} version is \033[0;32mthe latest.\033[0m"
-         return 0;
-     elif [ "$?" = "11" ] ; then
-         return;
-     fi
+    is_new_version $current_version $new_version
+    if [ "$?" = "0" ];then
+        [ "$is_echo_latest" = "" -o "$is_echo_latest" != "0" ] && \
+        echo -e "${soft} version is \033[0;32mthe latest.\033[0m"
+        return 0;
+    elif [ "$?" = "11" ] ; then
+        return;
+    fi
 
-     echo -e "${soft} current version: \033[0;33m${current_version}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+    echo -e "${soft} current version: \033[0;33m${current_version}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
 # {{{ function check_freedesktop_soft_version()
@@ -7135,20 +7605,21 @@ function check_freedesktop_soft_version()
         pattern="s/^.*>${soft}-\([0-9.]\{1,\}\)\.tar\.gz<.*$/\1/p"
     fi
     local new_version=`curl -Lk $url 2>/dev/null|sed -n "$pattern"|sort -rV|head -1`;
-     if [ -z "$new_version" ];then
-         echo -e "探测${soft}的新版本\033[0;31m失败\033[0m" >&2
-         return 1;
-     fi
+    if [ -z "$new_version" ];then
+        echo -e "探测${soft}的新版本\033[0;31m失败\033[0m" >&2
+        return 1;
+    fi
 
-     is_new_version $current_version $new_version
-     if [ "$?" = "0" ];then
-         echo -e "${soft} version is \033[0;32mthe latest.\033[0m"
-         return 0;
-     elif [ "$?" = "11" ] ; then
-         return;
-     fi
+    is_new_version $current_version $new_version
+    if [ "$?" = "0" ];then
+        [ "$is_echo_latest" = "" -o "$is_echo_latest" != "0" ] && \
+        echo -e "${soft} version is \033[0;32mthe latest.\033[0m"
+        return 0;
+    elif [ "$?" = "11" ] ; then
+        return;
+    fi
 
-     echo -e "${soft} current version: \033[0;33m${current_version}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+    echo -e "${soft} current version: \033[0;33m${current_version}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
 #}}}
@@ -7548,7 +8019,8 @@ function is_elf_file() {
         signatures="Mach-O"
     fi
 
-    file -b $filename |grep -q ELF
+    #file -b $filename |grep -q ELF
+    file -b $filename|grep dynamically |grep -q ELF
 }
 # }}}
 # {{{ function repair_elf_file_rpath
@@ -7634,7 +8106,18 @@ function multi_process() {
     exec 6>&- # 关闭fd6
 }
 # }}}
-
+# {{{ function ping_usable() # 测试当前网络下是否可以连接到某域名
+function ping_usable()
+{
+    local domain_name=$1
+    local threshold=$2
+    if [ "threshold" = "" ]; then
+        threshold="60"
+    fi
+    local status=`ping -c 5 -q $domain_name -i 0.001|sed -n '$p' |awk -F/ "{ if ( \\$6 < 0 || \\$6 > $threshold ) { print 1; } else { print 0;} ;}"`
+    return $status
+}
+# }}}
 #wget --content-disposition --no-check-certificate https://github.com/vrtadmin/clamav-devel/archive/clamav-0.99.2.tar.gz
 #tar zxf clamav-devel-clamav-0.99.2.tar.gz
 #cd clamav-devel-clamav-0.99.2
@@ -7699,3 +8182,20 @@ function multi_process() {
 # solr Sphinx Xapian,c++开发, 国内的 xunsearch 基于Xapian
 
 #https://github.com/exinnet/tclip
+
+# 域名后缀列表
+#https://publicsuffix.org/list/public_suffix_list.dat
+#cp -r contrib/vim ~/.vim/bundle/nginx
+
+# vim
+
+#wget --no-check-certificate --content-disposition https://github.com/vim/vim/archive/v8.0.0771.tar.gz
+
+#tar zxf vim-8.0.0771.tar.gz
+#cd vim-8.0.0771
+
+#yum install perl python ruby perl-devel python-devel ruby-devel lua lua-devel
+
+#./configure --prefix=/opt/vim800 --enable-luainterp=yes --enable-perlinterp=yes --enable-pythoninterp=yes --enable-rubyinterp=yes
+
+

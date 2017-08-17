@@ -1,5 +1,8 @@
 #!/bin/bash
 
+user="chg"
+group="chg"
+
 curr_dir=$(cd "$(dirname "$0")"; pwd);
 
 base_define_file=$curr_dir/base_define.sh
@@ -20,13 +23,23 @@ if [ `whoami` != "root" ]; then
     fi
 fi
 
+grep -q "^${group}:" /etc/group
+if [ "$?" != 0 ]; then
+    groupadd ${group}
+fi
+
+grep -q "^${user}:" /etc/passwd
+if [ "$?" != 0 ]; then
+    useradd -r -M -g $group -s $(grep 'nologin' /etc/shells|head -1) $user
+fi
+
 ##################################################################
 #                         LOG DIR                                #
 ##################################################################
 
 mkdir -p $NGINX_LOG_DIR $LOG_DIR/php-fpm
 
-chown -R nobody:nobody $LOG_DIR
+chown -R ${user}:${group} $LOG_DIR
 
 ##################################################################
 #                         RUN DIR                                #
@@ -34,20 +47,21 @@ chown -R nobody:nobody $LOG_DIR
 
 mkdir -p $BASE_DIR/run/nginx
 
-chown -R nobody:nobody $BASE_DIR/run
+chown -R ${user}:${group} $BASE_DIR/run
 ##################################################################
 #                         DATA DIR                               #
 ##################################################################
 
 mkdir -p $DATA_DIR/cache/php
+mkdir -p $TMP_DATA_DIR/nginx
 
-mkdir $DATA_DIR/{sqlite3,preview}
+mkdir -p $DATA_DIR/{sqlite3,preview}
 
-mkdir $DATA_DIR/preview/{flash,pdf,office,txt,html}
+mkdir -p $DATA_DIR/preview/{flash,pdf,office,txt,html}
 
-chown -R nobody:nobody $DATA_DIR/{sqlite3,preview}
+chown -R ${user}:${group} $DATA_DIR/{sqlite3,preview}
 
-chown -R nobody:nobody $UPLOAD_TMP_DIR
+chown -R ${user}:${group} $UPLOAD_TMP_DIR $TMP_DATA_DIR/nginx $DATA_DIR/cache/php
 
 ##################################################################
 #                         php cache file                         #
