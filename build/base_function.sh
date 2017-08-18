@@ -5856,6 +5856,7 @@ function compile_nodejs()
         #return 1;
         exit 1;
     fi
+    deal_path "$NODEJS_BASE"
     ping_usable registry.npm.org 100 || npm config set registry http://registry.npm.taobao.org
 }
 # }}}
