@@ -8112,7 +8112,7 @@ function ping_usable()
 {
     local domain_name=$1
     local threshold=$2
-    if [ "threshold" = "" ]; then
+    if [ "$threshold" = "" ]; then
         threshold="60"
     fi
     local status=`ping -c 5 -q $domain_name -i 0.001|sed -n '$p' |awk -F/ "{ if ( \\$6 < 0 || \\$6 > $threshold ) { print 1; } else { print 0;} ;}"`
@@ -8198,5 +8198,3 @@ function ping_usable()
 #yum install perl python ruby perl-devel python-devel ruby-devel lua lua-devel
 
 #./configure --prefix=/opt/vim800 --enable-luainterp=yes --enable-perlinterp=yes --enable-pythoninterp=yes --enable-rubyinterp=yes
-
-
