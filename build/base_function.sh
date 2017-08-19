@@ -8063,7 +8063,12 @@ function find_not_found_so_rpath() {
     # 没找到的so，查找文件所在目录
     for j in `echo "$@"|grep 'not found'|awk '{print $1;}'`;
     do
-        find $BASE_DIR/ -name $j |xargs dirname
+        local tmp=`find $BASE_DIR/ -name $j`;
+        if [ "$tmp" != "" ];then
+         echo "$tmp" | xargs dirname
+        else
+            echo "not find lib $j in $BASE_DIR " >&2
+        fi
     done | sort -u | tr "\n" ":"
 }
 # }}}
@@ -8195,6 +8200,6 @@ function ping_usable()
 #tar zxf vim-8.0.0771.tar.gz
 #cd vim-8.0.0771
 
-#yum install perl python ruby perl-devel python-devel ruby-devel lua lua-devel
+#yum install perl python ruby perl-devel python-devel ruby-devel lua lua-devel perl-ExtUtils-Embed
 
 #./configure --prefix=/opt/vim800 --enable-luainterp=yes --enable-perlinterp=yes --enable-pythoninterp=yes --enable-rubyinterp=yes
