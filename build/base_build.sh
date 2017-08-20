@@ -6,7 +6,7 @@
 # autoconf，automake，autopoint，pkg-config
 #wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-6.repo
 if [ ! -f $HOME/.chg_base_compile_env ]; then
-    yum install -y cmake gcc xz texinfo bzip2 xz-devel gcc-c++ ncurses-devel ncurses byacc file re2c libtool-ltdl-devel popt-devel re2c wget curl
+    yum install -y cmake gcc xz texinfo bzip2 xz-devel gcc-c++ ncurses-devel ncurses byacc file re2c libtool-ltdl-devel popt-devel re2c wget curl libtool
     yum install -y curl nss cyrus-sasl cyrus-sasl-devel cyrus-sasl-lib libacl libacl-devel libattr libattr-devel gperf pam pam-devel krb5-devel krb5-libs
 
     #wget http://dl.fedoraproject.org/pub/epel/7/x86_64/r/re2c-0.14.3-2.el7.x86_64.rpm
@@ -170,12 +170,11 @@ export LANG=C
 pkg_config_path_init
 #check_soft_updates
 #exit;
-compile_nodejs
-compile_gitbook_cli
-compile_gitbook_pdf
-compile_calibre
-compile_logrotate
+#compile_gitbook_pdf
+#exit;
 compile_patchelf
+compile_nodejs
+compile_logrotate
 compile_openssl
 compile_ImageMagick
 compile_redis
@@ -224,6 +223,7 @@ compile_php_extension_redis
 compile_php_extension_solr
 compile_php_extension_mongodb
 compile_php_extension_swoole
+compile_php_extension_grpc
 compile_php_extension_memcached
 compile_php_extension_tidy
 compile_php_extension_sphinx
@@ -237,6 +237,9 @@ install_dehydrated
 cp_GeoLite2_data
 install_web_service_common_php
 install_geoip2_php
+compile_gitbook_cli
+#compile_gitbook_pdf
+compile_calibre
 
 $PHP_BASE/bin/php --ini
 

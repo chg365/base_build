@@ -392,6 +392,7 @@ function wget_base_library()
     wget_lib $PHP_FILE_NAME           "http://cn2.php.net/distributions/$PHP_FILE_NAME"
     wget_lib $PTHREADS_FILE_NAME      "http://pecl.php.net/get/$PTHREADS_FILE_NAME"
     wget_lib $SWOOLE_FILE_NAME        "http://pecl.php.net/get/$SWOOLE_FILE_NAME"
+    wget_lib $GRPC_FILE_NAME          "http://pecl.php.net/get/$GRPC_FILE_NAME"
     wget_lib $LIBXSLT_FILE_NAME       "ftp://xmlsoft.org/libxslt/$LIBXSLT_FILE_NAME"
     wget_lib $TIDY_FILE_NAME          "https://github.com/htacg/tidy-html5/archive/${TIDY_FILE_NAME##*-}"
     wget_lib $SPHINX_FILE_NAME        "https://github.com/sphinxsearch/sphinx/archive/${SPHINX_FILE_NAME#*-}"
@@ -2765,7 +2766,9 @@ function compile_openjpeg()
     fi
 
     OPENJPEG_CONFIGURE="
-     cmake ./ -DCMAKE_INSTALL_PREFIX=$OPENJPEG_BASE
+     cmake ./ -DCMAKE_INSTALL_PREFIX=$OPENJPEG_BASE \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DBUILD_THIRDPARTY:BOOL=ON
     "
 
     compile "openjpeg" "$OPENJPEG_FILE_NAME" "openjpeg-$OPENJPEG_VERSION" "$OPENJPEG_BASE" "OPENJPEG_CONFIGURE"
@@ -4582,6 +4585,24 @@ function compile_php_extension_swoole()
     fi
 }
 # }}}
+# {{{ function compile_php_extension_grpc()
+function compile_php_extension_grpc()
+{
+    is_installed_php_extension grpc
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    PHP_EXTENSION_GRPC_CONFIGURE="
+        ./configure --with-php-config=$PHP_BASE/bin/php-config \
+                    --enable-grpc
+    "
+
+    compile "php_extension_grpc" "$GRPC_FILE_NAME" "grpc-$GRPC_VERSION" "grpc.so" "PHP_EXTENSION_GRPC_CONFIGURE"
+
+    /bin/rm -rf package.xml
+}
+# }}}
 # {{{ function compile_php_extension_qrencode()
 function compile_php_extension_qrencode()
 {
@@ -5964,7 +5985,12 @@ function compile_gitbook_pdf()
     #PHANTOMJS_CDNURL=http://cnpmjs.org/downloads npm install phantomjs
     #npm config set registry http://registry.npm.taobao.org -g
 
-    ping_usable cdn.bitbucket.org || npm config set registry http://registry.npm.taobao.org
+    ping_usable cdn.bitbucket.org || \
+    npm config set registry http://registry.npm.taobao.org && \
+    npm config set phantomjs_cdnurl=http://npm.taobao.org/dist/phantomjs
+
+    #npm install phantomjs -g
+
     npm install gitbook-pdf -g
 
 
@@ -6109,6 +6135,7 @@ function check_soft_updates()
             zeromq
             sqlite
             swoole
+            grpc
             openssl
             icu
             zlib
@@ -6909,6 +6936,12 @@ function check_sphinx_version()
 function check_swoole_version()
 {
     check_github_soft_version swoole $SWOOLE_VERSION "https://github.com/swoole/swoole-src/releases" "v\([0-9.]\{5,\}\)\(-stable\)\{0,1\}\.tar\.gz" 1
+}
+# }}}
+# {{{ function check_grpc_version()
+function check_grpc_version()
+{
+    check_github_soft_version grpc $GRPC_VERSION "https://github.com/grpc/grpc/releases"
 }
 # }}}
 # {{{ function check_libevent_version()
