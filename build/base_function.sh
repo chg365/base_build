@@ -8235,4 +8235,5 @@ function ping_usable()
 
 #yum install perl python ruby perl-devel python-devel ruby-devel lua lua-devel perl-ExtUtils-Embed
 
-#./configure --prefix=/opt/vim800 --enable-luainterp=yes --enable-perlinterp=yes --enable-pythoninterp=yes --enable-rubyinterp=yes
+#./configure --prefix=/opt/vim800 --enable-luainterp=yes --enable-perlinterp=yes --enable-pythoninterp=yes --enable-rubyinterp=yes --enable-multibyte
+#./configure --enable-gui=no --without-x 
