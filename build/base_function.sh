@@ -386,7 +386,8 @@ function wget_base_library()
     wget_lib $PCRE_FILE_NAME          "http://sourceforge.net/projects/pcre/files/pcre/$PCRE_VERSION/$PCRE_FILE_NAME/download"
     wget_lib $NGINX_FILE_NAME         "http://nginx.org/download/$NGINX_FILE_NAME"
     wget_lib $NODEJS_FILE_NAME        "https://nodejs.org/dist/v${NODEJS_VERSION}/${NODEJS_FILE_NAME}"
-    wget_lib $CALIBRE_FILE_NAME       "https://github.com/kovidgoyal/calibre/releases/download/v${CALIBRE_VERSION}/${CALIBRE_FILE_NAME}"
+    #wget_lib $CALIBRE_FILE_NAME       "https://github.com/kovidgoyal/calibre/releases/download/v${CALIBRE_VERSION}/${CALIBRE_FILE_NAME}"
+    wget_lib $CALIBRE_FILE_NAME       "https://download.calibre-ebook.com/${CALIBRE_VERSION}/${CALIBRE_FILE_NAME}"
     wget_lib $GITBOOK_FILE_NAME       "https://github.com/GitbookIO/gitbook/archive/${GITBOOK_FILE_NAME##*-}"
     wget_lib $GITBOOK_CLI_FILE_NAME   "https://github.com/GitbookIO/gitbook-cli/archive/${GITBOOK_CLI_FILE_NAME##*-}"
     wget_lib $PHP_FILE_NAME           "http://cn2.php.net/distributions/$PHP_FILE_NAME"
@@ -8080,7 +8081,7 @@ function repair_elf_file_rpath() {
     local tmp_str=`ldd $filename 2>/dev/null`;
     if echo "$tmp_str" |grep -q 'not found' ;then
         # 查找链接的所有so文件的目录
-        local rpath=$(find_not_found_so_rpath "$tmp_str")$(find_found_so_rpath "$tmp_str")
+        local rpath=$(find_not_found_so_rpath "$filename" "$tmp_str")$(find_found_so_rpath "$tmp_str")
         rpath=${rpath%%:}
         # 修复文件
         # 相同目录
@@ -8092,13 +8093,21 @@ function repair_elf_file_rpath() {
 # }}}
 # {{{ function find_not_found_so_rpath
 function find_not_found_so_rpath() {
+    local filedir=`echo $1 |xargs dirname`
+    shift
     local j=""
     # 没找到的so，查找文件所在目录
     for j in `echo "$@"|grep 'not found'|awk '{print $1;}'`;
     do
         local tmp=`find $BASE_DIR/ -name $j`;
         if [ "$tmp" != "" ];then
-         echo "$tmp" | xargs dirname
+            tmp=`echo "$tmp" | xargs dirname`
+            # if test `echo "$tmp"|awk 'END{print NR}'` -gt 1 ; then
+            if test `echo "$tmp"|wc -l` -gt 1 ; then
+                get_LCS_file $filedir "$tmp"
+            else
+                echo "$tmp"
+            fi
         else
             echo "not find lib $j in $BASE_DIR " >&2
         fi
@@ -8109,6 +8118,45 @@ function find_not_found_so_rpath() {
 function find_found_so_rpath() {
     # 能找到的so的目录
     echo "$tmp_str"|grep '=>' | grep '/' |grep -v 'not found'|awk '{print $3;}'|xargs dirname | sort -u | tr "\n" ":"
+}
+# }}}
+# {{{ function get_LCS_file 获取和指定目录最近的目录
+function get_LCS_file()
+{
+    local filedir="$1"
+    shift
+
+    # 查找最近的文件
+    local filedir=`realpath $filedir`
+    local max_subdir_num=0;
+    local max_subdir=""
+
+    local i="";
+    local dir_arr=( `echo ${filedir#/}|tr '/' '\n'` )
+    for i in `echo "$@"`;
+    do
+        local tmp_dir=`realpath $i`
+        local tmp_arr=( `echo ${tmp_dir#/}|tr '/' '\n'` )
+        local min_dir_num=${#dir_arr[@]}
+        if [ "$min_dir_num" -gt "${#tmp_arr[@]}" ];then
+            min_dir_num=${#tmp_arr[@]};
+        fi
+        local j=0;
+        local m=0;
+        for((; j<$min_dir_num; j++))
+        do
+            if [ "${dir_arr[j]}" = "${tmp_arr[j]}" ]; then
+                ((m++))
+            else
+                break;
+            fi
+        done
+        if [ "$max_subdir_num" -lt "$m" ]; then
+            max_subdir_num=$m
+            max_subdir=$i;
+        fi
+    done
+    echo $max_subdir
 }
 # }}}
 # }}}
