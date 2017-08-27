@@ -1028,7 +1028,7 @@ function is_installed_gitbook_cli()
     #    return 1;
     #fi
 
-    local version=`npm list gitbook-cli -g -depth 1| sed -n '/@/p'|awk -F@ '{print $2;}'|tr -d ' '`
+    local version=`npm list gitbook-cli -g -depth 1 2>/dev/null|sed -n '/@/p'|awk -F@ '{print $2;}'|tr -d ' '`
     if [ "$version" != "${GITBOOK_CLI_VERSION}" ];then
         return 1;
     fi
@@ -1040,7 +1040,7 @@ function is_installed_gitbook_pdf()
 {
     is_installed nodejs $NODEJS_BASE || return 1;
 
-    local version=`npm list gitbook-pdf -g -depth 1| sed -n '/@/p'|awk -F@ '{print $2;}'|tr -d ' '`
+    local version=`npm list gitbook-pdf -g -depth 1 2>/dev/null| sed -n '/@/p'|awk -F@ '{print $2;}'|tr -d ' '`
     if [ "$version" != "" ];then
         return;
     fi
@@ -5879,7 +5879,7 @@ function compile_nodejs()
         exit 1;
     fi
     deal_path "$NODEJS_BASE"
-    ping_usable registry.npm.org 100 || npm config set registry http://registry.npm.taobao.org
+    #ping_usable registry.npm.org 100 || npm config set registry http://registry.npm.taobao.org
 }
 # }}}
 # {{{ function compile_calibre()
@@ -5907,13 +5907,13 @@ function compile_calibre()
 # {{{ function compile_gitbook_cli()
 function compile_gitbook_cli()
 {
+    compile_nodejs
     is_installed gitbook_cli ${GITBOOK_CLI_BASE}
     if [ "$?" = "0" ];then
         return;
     fi
 
-    compile_nodejs
-    compile_gitbook
+    #compile_gitbook
 
     echo_build_start gitbook-cli
 
@@ -5986,9 +5986,10 @@ function compile_gitbook_pdf()
     #PHANTOMJS_CDNURL=http://cnpmjs.org/downloads npm install phantomjs
     #npm config set registry http://registry.npm.taobao.org -g
 
+    export PHANTOMJS_CDNURL="http://npm.taobao.org/dist/phantomjs"
     ping_usable cdn.bitbucket.org || \
-    npm config set registry http://registry.npm.taobao.org && \
-    npm config set phantomjs_cdnurl=http://npm.taobao.org/dist/phantomjs
+    npm config set phantomjs_cdnurl=http://npm.taobao.org/dist/phantomjs && \
+    #npm config set registry http://registry.npm.taobao.org
 
     #npm install phantomjs -g
 

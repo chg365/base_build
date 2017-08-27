@@ -238,7 +238,7 @@ cp_GeoLite2_data
 install_web_service_common_php
 install_geoip2_php
 compile_gitbook_cli
-#compile_gitbook_pdf
+compile_gitbook_pdf
 compile_calibre
 
 $PHP_BASE/bin/php --ini
