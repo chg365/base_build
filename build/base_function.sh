@@ -4914,6 +4914,7 @@ function compile_mysql()
                                   -DWITH_SSL=bundled \
                                   -DWITH_BOOST=../boost_${BOOST_VERSION}/ \
                                   -DWITH_ZLIB=bundled \
+                                  $( has_service && echo '-DWITH_SYSTEMD=ON' ) \
                                   -DINSTALL_MYSQLTESTDIR=
 
                                   # -DWITH_SSL=$OPENSSL_BASE \  # OPENSSL_VERSIOn > 1.1时，编译不过去
@@ -4925,17 +4926,21 @@ function compile_mysql()
                                   # -DWITH_MEMORY_STORAGE_ENGINE=1 \
                                   # -DWITH_READLINE=1 \
                                   # -DENABLED_LOCAL_INFILE=1 \                      #允许从本地导入数据
+
     make_run "$?/mysql"
     if [ "$?" != "0" ];then
         exit 1;
     fi
+
+    #if [ -d "scripts/systemd" ]; then
+    #    mkdir -p $BASE_DIR/setup/systemd && cp scripts/mysqld*.service $BASE_DIR/setup/systemd/
+    #fi
 
     cd ..
     /bin/rm -rf mysql-$MYSQL_VERSION
     /bin/rm -rf $mysql_install
     /bin/rm -rf boost_$BOOST_VERSION
 
-    mkdir -p $BASE_DIR/setup/systemd && cp scripts/systemd/* $BASE_DIR/setup/systemd/
     mkdir -p $MYSQL_CONFIG_DIR && cp $curr_dir/conf/my.cnf $mysql_cnf
     if [ "$?" != "0" ];then
         exit;
