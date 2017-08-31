@@ -51,7 +51,12 @@ function sed_quote2()
     a=${a//\//\\\/}
     echo $a;
 }
-
+# {{{ function has_service 判断系统是否支持service服务启动方式
+function has_service()
+{
+    which systemctl 1>/dev/null 2>&1
+}
+# }}}
 # {{{ function check_bison_version()
 function check_bison_version()
 {
@@ -4160,9 +4165,12 @@ function after_php_make_install()
     fi
 
     mkdir -p $SBIN_DIR
-    cp sapi/fpm/init.d.php-fpm $SBIN_DIR/php-fpm.sh
+    cp sapi/fpm/init.d.php-fpm $SBIN_DIR/php-fpm
 
-    chmod u+x $SBIN_DIR/php-fpm.sh
+    chmod u+x $SBIN_DIR/php-fpm
+
+    mkdir -p $BASE_DIR/setup/service
+    cp sapi/fpm/php-fpm.service $BASE_DIR/setup/service/php-fpm.service
 
     PHP_EXTENSION_DIR="$( find $PHP_LIB_DIR -name "no-debug-*" )"
 
@@ -4927,6 +4935,7 @@ function compile_mysql()
     /bin/rm -rf $mysql_install
     /bin/rm -rf boost_$BOOST_VERSION
 
+    mkdir -p $BASE_DIR/setup/systemd && cp scripts/systemd/* $BASE_DIR/setup/systemd/
     mkdir -p $MYSQL_CONFIG_DIR && cp $curr_dir/conf/my.cnf $mysql_cnf
     if [ "$?" != "0" ];then
         exit;

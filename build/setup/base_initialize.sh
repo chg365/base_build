@@ -47,7 +47,7 @@ chown -R ${user}:${group} $LOG_DIR
 
 mkdir -p $BASE_DIR/run/nginx
 
-chown -R ${user}:${group} $BASE_DIR/run
+#chown -R ${user}:${group} $BASE_DIR/run
 ##################################################################
 #                         DATA DIR                               #
 ##################################################################

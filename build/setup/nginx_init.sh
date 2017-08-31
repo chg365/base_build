@@ -39,7 +39,8 @@ mkdir -p $TMP_DATA_DIR/nginx
 mkdir -p $NGINX_LOG_DIR
 
 nginx_user_init
-chown -R $NGINX_USER:$NGINX_GROUP $BASE_DIR/run/nginx $TMP_DATA_DIR/nginx $NGINX_LOG_DIR
+#chown -R $NGINX_USER:$NGINX_GROUP $BASE_DIR/run/nginx
+chown -R $NGINX_USER:$NGINX_GROUP $TMP_DATA_DIR/nginx $NGINX_LOG_DIR
 
 if [ ! -d "$DEHYDRATED_CONFIG_DIR" ];then
     echo "domains.txt目录不存在" >&2
