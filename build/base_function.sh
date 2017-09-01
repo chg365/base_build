@@ -398,6 +398,7 @@ function wget_base_library()
     wget_lib $PHP_FILE_NAME           "http://cn2.php.net/distributions/$PHP_FILE_NAME"
     wget_lib $PTHREADS_FILE_NAME      "http://pecl.php.net/get/$PTHREADS_FILE_NAME"
     wget_lib $SWOOLE_FILE_NAME        "http://pecl.php.net/get/$SWOOLE_FILE_NAME"
+    wget_lib $PROTOBUF_FILE_NAME      "http://pecl.php.net/get/$PROTOBUF_FILE_NAME"
     wget_lib $GRPC_FILE_NAME          "http://pecl.php.net/get/$GRPC_FILE_NAME"
     wget_lib $LIBXSLT_FILE_NAME       "ftp://xmlsoft.org/libxslt/$LIBXSLT_FILE_NAME"
     wget_lib $TIDY_FILE_NAME          "https://github.com/htacg/tidy-html5/archive/${TIDY_FILE_NAME##*-}"
@@ -4606,6 +4607,22 @@ function compile_php_extension_swoole()
     fi
 }
 # }}}
+# {{{ function compile_php_extension_protobuf()
+function compile_php_extension_protobuf()
+{
+    is_installed_php_extension protobuf
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    PHP_EXTENSION_PROTOBUF_CONFIGURE="
+        ./configure --with-php-config=$PHP_BASE/bin/php-config \
+                    --enable-protobuf
+    "
+
+    compile "php_extension_protobuf" "$PROTOBUF_FILE_NAME" "protobuf-$PROTOBUF_VERSION" "protobuf.so" "PHP_EXTENSION_PROTOBUF_CONFIGURE"
+}
+# }}}
 # {{{ function compile_php_extension_grpc()
 function compile_php_extension_grpc()
 {
@@ -6163,6 +6180,7 @@ function check_soft_updates()
             zeromq
             sqlite
             swoole
+            protobuf
             grpc
             openssl
             icu
@@ -6964,6 +6982,12 @@ function check_sphinx_version()
 function check_swoole_version()
 {
     check_github_soft_version swoole $SWOOLE_VERSION "https://github.com/swoole/swoole-src/releases" "v\([0-9.]\{5,\}\)\(-stable\)\{0,1\}\.tar\.gz" 1
+}
+# }}}
+# {{{ function check_protobuf_version()
+function check_protobuf_version()
+{
+    check_php_pecl_version protobuf $PROTOBUF_VERSION
 }
 # }}}
 # {{{ function check_grpc_version()
