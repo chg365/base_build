@@ -161,3 +161,5 @@ mkdir -p $MYSQL_RUN_DIR $MYSQL_DATA_DIR
 chown -R root:root $MYSQL_BASE
 chown -R $user:$group $MYSQL_DATA_DIR $MYSQL_RUN_DIR
 mysql_init
+
+#$MYSQL_BASE/usr/lib/systemd/system/mysqld.service
