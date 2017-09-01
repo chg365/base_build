@@ -690,6 +690,10 @@ function init_php_ini()
     change_php_ini "$pattern" "openssl.cafile = \\\"$(sed_quote2 "$SSL_CONFIG_DIR/certs/ca-bundle.crt" )\\\""
     # ;openssl.capath
 
+    # ;opcache.enable_cli=0
+    local pattern='^; \{0,\}opcache.enable_cli \{0,\}=.\{0,\}$';
+    change_php_ini "$pattern" "opcache.enable_cli = 0"
+
     # session.cookie_httponly =
     local pattern='^session.cookie_httponly \{0,\}= \{0,\}.\{0,\}$';
     change_php_ini "$pattern" "session.cookie_httponly = 1"
