@@ -685,6 +685,10 @@ function init_php_ini()
     # ;date.timezone =
     local pattern='^; \{0,\}date.timezone \{0,\}=.\{0,\}$';
     change_php_ini "$pattern" "date.timezone = \\\"Asia\/Shanghai\\\""
+    # ;openssl.cafile
+    local pattern='^; \{0,\}openssl.cafile \{0,\}=.\{0,\}$';
+    change_php_ini "$pattern" "openssl.cafile = \\\"$(sed_quote2 "$SSL_CONFIG_DIR/certs/ca-bundle.crt" )\\\""
+    # ;openssl.capath
 
     # session.cookie_httponly =
     local pattern='^session.cookie_httponly \{0,\}= \{0,\}.\{0,\}$';
@@ -2298,6 +2302,8 @@ function compile_openssl()
     # -darwin-i386-cc
 
     compile "openssl" "$OPENSSL_FILE_NAME" "openssl-$OPENSSL_VERSION" "$OPENSSL_BASE" "OPENSSL_CONFIGURE"
+
+    curl https://curl.haxx.se/ca/cacert.pem -o $SSL_CONFIG_DIR/certs/ca-bundle.crt 1>/dev/null 2>&1
 }
 # }}}
 # {{{ function compile_icu()

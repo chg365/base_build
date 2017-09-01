@@ -75,3 +75,16 @@ chown -R ${user}:${group} $UPLOAD_TMP_DIR $TMP_DATA_DIR/nginx $DATA_DIR/cache/ph
 if [ -f "$mysql_cnf" ]; then
     ${curr_dir}/mysql_init.sh
 fi
+
+##################################################################
+#                         openssl init                           #
+##################################################################
+ca_file="/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem"
+if [ -f "$ca_file" ];then
+    cp $ca_file $SSL_CONFIG_DIR/certs/ca-bundle.crt
+else
+    curl https://curl.haxx.se/ca/cacert.pem -o $SSL_CONFIG_DIR/certs/ca-bundle.crt 1>/dev/null 2>&1
+    if [ "$?" != "0" ];then
+        :
+    fi
+fi
