@@ -223,7 +223,9 @@ compile_php_extension_redis
 compile_php_extension_solr
 compile_php_extension_mongodb
 compile_php_extension_swoole
-compile_php_extension_grpc
+if [ "$gcc_new_version" != "$gcc_minimum_version" ]; then
+    compile_php_extension_grpc
+fi
 compile_php_extension_memcached
 compile_php_extension_tidy
 compile_php_extension_sphinx
