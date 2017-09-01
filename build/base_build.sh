@@ -225,6 +225,7 @@ compile_php_extension_mongodb
 compile_php_extension_swoole
 if [ "$gcc_new_version" != "$gcc_minimum_version" ]; then
     compile_php_extension_grpc
+    compile_php_extension_protobuf
 fi
 compile_php_extension_memcached
 compile_php_extension_tidy
