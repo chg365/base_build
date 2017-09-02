@@ -139,7 +139,6 @@ get_cppflags()
 # function echo_build_start {{{
 function echo_build_start()
 {
-    echo `date "+%Y-%d-%m %H:%M:%S"` start
     echo ""
     echo ""
     echo ""
