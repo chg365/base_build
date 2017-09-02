@@ -139,10 +139,11 @@ get_cppflags()
 # function echo_build_start {{{
 function echo_build_start()
 {
+    echo `date "+%Y-%d-%m %H:%M:%S"` start
     echo ""
     echo ""
     echo ""
-    echo "****************************  ${@}  ****************************************"
+    echo "**************************  ${@}  $(date "+%Y-%d-%m %H:%M:%S") ************************"
     echo ""
     echo "===================================================================================="
     echo ""
@@ -399,7 +400,7 @@ function wget_base_library()
     wget_lib $PTHREADS_FILE_NAME      "http://pecl.php.net/get/$PTHREADS_FILE_NAME"
     wget_lib $SWOOLE_FILE_NAME        "http://pecl.php.net/get/$SWOOLE_FILE_NAME"
     wget_lib $PHP_PROTOBUF_FILE_NAME  "http://pecl.php.net/get/$PHP_PROTOBUF_FILE_NAME"
-    wget_lib $GRPC_FILE_NAME          "http://pecl.php.net/get/$GRPC_FILE_NAME"
+    wget_lib $PHP_GRPC_FILE_NAME      "http://pecl.php.net/get/$PHP_GRPC_FILE_NAME"
     wget_lib $LIBXSLT_FILE_NAME       "ftp://xmlsoft.org/libxslt/$LIBXSLT_FILE_NAME"
     wget_lib $TIDY_FILE_NAME          "https://github.com/htacg/tidy-html5/archive/${TIDY_FILE_NAME##*-}"
     wget_lib $SPHINX_FILE_NAME        "https://github.com/sphinxsearch/sphinx/archive/${SPHINX_FILE_NAME#*-}"
@@ -4636,7 +4637,7 @@ function compile_php_extension_grpc()
                     --enable-grpc
     "
 
-    compile "php_extension_grpc" "$GRPC_FILE_NAME" "grpc-$GRPC_VERSION" "grpc.so" "PHP_EXTENSION_GRPC_CONFIGURE"
+    compile "php_extension_grpc" "$PHP_GRPC_FILE_NAME" "grpc-$PHP_GRPC_VERSION" "grpc.so" "PHP_EXTENSION_GRPC_CONFIGURE"
 
     /bin/rm -rf package.xml
 }
@@ -6180,7 +6181,6 @@ function check_soft_updates()
             zeromq
             sqlite
             swoole
-            grpc
             openssl
             icu
             zlib
@@ -6197,6 +6197,7 @@ function check_soft_updates()
             openjpeg
             pdf2htmlEX
 
+            pecl_grpc
             pecl_protobuf
             pecl_pthreads
             pecl_solr
@@ -6990,10 +6991,10 @@ function check_pecl_protobuf_version()
     check_php_pecl_version protobuf $PHP_PROTOBUF_VERSION
 }
 # }}}
-# {{{ function check_grpc_version()
-function check_grpc_version()
+# {{{ function check_pecl_grpc_version()
+function check_pecl_grpc_version()
 {
-    check_github_soft_version grpc $GRPC_VERSION "https://github.com/grpc/grpc/releases"
+    check_php_pecl_version grpc $PHP_GRPC_VERSION
 }
 # }}}
 # {{{ function check_libevent_version()
