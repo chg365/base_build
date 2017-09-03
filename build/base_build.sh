@@ -174,7 +174,6 @@ pkg_config_path_init
 #exit;
 compile_patchelf
 compile_nodejs
-compile_logrotate
 compile_openssl
 compile_ImageMagick
 compile_redis
@@ -198,6 +197,7 @@ if [ "$gcc_new_version" != "$gcc_minimum_version" ]; then
     compile_pdf2htmlEX
 fi
 compile_php_extension_gearman
+compile_logrotate
 fi
 compile_rsyslog
 compile_php_extension_dio

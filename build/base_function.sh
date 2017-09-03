@@ -5443,14 +5443,21 @@ configure_harfbuzz_command()
 # {{{ configure_php_command()
 configure_php_command()
 {
-    if [ "$PHP_VERSION" = "7.1.5" ];then
-        sed -i.bak$$ '38311{/^ \{0,\}LDFLAGS=$O_LDFLAGS \{0,\}/d;}' ./configure
-        sed -i.bak$$ '37700a\
-            LDFLAGS=$O_LDFLAGS' ./configure
-    elif [ "$PHP_VERSION" = "7.1.6" ];then
-        sed -i.bak$$ '38312{/^ \{0,\}LDFLAGS=$O_LDFLAGS \{0,\}$/d;}' ./configure
-        sed -i.bak$$ '37701a\
-            LDFLAGS=$O_LDFLAGS' ./configure
+    # mac下 报gmp版本太低,没使用上编译的gmp
+    if [ "$OS_NAME" = "darwin" ];then
+        if [ "$PHP_VERSION" = "7.1.5" ];then
+            sed -i.bak$$ '38311{/^ \{0,\}LDFLAGS=$O_LDFLAGS \{0,\}/d;}' ./configure
+            sed -i.bak$$ '37700a\
+                LDFLAGS=$O_LDFLAGS' ./configure
+        elif [ "$PHP_VERSION" = "7.1.6" ];then
+            sed -i.bak$$ '38312{/^ \{0,\}LDFLAGS=$O_LDFLAGS \{0,\}$/d;}' ./configure
+            sed -i.bak$$ '37701a\
+                LDFLAGS=$O_LDFLAGS' ./configure
+        elif [ "$PHP_VERSION" = "7.1.9" ];then
+            sed -i.bak$$ '38514{/^ \{0,\}LDFLAGS=$O_LDFLAGS \{0,\}$/d;}' ./configure
+            sed -i.bak$$ '37903a\
+                LDFLAGS=$O_LDFLAGS' ./configure
+        fi
     fi
 
     # EXTRA_LIBS="-lresolv" \
@@ -7935,6 +7942,7 @@ function path_init()
             "/usr/sbin"
             "/usr/local/bin"
             "/usr/sbin"
+            "/sbin"
             "/usr/local/opt/bison/bin"
             "/usr/local/opt/coreutils/libexec/gnubin"
             );
