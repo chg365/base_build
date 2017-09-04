@@ -1,0 +1,22 @@
+[Unit]
+Description=nginx - high performance web server
+Documentation=http://nginx.org/en/docs/
+After=network-online.target remote-fs.target nss-lookup.target
+# php-fpm.service
+Wants=network-online.target
+
+[Service]
+Type=forking
+PIDFile=NGINX_RUN_DIR/nginx.pid
+ExecStartPre=NGINX_BASE/sbin/nginx -t
+ExecStart=NGINX_BASE/sbin/nginx
+#stop, reopen
+ExecReload=NGINX_BASE/sbin/nginx -s reload
+ExecStop=NGINX_BASE/sbin/nginx -s quit
+#KillMode=process
+#KillSignal=SIGQUIT
+#TimeoutStopSec=5
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

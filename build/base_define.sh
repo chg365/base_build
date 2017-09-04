@@ -491,7 +491,7 @@ PHP_FPM_USER="nobody"
 PHP_FPM_GROUP="nobody"
 
 NGINX_LOG_DIR=$LOG_DIR/nginx
-NGINX_RUN_DIR=$BASE_DIR/run/nginx
+NGINX_RUN_DIR=$BASE_DIR/run
 #NGINX用户、所属组
 NGINX_USER="nobody"
 NGINX_GROUP="nobody"

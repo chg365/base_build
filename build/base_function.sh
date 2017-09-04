@@ -51,8 +51,8 @@ function sed_quote2()
     a=${a//\//\\\/}
     echo $a;
 }
-# {{{ function has_service 判断系统是否支持service服务启动方式
-function has_service()
+# {{{ function has_systemd 判断系统是否支持systemd服务启动方式 centos7
+function has_systemd()
 {
     which systemctl 1>/dev/null 2>&1
 }
@@ -4943,7 +4943,7 @@ function compile_mysql()
                                   -DWITH_SSL=bundled \
                                   -DWITH_BOOST=../boost_${BOOST_VERSION}/ \
                                   -DWITH_ZLIB=bundled \
-                                  $( has_service && echo '-DWITH_SYSTEMD=ON' ) \
+                                  $( has_systemd && echo '-DWITH_SYSTEMD=ON' ) \
                                   -DINSTALL_MYSQLTESTDIR=
 
                                   # -DWITH_SSL=$OPENSSL_BASE \  # OPENSSL_VERSIOn > 1.1时，编译不过去
@@ -5464,6 +5464,7 @@ configure_php_command()
     ./configure --prefix=$PHP_BASE \
                 --sysconfdir=$PHP_FPM_CONFIG_DIR \
                 --with-config-file-path=$PHP_CONFIG_DIR \
+                --runstatedir=${BASE_DIR}/run \
                 $(is_installed_apache && echo --with-apxs2=$APACHE_BASE/bin/apxs || echo "") \
                 --with-openssl=$OPENSSL_BASE \
                 --enable-mysqlnd  \
@@ -5493,6 +5494,7 @@ configure_php_command()
                 --enable-maintainer-zts \
                 --with-gmp=$GMP_BASE \
                 --enable-fpm \
+                $( has_systemd && echo '--with-fpm-systemd' ) \
                 $( [ \"$OS_NAME\" != \"darwin\" ] && echo --with-fpm-acl ) \
                 --with-gd=$LIBGD_BASE \
                 --with-freetype-dir=$FREETYPE_BASE \
@@ -5584,7 +5586,7 @@ configure_nginx_command()
         sed -i.bak.$$ "s/<hr><center>nginx<\/center>/<hr><center>${NGINX_CUSTOMIZE_NAME}\/${NGINX_CUSTOMIZE_VERSION}<\/center>/" ./src/http/ngx_http_special_response.c
         #local len=`echo ${NGINX_CUSTOMIZE_NAME_HUFFMAN}|awk -F'\\' '{print NF -1 ; }'`
         local len=${#NGINX_CUSTOMIZE_NAME};
-        sed -n "s/nginx\[5\] = \"$(sed_quote2 '\x84\xaa\x63\x55\xe7' )\"/nginx[${len}] = \"$(sed_quote2 ${NGINX_CUSTOMIZE_NAME_HUFFMAN})\"/p" ./src/http/v2/ngx_http_v2_filter_module.c
+        sed -i.bak.$$ "s/nginx\[5\] = \"$(sed_quote2 '\x84\xaa\x63\x55\xe7' )\"/nginx[${len}] = \"$(sed_quote2 ${NGINX_CUSTOMIZE_NAME_HUFFMAN})\"/" ./src/http/v2/ngx_http_v2_filter_module.c
     fi
 
     ./configure --prefix=$NGINX_BASE \
