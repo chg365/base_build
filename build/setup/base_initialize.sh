@@ -88,3 +88,32 @@ else
         :
     fi
 fi
+
+##################################################################
+#                         php-fpm init                           #
+##################################################################
+php_fpm_pid=`sed -n 's/^ \{0,\}pid \{0,\}= \{0,\}\(.\{1,\}\)$/\1/p' $PHP_FPM_CONFIG_DIR/php-fpm.conf`
+sed -n "s/PIDFile=/PIDFile=$(echo $php_fpm_pid|sed 's/\//\\\//g')/p" $curr_dir/service/php-fpm.service
+/usr/lib/systemd/system/
+After=
+Before=nginx.service
+
+Type=forking
+ExecStart=/usr/local/sbin/php-fpm
+ExecStart=/usr/local/chg/base/opt/php/sbin/php-fpm
+
+##################################################################
+#                         nginx init                             #
+##################################################################
+
+systemctl enable nginx.service
+systemctl -a|grep nss
+systemctl status nginx
+systemctl start nginx
+systemctl daemon-reload
+systemctl stop nginx
+systemctl reload nginx
+
+# firewall-cmd --permanent --add-service=http
+# firewall-cmd --permanent --add-service=https
+# firewall-cmd --reload
