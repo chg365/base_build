@@ -3672,6 +3672,7 @@ function compile_apr()
 # {{{ function compile_apr_util()
 function compile_apr_util()
 {
+    compile_expat
     compile_openssl
     compile_libiconv
     compile_apr
@@ -3684,6 +3685,7 @@ function compile_apr_util()
     APR_UTIL_CONFIGURE="
     ./configure --prefix=$APR_UTIL_BASE \
                 --with-openssl=$OPENSSL_BASE \
+                --with-expat=$EXPAT_BASE \
                 --with-iconv=$LIBICONV_BASE \
                 --with-crypto \
                 --with-apr=$APR_BASE

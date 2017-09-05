@@ -1,5 +1,25 @@
 #!/bin/bash
 
+curr_dir=$(cd "$(dirname "$0")"; pwd);
+#otool -L
+#brew install
+
+base_define_file=$curr_dir/base_define.sh
+
+if [ ! -f $base_define_file ]; then
+    echo "can't find base_define.sh";
+    exit 1;
+fi
+
+base_function_file=$curr_dir/base_function.sh
+if [ ! -f $base_function_file ];then
+    echo "can't find base_function.sh"
+    exit 1;
+fi
+
+. $base_define_file
+. $base_function_file
+
 #shopt | grep huponexit
 #disown
 # screen tmux
@@ -66,25 +86,6 @@ export LC_ALL=C
  
 echo `date "+%Y-%d-%m %H:%M:%S"` start
 start_time=`date +%s`
-curr_dir=$(cd "$(dirname "$0")"; pwd);
-#otool -L
-#brew install
-
-base_define_file=$curr_dir/base_define.sh
-
-if [ ! -f $base_define_file ]; then
-echo "can't find base_define.sh";
-exit 1;
-fi
-
-base_function_file=$curr_dir/base_function.sh
-if [ ! -f $base_function_file ];then
-echo "can't find base_function.sh"
-exit 1;
-fi
-
-. $base_define_file
-. $base_function_file
 
 ################################################################################
 # environment check
@@ -185,7 +186,7 @@ compile_redis
 compile_zeromq
 compile_zlib
 compile_libgd
-#compile_apache
+compile_apache
 compile_php
 compile_memcached
 compile_sphinx
@@ -194,14 +195,14 @@ compile_nginx
 compile_sqlite
 compile_phantomjs
 if [ "$OS_NAME" != 'darwin' ];then
-gcc_minimum_version="4.7.99"
-gcc_version=`gcc --version 2>/dev/null|head -1|awk '{ print $3;}'`;
-gcc_new_version=`echo $gcc_version $gcc_minimum_version|tr " " "\n"|sort -rV|head -1`;
-if [ "$gcc_new_version" != "$gcc_minimum_version" ]; then
-    compile_pdf2htmlEX
-fi
-compile_php_extension_gearman
-compile_logrotate
+    gcc_minimum_version="4.7.99"
+    gcc_version=`gcc --version 2>/dev/null|head -1|awk '{ print $3;}'`;
+    gcc_new_version=`echo $gcc_version $gcc_minimum_version|tr " " "\n"|sort -rV|head -1`;
+    if [ "$gcc_new_version" != "$gcc_minimum_version" ]; then
+        compile_pdf2htmlEX
+    fi
+    compile_php_extension_gearman
+    compile_logrotate
 fi
 compile_rsyslog
 compile_php_extension_dio
