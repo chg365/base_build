@@ -77,6 +77,7 @@ sed -i.bak.$PID '/^(.\{1,\})$/d' $1
 sed -i.bak.$PID '/^  CC /d' $1
 sed -i.bak.$PID '/^CC="cc"/d' $1
 sed -i.bak.$PID '/^LD_LIBRARY_PATH=/d' $1
+sed -i.bak.$PID '/^ \{0,\}\/bin\/sh /d' $1
 sed -i.bak.$PID '/^autoreconf: /d' $1
 sed -i.bak.$PID '/^configure.ac:/d' $1
 sed -i.bak.$PID '/^[a-z0-9A-Z.\/]\{0,\}libtool /d' $1
@@ -90,7 +91,6 @@ sed -i.bak.$PID '/^+ /d' $1
 sed -i.bak.$PID '/^In file included from /d' $1
 sed -i.bak.$PID '/^ \{1,\}clang+\{0,\}.\{1,\}\.\{3\}/d' $1
 #sed -i.bak.$PID '/^install .\{1,\}.h -> .\{1,\}.h/d' $1
-sed -i.bak.$PID '/.\{1,\} -> .\{1,\}/d' $1
 sed -i.bak.$PID '/^  CCLD /d' $1
 sed -i.bak.$PID '/^  CXX  /d' $1
 sed -i.bak.$PID '/^  CXXLD  /d' $1
@@ -98,4 +98,5 @@ sed -i.bak.$PID '/^  GEN  /d' $1
 sed -i.bak.$PID '/^\.\/builds\/unix\/libtool/d' $1
 sed -i.bak.$PID '/^apr\(-util\)\{0,1\}-[A-Za-z0-9._\/-]\{1,\}$/d' $1
 #sed -i.bak.$PID '/^apr-.\{1,\}\.[ch]$/d' $1
+sed -i.bak.$PID '/.\{1,\} -> .\{1,\}/d' $1
 rm -rf $1.bak.$PID
