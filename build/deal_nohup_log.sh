@@ -104,6 +104,14 @@ sed -i.bak.$PID '/^echo /d' $1
 sed -i.bak.$PID '/^tools\/an /d' $1
 sed -i.bak.$PID '/ yes$/d' $1
 sed -i.bak.$PID '/ no$/d' $1
+sed -i.bak.$PID '/\[default\]/d' $1
+sed -i.bak.$PID "/^[ \t]\{1,\}\*[ \t]\{1,\}/d" $1
+sed -i.bak.$PID '/^Installing shared extensions:/d' $1
+sed -i.bak.$PID "/^Don't forget to run 'make test'./d" $1
+sed -i.bak.$PID '/^Build complete./d' $1
+sed -i.bak.$PID '/^Configuring for:/,/^configure command:/d' $1
+sed -i.bak.$PID '/^`--/,/^$/d' $1
+sed -i.bak.$PID '/make\[[0-9]\{1,\}\]:/d' $1
 sed -i.bak.$PID "/[\t ]\{1,\}g++[\t ]\{1,\}...[\t ]\{1,\}/d" $1
 sed -i.bak.$PID "/[\t ]\{1,\}gcc[\t ]\{1,\}...[\t ]\{1,\}/d" $1
 sed -i.bak.$PID "/ \{0,\}(deps)[ \t]\{1,\}/d" $1
