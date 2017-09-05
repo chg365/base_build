@@ -76,6 +76,7 @@ fi
 sed -i.bak.$PID '/^(.\{1,\})$/d' $1
 sed -i.bak.$PID '/^  CC /d' $1
 sed -i.bak.$PID '/^CC="cc"/d' $1
+sed -i.bak.$PID '/^CC="gcc" /d' $1
 sed -i.bak.$PID '/^LD_LIBRARY_PATH=/d' $1
 sed -i.bak.$PID '/^ \{0,\}\/bin\/sh /d' $1
 sed -i.bak.$PID '/^autoreconf: /d' $1
@@ -96,7 +97,20 @@ sed -i.bak.$PID '/^  CXX  /d' $1
 sed -i.bak.$PID '/^  CXXLD  /d' $1
 sed -i.bak.$PID '/^  GEN  /d' $1
 sed -i.bak.$PID '/^\.\/builds\/unix\/libtool/d' $1
+sed -i.bak.$PID '/^ldconfig: file /d' $1
+sed -i.bak.$PID '/^[A-Z0-9 _]\{1,\}=/d' $1
+sed -i.bak.$PID '/`cat /d' $1
+sed -i.bak.$PID '/^echo /d' $1
+sed -i.bak.$PID '/^tools\/an /d' $1
+sed -i.bak.$PID '/ yes$/d' $1
+sed -i.bak.$PID '/ no$/d' $1
+sed -i.bak.$PID "/[\t ]\{1,\}g++[\t ]\{1,\}...[\t ]\{1,\}/d" $1
+sed -i.bak.$PID "/[\t ]\{1,\}gcc[\t ]\{1,\}...[\t ]\{1,\}/d" $1
+sed -i.bak.$PID "/ \{0,\}(deps)[ \t]\{1,\}/d" $1
+sed -i.bak.$PID '/^PATH="$PATH:\/sbin" ldconfig /d' $1
+sed -i.bak.$PID '/^appending configuration tag/d' $1
 sed -i.bak.$PID '/^apr\(-util\)\{0,1\}-[A-Za-z0-9._\/-]\{1,\}$/d' $1
+sed -i.bak.$PID '/^Libraries have been installed in:$/,/^more information, such as the ld(1) and ld.so(8) manual pages.$/d' $1
 #sed -i.bak.$PID '/^apr-.\{1,\}\.[ch]$/d' $1
 sed -i.bak.$PID '/.\{1,\} -> .\{1,\}/d' $1
 rm -rf $1.bak.$PID
