@@ -94,7 +94,6 @@ fi
 ##################################################################
 php_fpm_pid=`sed -n 's/^ \{0,\}pid \{0,\}= \{0,\}\(.\{1,\}\)$/\1/p' $PHP_FPM_CONFIG_DIR/php-fpm.conf`
 sed -n "s/PIDFile=/PIDFile=$(echo $php_fpm_pid|sed 's/\//\\\//g')/p" $curr_dir/service/php-fpm.service
-/usr/lib/systemd/system/
 After=
 Before=nginx.service
 
@@ -105,6 +104,7 @@ ExecStart=/usr/local/chg/base/opt/php/sbin/php-fpm
 ##################################################################
 #                         nginx init                             #
 ##################################################################
+cp service/nginx.service /usr/lib/systemd/system/${project_abbreviation}.nginx.service
 
 systemctl enable nginx.service
 systemctl -a|grep nss

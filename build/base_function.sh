@@ -29,9 +29,10 @@ function check_minimum_env_requirements()
 # yum install libtool-ltdl-devel
 # yum install texinfo
 }
+# {{{ function sed_quote()
 function sed_quote()
 {
-# mac sed 不支持\< \> |
+    # mac sed 不支持\< \> |
     local a=$1;
     # 替换转义符
     a=${a//\\/\\\\}
@@ -40,8 +41,10 @@ function sed_quote()
     # 替换分隔符/
     a=${a//\//\\\/}
     echo $a;
-#line=`sed -n "/^$(sed_quote $ext),/=" MIME_table.txt`
+    #line=`sed -n "/^$(sed_quote $ext),/=" MIME_table.txt`
 }
+# }}}
+# {{{ function sed_quote2()
 function sed_quote2()
 {
     local a=$1;
@@ -51,6 +54,7 @@ function sed_quote2()
     a=${a//\//\\\/}
     echo $a;
 }
+# }}}
 # {{{ function has_systemd 判断系统是否支持systemd服务启动方式 centos7
 function has_systemd()
 {
@@ -793,6 +797,7 @@ function init_nginx_conf()
         sed -i.bak.$$ "s/NGINX_CONF_DIR/$(sed_quote2 $NGINX_CONFIG_DIR )/g" $i
         sed -i.bak.$$ "s/TMP_DATA_DIR/$(sed_quote2 $TMP_DATA_DIR )/g" $i
         sed -i.bak.$$ "s/DEHYDRATED_CONFIG_DIR/$(sed_quote2 $DEHYDRATED_CONFIG_DIR )/g" $i
+        sed -i.bak.$$ "s/SSL_CONFIG_DIR/$(sed_quote2 $SSL_CONFIG_DIR )/g" $i
 
         rm_bak_file ${i}.bak.*
     done
@@ -2309,6 +2314,7 @@ function compile_openssl()
     compile "openssl" "$OPENSSL_FILE_NAME" "openssl-$OPENSSL_VERSION" "$OPENSSL_BASE" "OPENSSL_CONFIGURE"
 
     curl https://curl.haxx.se/ca/cacert.pem -o $SSL_CONFIG_DIR/certs/ca-bundle.crt 1>/dev/null 2>&1
+    $OPENSSL_BASE/bin/openssl dhparam -out $SSL_CONFIG_DIR/dhparams.pem 2048
 }
 # }}}
 # {{{ function compile_icu()
@@ -3718,15 +3724,23 @@ function compile_apache()
     ./configure --prefix=$APACHE_BASE \
                 --sysconfdir=$APACHE_CONFIG_DIR \
                 --with-mpm=worker \
+                --enable-modules=few \
                 --enable-mods-static=few \
                 --enable-so \
                 --enable-rewrite \
+                --enable-http \
+                --enable-session \
+                --enable-mime-magic \
+                --enable-sed \
                 --enable-ssl \
                 --with-ssl=$OPENSSL_BASE \
                 --with-apr=$APR_BASE \
                 --with-apr-util=$APR_UTIL_BASE \
                 --with-pcre=$PCRE_BASE/bin/pcre-config
     "
+                #--enable-http2 \
+                #--with-nghttp2=
+                #https://github.com/nghttp2/nghttp2/releases/
 
     compile "apache" "$APACHE_FILE_NAME" "httpd-$APACHE_VERSION" "$APACHE_BASE" "APACHE_CONFIGURE"
 }
@@ -4962,7 +4976,7 @@ function compile_mysql()
     fi
 
     #if [ -d "scripts/systemd" ]; then
-    #    mkdir -p $BASE_DIR/setup/systemd && cp scripts/mysqld*.service $BASE_DIR/setup/systemd/
+    #    mkdir -p $BASE_DIR/setup/service && cp scripts/mysqld*.service $BASE_DIR/setup/service/
     #fi
 
     cd ..
@@ -8264,6 +8278,20 @@ function ping_usable()
     fi
     local status=`ping -c 5 -q $domain_name -i 0.001|sed -n '$p' |awk -F/ "{ if ( \\$6 < 0 || \\$6 > $threshold ) { print 1; } else { print 0;} ;}"`
     return $status
+}
+# }}}
+# {{{ function init_setup() #
+function init_setup()
+{
+    cp $curr_dir/base_define.sh $BASE_DIR/setup/
+    chmod u+x $BASE_DIR/setup/base_define.sh
+    #sed -i.bak.$$ '/^.\{1,\}_VERSION=/d;/^.\{1,\}_FILE_NAME/d' $BASE_DIR/setup/base_define.sh
+    sed -i.bak.$$ '/^# {{{ open source libray version info/,/^# }}}/d' $BASE_DIR/setup/base_define.sh
+    sed -i.bak.$$ '/^# {{{ open source libray file name/,/^# }}}/d' $BASE_DIR/setup/base_define.sh
+    rm -rf $BASE_DIR/setup/base_define.sh.bak.*
+
+    cp $curr_dir/setup/*.sh $BASE_DIR/setup/
+    chmod u+x $BASE_DIR/setup/*.sh
 }
 # }}}
 #wget --content-disposition --no-check-certificate https://github.com/vrtadmin/clamav-devel/archive/clamav-0.99.2.tar.gz

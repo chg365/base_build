@@ -308,7 +308,7 @@ NGINX_STICKY_MODULE_VERSION="1.2.6"
 NGINX_UPLOAD_MODULE_VERSION="2.2.0"
 
 # }}}
-# {{{ open source libray  file name
+# {{{ open source libray file name
 PATCHELF_FILE_NAME="patchelf-${PATCHELF_VERSION}.tar.gz"
 RE2C_FILE_NAME="re2c-${RE2C_VERSION}.tar.gz"
 OPENSSL_FILE_NAME="openssl-${OPENSSL_VERSION}.tar.gz"

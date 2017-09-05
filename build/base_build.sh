@@ -7,7 +7,7 @@
 #wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-6.repo
 if [ ! -f $HOME/.chg_base_compile_env -a "$OS_NAME" = "linux" ]; then
     yum install -y cmake gcc xz texinfo bzip2 xz-devel gcc-c++ ncurses-devel ncurses byacc file re2c libtool-ltdl-devel popt-devel re2c wget curl libtool
-    yum install -y curl nss cyrus-sasl cyrus-sasl-devel cyrus-sasl-lib libacl libacl-devel libattr libattr-devel gperf pam pam-devel krb5-devel krb5-libs
+    yum install -y curl nss cyrus-sasl cyrus-sasl-devel cyrus-sasl-lib libacl libacl-devel libattr libattr-devel gperf pam pam-devel krb5-devel krb5-libs uuid uuid-devel
 
     #wget http://dl.fedoraproject.org/pub/epel/7/x86_64/r/re2c-0.14.3-2.el7.x86_64.rpm
     yum install -y autoconf m4 automake pkg-config gettext-devel
@@ -263,10 +263,12 @@ echo $LD_LIBRARY_PATH
 [ "$OS_NAME" != "linux" ] || repair_dir_elf_rpath $BASE_DIR
 #repair_file_rpath $LIBICU_BASE/lib/libicutu.so
 #repair_elf_file_rpath $LIBICU_BASE/lib/libicutu.so
-exit;
+init_setup
 cp $php_ini $PHP_CONFIG_DIR/php-cli.ini
 
-sed -i '/extension=pthreads.so/d' $php_ini
+sed -i.bak.$$ '/extension=pthreads.so/d' $php_ini
+rm -rf ${php_ini}.bak*
+exit;
 ################################################################################
 # Install SWFUpload
 ################################################################################

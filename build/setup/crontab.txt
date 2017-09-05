@@ -1,3 +1,2 @@
 #每周日凌晨4:15 更新ssl证书
 15 4 * * 0 $BASE_DIR/sbin/renew_cert.sh > $BASE_DIR/log/dehydrated.log 2>&1
-~                                                                               
