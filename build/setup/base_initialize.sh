@@ -195,6 +195,8 @@ function mysql_data_init()
 
     # 修改php配置文件中的mysql密码
     mod_php_config_mysql_password $NEW_PASSWORD
+
+    return 0;
 }
 # }}}
 # {{{ function get_mysql_temp_password()
@@ -242,11 +244,13 @@ function mysql_systemd_init()
 
     sed -i.bak.$$ "s/^User=.\{1,\}$/User=$MYSQL_USER/" $service_file
     sed -i.bak.$$ "s/^Group=.\{1,\}$/Group=$MYSQL_GROUP/" $service_file
-    sed -i.bak.$$ "s/^PIDFile=.\{1,\}$/PIDFile=$pid_file/" $service_file
+    sed -i.bak.$$ "s/^PIDFile=.\{1,\}$/PIDFile=$( sed_quote2 $pid_file)/" $service_file
     sed -i.bak.$$ 's/^\(ExecStartPre=\)/# \1/' $service_file
-    sed -i.bak.$$ "s/^ExecStart=.\{1,\}$/ExecStart=$( sed_quote2 $MYSQL_BASE/bin/mysqld ) --daemonize --defaults-file=$(sed_quote2 ${mysql_cnf})/" $service_file
+    sed -i.bak.$$ "s/^ExecStart=.\{1,\}$/ExecStart=$( sed_quote2 $MYSQL_BASE/bin/mysqld ) --defaults-file=$(sed_quote2 ${mysql_cnf}) --daemonize/" $service_file
     sed -i.bak.$$ 's/^\(After=syslog.target\)/# \1/' $service_file
     sed -i.bak.$$ 's/^EnvironmentFile=/# EnvironmentFile=/' $service_file
+
+    rm -rf ${service_file}.bak.*
 
     # 
     systemctl enable `basename $service_file`
@@ -361,8 +365,9 @@ function php_fpm_systemd_init()
 
     # Before=nginx.service
 
-    sed -i.bak.$$ "s/^PIDFile=/PIDFile=$(sed_quote2 $pid_file )/" $service_file
+    sed -i.bak.$$ "s/^PIDFile=.\{0,\}$/PIDFile=$(sed_quote2 $pid_file )/" $service_file
     #sed -i.bak.$$ "s/^Type=/Type=forking/" $service_file
+    rm -rf ${service_file}.bak.*
 
     systemctl enable `basename $service_file`
     systemctl daemon-reload
@@ -423,8 +428,13 @@ function nginx_systemd_init()
 
     local pid_file=`sed -n 's/^ \{0,\}pid \{0,\}\(.\{1,\}\) \{0,\}; \{0,\}$/\1/p' $NGINX_CONFIG_DIR/conf/nginx.conf`
 
-    sed -i.bak.$$ "s/^PIDFile=/PIDFile=$(sed_quote2 $pid_file )/" $service_file
+    sed -i.bak.$$ "s/^PIDFile=.\{0,\}$/PIDFile=$(sed_quote2 $pid_file )/" $service_file
+    sed -i.bak.$$ "s/NGINX_RUN_DIR/$(sed_quote2 $NGINX_RUN_DIR)/g" $service_file
+    sed -i.bak.$$ "s/NGINX_BASE/$(sed_quote2 $NGINX_BASE)/g" $service_file
+    #sed -i.bak.$$ 's/^\(After=.\{0,\}\)nss-lookup.target\(.\{0,\}\)$/\1\2/' $service_file
     #sed -i.bak.$$ "s/^Type=/Type=forking/" $service_file
+
+    rm -rf ${service_file}.bak.*
 
     systemctl enable `basename $service_file`
     systemctl daemon-reload
