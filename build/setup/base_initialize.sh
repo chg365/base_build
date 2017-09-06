@@ -86,11 +86,23 @@ function mysql_init()
     #sudo rm -rf $MYSQL_RUN_DIR/* $MYSQL_CONFIG_DIR/.mysql_secret $MYSQL_DATA_DIR/*
     echo "Initialize MySQL Data..."
     mysql_user_init
+    if [ "$?" != "0" ]; then
+        return 1;
+    fi
     mysql_dir_init
+    if [ "$?" != "0" ]; then
+        return 1;
+    fi
     mysql_data_init
+    if [ "$?" != "0" ]; then
+        return 1;
+    fi
 
     if has_systemd ;then
         mysql_systemd_init
+        if [ "$?" != "0" ]; then
+            return 1;
+        fi
     fi
     echo "Initialize MySQL Data finished."
 }
@@ -121,10 +133,23 @@ function mysql_data_init()
         echo "ERROR: Can't find my.cnf file. file: $mysql_cnf" >&2;
         return 1;
     fi
-    # cat /root/.mysql_secret
-    local random_password=`$MYSQL_BASE/bin/mysqld --defaults-file=$mysql_cnf --user=$MYSQL_USER --initialize 2>&1 \
-        |grep password|awk -F": " '{print $NF;}'`
+    local random_password=`get_mysql_temp_password`
+    if [ -z "$random_password" ];then
+        # cat /root/.mysql_secret
+        $MYSQL_BASE/bin/mysqld --defaults-file=$mysql_cnf --initialize
+        random_password=`get_mysql_temp_password`
+        if [ "$?" != "0" ];then
+            return 1;
+        fi
+    fi
+
     # echo $random_password;
+
+    if [ "$random_password" = "" ];then
+        echo "初始化mysql密码失败" >&2
+        return 1;
+    fi
+
     echo $random_password > $MYSQL_CONFIG_DIR/.mysql_secret.rand
 
     local NEW_PASSWORD="$MYSQL_PASSWORD";
@@ -138,7 +163,7 @@ function mysql_data_init()
         echo $NEW_PASSWORD > $MYSQL_CONFIG_DIR/.mysql_secret
     fi
 
-    $MYSQL_BASE/bin/mysqld --daemonize --defaults-file=$mysql_cnf > /dev/null &
+    $MYSQL_BASE/bin/mysqld --defaults-file=$mysql_cnf --daemonize > /dev/null &
 
     if [ "$?" != "0" ];then
         echo "Start MySQL service failed." >&2;
@@ -159,29 +184,7 @@ function mysql_data_init()
         return 1;
     fi
 
-    # {{{ sql初始化
-    local sql_file_array;
-    local j=0;
-    if [ -f "$curr_dir/sql/${project_abbreviation}.sql" ]; then
-        sql_file_array[0]="$curr_dir/sql/${project_abbreviation}.sql";
-        j=1;
-    fi
-    for i in `find $curr_dir/sql/ -type f -name "*.sql"|grep -v "${project_abbreviation}.sql"`;
-    do
-        sql_file_array[$j]=$i;
-        ((j++))
-    done
-
-    for((i=0;i<${#sql_file_array[@]};i++))
-    do
-        $MYSQL_BASE/bin/mysql -uroot -p"$NEW_PASSWORD" -S $MYSQL_RUN_DIR/mysql.sock < ${sql_file_array[$i]} 2>/dev/null
-
-        if [ "$?" != "0" ];then
-            echo "Failed to initialize the mysql database. sql file: ${sql_file_array[$i]}" >&2;
-            return 1;
-        fi
-    done;
-    # }}}
+    sql_init $NEW_PASSWORD
 
     $MYSQL_BASE/bin/mysqladmin --defaults-file=$mysql_cnf -u root -p"$NEW_PASSWORD" shutdown 2>/dev/null
 
@@ -191,24 +194,37 @@ function mysql_data_init()
     fi
 
     # 修改php配置文件中的mysql密码
-    local PHP_CONF=$BASE_DIR/conf/config.php
-    if [ ! -f "$PHP_CONF" ];then
-        echo "Can't find file: $PHP_CONF . Please manually modify the mysql root password. " >&2;
+    mod_php_config_mysql_password $NEW_PASSWORD
+}
+# }}}
+# {{{ function get_mysql_temp_password()
+function get_mysql_temp_password()
+{
+    local log_file=`sed -n 's/^ \{0,\}log_error \{0,\}= \{0,\}\(.\{1,\}\) \{0,\}$/\1/p' $mysql_cnf`
+
+    if [ -z "$log_file" ];then
+        echo "my.cnf文件中没有设置log_error参数" >&2
         return 1;
     fi
-    local mysql_user=`$PHP_BASE/bin/php -r "require('$PHP_CONF'); echo MYSQL_USER;"`;
-    if [ "$mysql_user" = "root" ];then
-        sed -i.bak.$$ "s/define('MYSQL_PASS', '[^'\"]\{1,\}')/define('MYSQL_PASS', '$NEW_PASSWORD')/" $PHP_CONF
-        rm -rf ${PHP_CONF}.bak.*
+
+    if [ ! -f "$log_file" ];then
+        return 1;
     fi
+
+    local password=`grep 'A temporary password is generated' $log_file|awk -F": " '{print $NF;}'`
+    if [ -z "$password" ];then
+        echo "获得mysql初始化密码失败" >&2
+        return 1;
+    fi
+    echo $password;
 }
 # }}}
 # {{{ function mysql_dir_init()
 function mysql_dir_init()
 {
-    mkdir -p $MYSQL_RUN_DIR $MYSQL_DATA_DIR
+    mkdir -p $MYSQL_RUN_DIR $MYSQL_DATA_DIR ${LOG_DIR}/mysql
     #chown -R root:root $MYSQL_BASE
-    chown -R $MYSQL_USER:$MYSQL_GROUP $MYSQL_DATA_DIR
+    chown -R $MYSQL_USER:$MYSQL_GROUP $MYSQL_DATA_DIR ${LOG_DIR}/mysql $MYSQL_RUN_DIR
     #chown -R $MYSQL_USER:$MYSQL_GROUP $MYSQL_RUN_DIR
 }
 # }}}
@@ -562,6 +578,54 @@ function renew_cret_crontab_init()
     fi
 }
 # }}}
+# {{{ function mod_php_config_mysql_password() php配置文件中mysql密码修改在这里
+function mod_php_config_mysql_password()
+{
+    local password=$1
+
+    # 修改php配置文件中的mysql密码
+    local PHP_CONF=$BASE_DIR/conf/config.php
+    if [ ! -f "$PHP_CONF" ];then
+        echo "Can't find file: $PHP_CONF . Please manually modify the mysql root password. " >&2;
+        return 1;
+    fi
+    local mysql_user=`$PHP_BASE/bin/php -r "require('$PHP_CONF'); echo MYSQL_USER;"`;
+    if [ "$mysql_user" = "root" ];then
+        sed -i.bak.$$ "s/define('MYSQL_PASS', '[^'\"]\{1,\}')/define('MYSQL_PASS', '$password')/" $PHP_CONF
+        rm -rf ${PHP_CONF}.bak.*
+    fi
+}
+# }}}
+# {{{ function sql_init() mysql数据库初始化在这里
+function sql_init()
+{
+    local password=$1
+
+    if [ -d "$curr_dir/sql" ];then
+        local sql_file_array;
+        local j=0;
+        if [ -f "$curr_dir/sql/${project_abbreviation}.sql" ]; then
+            sql_file_array[0]="$curr_dir/sql/${project_abbreviation}.sql";
+            j=1;
+        fi
+        for i in `find $curr_dir/sql/ -type f -name "*.sql"|grep -v "${project_abbreviation}.sql"`;
+        do
+            sql_file_array[$j]=$i;
+            ((j++))
+        done
+
+        for((i=0;i<${#sql_file_array[@]};i++))
+        do
+            $MYSQL_BASE/bin/mysql -uroot -p"$password" -S $MYSQL_RUN_DIR/mysql.sock < ${sql_file_array[$i]} 2>/dev/null
+
+            if [ "$?" != "0" ];then
+                echo "Failed to initialize the mysql database. sql file: ${sql_file_array[$i]}" >&2;
+                return 1;
+            fi
+        done;
+    fi
+}
+# }}}
 
 ##################################################################
 #                         DATA DIR                               #
@@ -605,4 +669,3 @@ nginx_init
 #                         dehydrated init                             #
 ##################################################################
 dehydrated_init
-

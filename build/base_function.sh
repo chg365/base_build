@@ -779,6 +779,7 @@ function init_mysql_cnf()
     sed -i.bak.$$ "s/\<MYSQL_RUN_DIR\>/$( echo $MYSQL_RUN_DIR|sed 's/\//\\\//g' )/" $mysql_cnf;
     sed -i.bak.$$ "s/\<MYSQL_CONFIG_DIR\>/$( echo $MYSQL_CONFIG_DIR|sed 's/\//\\\//g' )/" $mysql_cnf;
     sed -i.bak.$$ "s/\<MYSQL_DATA_DIR\>/$( echo $MYSQL_DATA_DIR|sed 's/\//\\\//g' )/" $mysql_cnf;
+    sed -i.bak.$$ "s/\<LOG_DIR\>/$( echo ${LOG_DIR}/mysql|sed 's/\//\\\//g' )/" $mysql_cnf;
 
     rm_bak_file ${mysql_cnf}.bak.*
 }
