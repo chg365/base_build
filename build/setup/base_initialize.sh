@@ -222,7 +222,7 @@ function mysql_systemd_init()
     local service_file="/usr/lib/systemd/system/${project_abbreviation}.mysqld.service"
     cp $MYSQL_BASE/usr/lib/systemd/system/mysqld.service $service_file
 
-    local pid_file=`sed -n 's/^ \{0,\}pid-file \{1,\}= \{0,\}\(.\{1,\}\) \{0,\}$/\1/p' $mysql_cnf
+    local pid_file=`sed -n 's/^ \{0,\}pid-file \{1,\}= \{0,\}\(.\{1,\}\) \{0,\}$/\1/p' $mysql_cnf`
 
     sed -i.bak.$$ "s/^User=.\{1,\}$/User=$MYSQL_USER/" $service_file
     sed -i.bak.$$ "s/^Group=.\{1,\}$/Group=$MYSQL_GROUP/" $service_file
@@ -382,7 +382,7 @@ function nginx_user_init()
     fi
 
     # user
-    sed -i.bak.$$ "s/^ \{0,\}user \{0,\}\{0,\}.\{0,\}$/user  $NGINX_USER $NGINX_GROUP;/" $NGINX_CONFIG_DIR/conf/nginx.conf;
+    sed -i.bak.$$ "s/^ \{0,\}user \{0,\}.\{0,\}$/user  $NGINX_USER $NGINX_GROUP;/" $NGINX_CONFIG_DIR/conf/nginx.conf;
 
     rm -rf $NGINX_CONFIG_DIR/conf/nginx.conf.bak.$$
 }
@@ -430,7 +430,6 @@ function dehydrated_init()
     if [ "$init_dir_only" = "1" ];then
         return;
     fi
-    if has_systemd ;then
     if [ ! -d "$DEHYDRATED_CONFIG_DIR" ];then
         echo "domains.txt目录不存在" >&2
         return 1;
@@ -553,7 +552,7 @@ function renew_cret_crontab_init()
     local CRONTAB_CMD="#每周日凌晨4:15 更新ssl证书\
 15 4 $day * * $PROGRAM > $BASE_DIR/log/dehydrated.log 2>&1 &"
 
-    echo "$CRONTAB_CMD") | crontab -
+    echo "$CRONTAB_CMD" | crontab -
 
     if crontab -l 2>/dev/null | grep -qF $PROGRAM ;then
         return;

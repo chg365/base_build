@@ -759,6 +759,14 @@ function init_php_fpm_ini()
     local pattern='^;slowlog \{0,\}= \{0,\}.\{1,\}$';
     change_php_fpm_ini "$pattern" "slowlog = $LOG_DIR/php-fpm/\$pool.log.slow" "$PHP_FPM_CONFIG_DIR/php-fpm.d/www.conf"
 
+    # user
+    local pattern='^user \{0,\}= \{0,\}.\{1,\}$';
+    change_php_fpm_ini "$pattern" "user = $PHP_FPM_USER" "$PHP_FPM_CONFIG_DIR/php-fpm.d/www.conf"
+
+    # group
+    local pattern='^group \{0,\}= \{0,\}.\{1,\}$';
+    change_php_fpm_ini "$pattern" "group = $PHP_FPM_GROUP" "$PHP_FPM_CONFIG_DIR/php-fpm.d/www.conf"
+
     # listen
     local pattern='^\(listen = [0-9.]\{1,\}:\)[0-9]\{1,\}$';
     change_php_fpm_ini "$pattern" "\19040" "$PHP_FPM_CONFIG_DIR/php-fpm.d/www.conf"
