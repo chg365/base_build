@@ -1,6 +1,6 @@
 ################################################################################
 #
-# eYou office system RPM spec
+# chg base system RPM spec
 #
 ################################################################################
 
@@ -8,17 +8,17 @@
 # Header段
 # 本段定义软件包的名称，版本号，以及变量
 ################################################################################
-Name: eyou-office
+Name: chg-base
 Group: Applications/Productivity
-License: eYou.net Commerical License
+License: mochoua.com Commerical License
 
 Version: 1.0.0
 Release: rhel
 
-Summary: eYou office system
-Vendor: Beijing eYou Information Technology Co., Ltd.
-Packager: eYou Mail Dev Group
-Url: http://www.eyou.net
+Summary: chg base system
+Vendor:  www.mochoua.com
+Packager: mochoua.com
+Url: http://www.mochoua.com
 
 #Source: %{name}-%{version}.tar.gz
 Source: trunk.tar.gz
@@ -29,12 +29,12 @@ Prefix: %{_sysconfdir}
 #BuildArch: noarch
 Requires: libXext perl-WWW-Curl java-1.8.0-openjdk
 
-%define userpath /usr/local/eyou/office
+%define userpath /usr/local/chg/base
 %define debug_packages %{nil}
 %define debug_package %{nil}
 
 %description
-Powered by eYou Mail Dev Group rpm suite.
+Powered by mochoua.com rpm suite.
 
 ###############################################################################
 # prep段
@@ -105,7 +105,7 @@ fi
 
 if [ -d %{userpath} ];then
 	echo ""
-	echo "[\033[0;31meYou Office install dir '%{userpath}' exists, please remove it manually, exit now!\033[0m]"
+	echo "[\033[0;31mchg base install dir '%{userpath}' exists, please remove it manually, exit now!\033[0m]"
 	echo ""
 	exit 1;
 fi
@@ -117,24 +117,24 @@ fi
 %post
 echo "Initializing..."
 echo ""
-echo -e "eYou Office Initialization: [\033[0;32mStart\033[0m]"
+echo -e "chg base Initialization: [\033[0;32mStart\033[0m]"
 
 tar zxf %{userpath}/setup/fonts.tar.gz -C /opt/openoffice4/share/
 
 if %{userpath}/setup/eddm_initialize.sh;then
-	echo -e "eYou Office Initialization: [\033[0;32mDone\033[0m]"
+	echo -e "chg base Initialization: [\033[0;32mDone\033[0m]"
 	echo ""
 else
-	echo -e "eYou Office Initialization: [\033[0;31mFail\033[0m]"
+	echo -e "chg base Initialization: [\033[0;31mFail\033[0m]"
     # test ""
 fi
 
 /bin/rm -rf %{userpath}/setup
 
-ln -sf %{userpath}/sbin/eyou_office /etc/init.d/eyou_office
+ln -sf %{userpath}/sbin/chg_base /etc/init.d/chg_base
 
-chkconfig --add eyou_office
-#chkconfig eyou_office on
+chkconfig --add chg_base
+#chkconfig chg_base on
 
 #定时执行程序
 mkdir -p %{userpath}/data/tmp
@@ -148,13 +148,13 @@ rm  -rf %{userpath}/data/tmp/clean_cron.tmp
 # RPM卸载前执行的脚本
 ###############################################################################
 %preun
-echo "Stop eYou office ..."
+echo "Stop chg base ..."
 
-%{userpath}/sbin/eyou_office stop
+%{userpath}/sbin/chg_base stop
 echo "Stop OK"
 
-chkconfig --del eyou_office
-unlink /etc/rc.d/init.d/eyou_office
+chkconfig --del chg_base
+unlink /etc/rc.d/init.d/chg_base
 
 #清理定时程序
 crontab -l |grep -v 'eo_clean.php' > %{userpath}/data/tmp/clean_cron_invert.tmp
@@ -180,5 +180,5 @@ echo "the old version '%{userpath}' backup to '$BACKUP_PATH'"
 #     多行数据
 ###############################################################################
 %changelog
-* Mon Jun 27 2016 cuihaiguang@eyou.net
+* Mon Jun 27 2017 cuihaiguang@gmail.com
 - create Name

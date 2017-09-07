@@ -2,7 +2,7 @@
 
 ################################################################################
 #
-# eYou mailer & marketing system rpm package build
+# mochoua.com & marketing system rpm package build
 #
 ################################################################################
 
@@ -24,9 +24,9 @@ cd $curr_dir
 ################################################################################
 # Set rpm build DIR
 ################################################################################
-rpm_build_dir="$HOME/eyou_office"
+rpm_build_dir="$HOME/chg_base"
 echo "%_topdir $rpm_build_dir/rpm" >> $HOME/.rpmmacros
-#mkdir -p $HOME/eyou_office/rpm
+#mkdir -p $HOME/chg_base/rpm
 mkdir -p $rpm_build_dir/rpm/{SOURCES,SPECS,BUILD,SRPMS,RPMS}
 mkdir -p $rpm_build_dir/rpm/RPMS/{i386,x86_64}
 
@@ -73,22 +73,22 @@ if [ "$tmp_str" != "trunk" ];
 then
 	rm -rf trunk
 fi;
-cp -f trunk.tar.gz $HOME/eyou_office/rpm/SOURCES
+cp -f trunk.tar.gz $HOME/chg_base/rpm/SOURCES
 
 rm -rf trunk.tar.gz
 
 ################################################################################
 # RPM build
 ################################################################################
-cd $HOME/eyou_office/rpm
+cd $HOME/chg_base/rpm
 which rpmbuild > /dev/null
 if [ "$?" != "0" ];then
     yum -y install rpm-build
 fi
 sudo rpmbuild -bb SPECS/eddm_rpm.spec
 
-rm -rf $HOME/eyou_office/rpm/SOURCES
-rm -rf $HOME/eyou_office/rpm/SPECS
+rm -rf $HOME/chg_base/rpm/SOURCES
+rm -rf $HOME/chg_base/rpm/SPECS
 
 
 ################################################################################
