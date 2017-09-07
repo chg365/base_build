@@ -832,6 +832,16 @@ function init_dehydrated_conf()
 
     rm_bak_file $DEHYDRATED_CONFIG_DIR/config.bak.*
 
+    mkdir -p $SBIN_DIR/
+    cp $curr_dir/renew_cert.sh $SBIN_DIR/
+
+    sed -i.bak.$$ "s/@project_abbreviation@/$(sed_quote2 $project_abbreviation )/g" $SBIN_DIR/renew_cert.sh
+    sed -i.bak.$$ "s/@DEHYDRATED_BASE@/$(sed_quote2 $DEHYDRATED_BASE)/g" $SBIN_DIR/renew_cert.sh
+    sed -i.bak.$$ "s/@DEHYDRATED_CONFIG_DIR@/$(sed_quote2 $DEHYDRATED_CONFIG_DIR)/g" $SBIN_DIR/renew_cert.sh
+    sed -i.bak.$$ "s/@NGINX_BASE@/$(sed_quote2 $NGINX_BASE)/g" $SBIN_DIR/renew_cert.sh
+
+    rm_bak_file $SBIN_DIR/renew_cert.sh.bak.*
+
     cp -r $curr_dir/conf/dehydrated/certs $DEHYDRATED_CONFIG_DIR/
 }
 # }}}

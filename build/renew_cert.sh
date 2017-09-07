@@ -1,8 +1,9 @@
 #!/bin/bash
 
-DEHYDRATED_BASE=$DEHYDRATED_BASE
-CONFIG_DIR=$DEHYDRATED_CONFIG_DIR
-NGINX_BASE=$NGINX_BASE
+project=@project_abbreviation@
+DEHYDRATED_BASE=@DEHYDRATED_BASE@
+CONFIG_DIR=@DEHYDRATED_CONFIG_DIR@
+NGINX_BASE=@NGINX_BASE@
 
 if [ ! -d "$CONFIG_DIR/accounts" ] || ! test -f `find $CONFIG_DIR/accounts/ -name account_key.pem` ; then
     $DEHYDRATED_BASE/sbin/dehydrated --register --accept-terms -f $CONFIG_DIR/config
@@ -28,14 +29,13 @@ if [ "$num1" -gt "0" -a "$num1" = "$num2" ] ;then
     exit;
 fi
 
-# 强制使用https
-sed -n ''
-#ssl_certificate      /usr/local/chg/base/etc/dehydrated/certs/mochoua.com/fullchain.pem;
-#ssl_certificate_key  /usr/local/chg/base/etc/dehydrated/certs/mochoua.com/privkey.pem;
-
- #return 301 https:
-
-$NGINX_BASE/sbin/nginx -s reload
+if  which systemctl >/dev/null 2>&1 && [ -f /usr/lib/systemd/system/${project}.nginx.service ]; then
+    #if systemctl status chg_base.nginx >/dev/null ; then
+        systemctl reload ${project}.nginx.service
+    #fi
+else
+    $NGINX_BASE/sbin/nginx -s reload
+fi
 
 # 测试证书是否生效
 # echo | openssl s_client -connect your.domain.com:443 | openssl x509 -noout -dates
