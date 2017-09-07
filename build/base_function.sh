@@ -7308,7 +7308,21 @@ function check_libxslt_version()
 # {{{ function check_boost_version()
 function check_boost_version()
 {
-    check_sourceforge_soft_version boost ${BOOST_VERSION//_/.} 's/^.\{0,\}<tr title="\([0-9.]\{1,\}\)" class="folder \{0,\}"> \{0,\}$/\1/p'
+    #check_sourceforge_soft_version boost ${BOOST_VERSION//_/.} 's/^.\{0,\}<tr title="\([0-9.]\{1,\}\)" class="folder \{0,\}"> \{0,\}$/\1/p'
+    local new_version=`curl -k http://www.boost.org/ 2>/dev/null |sed -n 's/^.\{1,\}Version \([0-9._-]\{1,\}\).\{1,\}>Download<.\{1,\}/\1/p'|sort -rV|head -1`
+    if [ -z "$new_version" ];then
+        echo -e "探测boost新版本\033[0;31m失败\033[0m" >&2
+        return 1;
+    fi
+
+    is_new_version $BOOST_VERSION $new_version
+    if [ "$?" = "0" ];then
+        [ "$is_echo_latest" = "" -o "$is_echo_latest" != "0" ] && \
+        echo -e "boost version is \033[0;32mthe latest.\033[0m"
+        return 0;
+    fi
+
+    echo -e "boost current version: \033[0;33m${BOOST_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
 # {{{ function check_libmcrypt_version()
