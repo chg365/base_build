@@ -515,7 +515,8 @@ function wget_base_library()
     wget_lib $RABBITMQ_C_FILE_NAME    "https://github.com/alanxz/rabbitmq-c/archive/v${RABBITMQ_C_FILE_NAME##*-}"
 
     wget_lib $ZEROMQ_FILE_NAME        "https://github.com/zeromq/libzmq/releases/download/v${ZEROMQ_VERSION}/$ZEROMQ_FILE_NAME"
-    wget_lib $LIBUNWIND_FILE_NAME     "http://download.savannah.gnu.org/releases/libunwind/$LIBUNWIND_FILE_NAME"
+    #wget_lib $LIBUNWIND_FILE_NAME     "http://download.savannah.gnu.org/releases/libunwind/$LIBUNWIND_FILE_NAME"
+    wget_lib $LIBUNWIND_FILE_NAME     "https://github.com/libunwind/libunwind/releases/download/v${LIBUNWIND_VERSION}/$LIBUNWIND_FILE_NAME"
     wget_lib $LIBSODIUM_FILE_NAME     "https://download.libsodium.org/libsodium/releases/$LIBSODIUM_FILE_NAME"
     wget_lib $PHP_ZMQ_FILE_NAME       "https://github.com/mkoppanen/php-zmq/archive/${PHP_ZMQ_FILE_NAME##*-}"
     # wget_lib $SWFUPLOAD_FILE_NAME    "http://swfupload.googlecode.com/files/SWFUpload%20v$SWFUPLOAD_VERSION%20Core.zip"
