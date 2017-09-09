@@ -6,6 +6,11 @@
 #
 ################################################################################
 
+if [ `whoami` = "root" ];then
+    echo "切勿以 root 的身份来创建 RPM。这个工作应该永远在一个没有特殊权限的户口内进行。以 root 的身份来创建 RPM 可能会损坏你的系统。" >&2
+    exit 1;
+fi
+
 curr_dir=$(cd "$(dirname "$0")"; pwd);
 EDDM_VERSION="1.0.9";
 
@@ -27,7 +32,7 @@ cd $curr_dir
 rpm_build_dir="$HOME/chg_base"
 echo "%_topdir $rpm_build_dir/rpm" >> $HOME/.rpmmacros
 #mkdir -p $HOME/chg_base/rpm
-mkdir -p $rpm_build_dir/rpm/{SOURCES,SPECS,BUILD,SRPMS,RPMS}
+mkdir -p $rpm_build_dir/rpm/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
 mkdir -p $rpm_build_dir/rpm/RPMS/{i386,x86_64}
 
 ################################################################################
@@ -83,9 +88,14 @@ rm -rf trunk.tar.gz
 cd $HOME/chg_base/rpm
 which rpmbuild > /dev/null
 if [ "$?" != "0" ];then
-    yum -y install rpm-build
+    sudo yum -y install rpm-build redhat-rpm-config
 fi
-sudo rpmbuild -bb SPECS/eddm_rpm.spec
+if ! which rpmbuild 1>/dev/null 2>&1 ;then
+    echo "没有安装rpmbuild!" >&2
+    exit 1;
+fi
+#rpmbuild --showrc
+rpmbuild -bb SPECS/eddm_rpm.spec
 
 rm -rf $HOME/chg_base/rpm/SOURCES
 rm -rf $HOME/chg_base/rpm/SPECS

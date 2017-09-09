@@ -9,8 +9,9 @@
 # 本段定义软件包的名称，版本号，以及变量
 ################################################################################
 Name: chg-base
-Group: Applications/Productivity
-License: mochoua.com Commerical License
+Group: Applications/System
+#License: GPL
+Copyright: GPL
 
 Version: 1.0.0
 Release: rhel
@@ -20,8 +21,8 @@ Vendor:  www.mochoua.com
 Packager: mochoua.com
 Url: http://www.mochoua.com
 
-#Source: %{name}-%{version}.tar.gz
-Source: trunk.tar.gz
+Source: %{name}-%{version}.tar.gz
+#Source: trunk.tar.gz
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 Prefix: %{_prefix}
@@ -30,7 +31,7 @@ Prefix: %{_sysconfdir}
 Requires: libXext perl-WWW-Curl java-1.8.0-openjdk
 
 %define userpath /usr/local/chg/base
-%define debug_packages %{nil}
+#%define debug_packages %{nil}
 %define debug_package %{nil}
 
 %description
@@ -71,6 +72,11 @@ tar zxf jodconverter_java_lib.tar.gz -C $RPM_BUILD_ROOT%{userpath}/lib/
 cd ../build
 
 cp -a %{userpath}/* $RPM_BUILD_ROOT%{userpath}
+#清除不需要的文件
+#删除所有的.h文件
+find /usr/local/chg/base/ -name  "*.h" -delete
+find /usr/local/chg/base/ -name  "*.h" -delete
+find $RPM_BUILD_ROOT%{userpath}/ -name  "*.h" -delete
 
 ###############################################################################
 # clean段
@@ -177,6 +183,7 @@ echo "the old version '%{userpath}' backup to '$BACKUP_PATH'"
 # 本段是修改日志段，可以将每次的修改记录到发布的软件包中，用于查询。
 # 格式：
 #     * 星期 月 日 年 修改人电子信箱
+#       LANG=C; date "+%a %b %d %Y"
 #     多行数据
 ###############################################################################
 %changelog
