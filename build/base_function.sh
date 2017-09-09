@@ -1121,7 +1121,7 @@ function is_installed_sphinx()
 # {{{ function is_installed_sphinxclient()
 function is_installed_sphinxclient()
 {
-    if [ ! -f "$SPHINX_CLIENT_BASE/include/sphinxclient.h" ];then
+    if [ ! -f "$SPHINX_CLIENT_BASE/lib/libsphinxclient.so" ];then
         return 1;
     fi
     # 没有版本比较
@@ -1916,7 +1916,9 @@ function is_installed_ImageMagick()
     if [ "$version" != "${IMAGEMAGICK_VERSION%-*}" ];then
         return 1;
     fi
-    local version=`sed -n 's/^#define MAGICKCORE_VERSION "\([0-9.-]\{1,\}\)"$/\1/p' ${IMAGEMAGICK_BASE}/include/ImageMagick-${IMAGEMAGICK_VERSION%%.*}/MagickCore/magick-baseconfig.h`;
+    #local version=`sed -n 's/^#define MAGICKCORE_VERSION "\([0-9.-]\{1,\}\)"$/\1/p' ${IMAGEMAGICK_BASE}/include/ImageMagick-${IMAGEMAGICK_VERSION%%.*}/MagickCore/magick-baseconfig.h`;
+    local version=`$IMAGEMAGICK_BASE/bin/magick -version|head -1|awk '{print $3;}'`;
+
     if [ "$version" != "${IMAGEMAGICK_VERSION}" ];then
         return 1;
     fi
