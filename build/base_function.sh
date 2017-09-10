@@ -3530,6 +3530,7 @@ function compile_imap()
             local tmp_64=""
         else
             echo "Please install OpenSSL(1.0.x) first." >&2
+            echo "yum install openssl.x86_64 openssl-devel.x86_64 openssl-libs.x86_64 openssl-static.x86_64" >&2
             exit 1;
         fi
     else
@@ -6034,7 +6035,7 @@ function compile_gitbook_cli()
         #return 1;
         exit 1;
     fi
-    #compile_gitbook_pdf
+    compile_gitbook_pdf
 }
 # }}}
 # {{{ function compile_gitbook()
@@ -6085,9 +6086,9 @@ function compile_gitbook_pdf()
     #PHANTOMJS_CDNURL=http://cnpmjs.org/downloads npm install phantomjs
     #npm config set registry http://registry.npm.taobao.org -g
 
-    export PHANTOMJS_CDNURL="http://npm.taobao.org/dist/phantomjs"
-    ping_usable cdn.bitbucket.org || \
-    npm config set phantomjs_cdnurl=http://npm.taobao.org/dist/phantomjs && \
+    #export PHANTOMJS_CDNURL="http://npm.taobao.org/dist/phantomjs"
+    #ping_usable cdn.bitbucket.org || \
+    #npm config set phantomjs_cdnurl=http://npm.taobao.org/dist/phantomjs && \
     #npm config set registry http://registry.npm.taobao.org
 
     #npm install phantomjs -g
