@@ -4664,19 +4664,28 @@ function compile_php_extension_protobuf()
 # {{{ function compile_php_extension_grpc()
 function compile_php_extension_grpc()
 {
+    compile_zlib
     is_installed_php_extension grpc
     if [ "$?" = "0" ];then
         return;
     fi
 
     PHP_EXTENSION_GRPC_CONFIGURE="
-        ./configure --with-php-config=$PHP_BASE/bin/php-config \
-                    --enable-grpc
+        configure_php_ext_grpc_command
     "
 
     compile "php_extension_grpc" "$PHP_GRPC_FILE_NAME" "grpc-$PHP_GRPC_VERSION" "grpc.so" "PHP_EXTENSION_GRPC_CONFIGURE"
 
     /bin/rm -rf package.xml
+}
+# }}}
+# {{{ function configure_php_ext_grpc_command()
+function configure_php_ext_grpc_command()
+{
+    CPPFLAGS="$(get_cppflags $ZLIB_BASE/include)" LDFLAGS="$(get_ldflags $ZLIB_BASE/lib)" \
+    ./configure --with-php-config=$PHP_BASE/bin/php-config \
+                --enable-grpc
+
 }
 # }}}
 # {{{ function compile_php_extension_qrencode()
