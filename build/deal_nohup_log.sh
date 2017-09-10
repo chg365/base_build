@@ -32,6 +32,10 @@ sed -i.bak.$PID '/\\$/,/[^\\]$/d' $1
 #sed -i.bak.$PID '/^rm .\{1,\}\\$/,/[^\\]$/d' $1
 
 sed -i.bak.$PID '/^-- /d' $1
+sed -i.bak.$PID '/^common.copy /d' $1
+sed -i.bak.$PID '/^common.mkdir /d' $1
+sed -i.bak.$PID '/^gcc.compile.c++ .\{1,\}\.o$/d' $1
+sed -i.bak.$PID '/^\.\{3\}.\{1,\}\.\{3\}$/d' $1
 #sed -i.bak.$PID '/^-- Looking for /d' $1
 #sed -i.bak.$PID '/^-- Installing: /d' $1
 
@@ -83,7 +87,8 @@ sed -i.bak.$PID '/^autoreconf: /d' $1
 sed -i.bak.$PID '/^configure.ac:/d' $1
 sed -i.bak.$PID '/^[a-z0-9A-Z.\/]\{0,\}libtool /d' $1
 sed -i.bak.$PID '/^[a-z0-9A-Z.\/]\{0,\}libtoolize: /d' $1
-sed -i.bak.$PID '/^g++ /d' $1
+sed -i.bak.$PID '/^ g++ .\{1,\}\.o$/d' $1
+#sed -i.bak.$PID '/^g++ /d' $1
 sed -i.bak.$PID '/^clang++ /d' $1
 sed -i.bak.$PID '/^\(\/.\{1,\}\)\{0,1\}\/usr\/bin\/make/d' $1
 sed -i.bak.$PID '/^pkgdata:/d' $1
@@ -121,4 +126,33 @@ sed -i.bak.$PID '/^apr\(-util\)\{0,1\}-[A-Za-z0-9._\/-]\{1,\}$/d' $1
 sed -i.bak.$PID '/^Libraries have been installed in:$/,/^more information, such as the ld(1) and ld.so(8) manual pages.$/d' $1
 #sed -i.bak.$PID '/^apr-.\{1,\}\.[ch]$/d' $1
 sed -i.bak.$PID '/.\{1,\} -> .\{1,\}/d' $1
+sed -i.bak.$PID '/: installing/d' $1
+sed -i.bak.$PID '/\. : /d' $1
+sed -i.bak.$PID '/^-\{1,\}$/d' $1
+sed -i.bak.$PID '/^*\{1,3\} /d' $1
+sed -i.bak.$PID '/^DOCMAN3 /d' $1
+sed -i.bak.$PID '/\[34mCC/d' $1
+sed -i.bak.$PID '/\[32;/d' $1
+sed -i.bak.$PID '/\[34;/d' $1
+sed -i.bak.$PID '/^Copying file /d' $1
+sed -i.bak.$PID '/[\t]yes$/d' $1
+sed -i.bak.$PID '/[\t]no$/d' $1
+sed -i.bak.$PID '/^  setting /d' $1
+sed -i.bak.$PID '/^  adding /d' $1
+sed -i.bak.$PID '/^Generate /d' $1
+sed -i.bak.$PID '/^copying selected object files to/d' $1
+sed -i.bak.$PID '/\[1m  +-/,/\[m/d' $1
+sed -i.bak.$PID '/^Installing /d' $1
+sed -i.bak.$PID '/^cat /d' $1
+sed -i.bak.$PID '/^Building /d' $1
+sed -i.bak.$PID '/^sh -c /d' $1
+sed -i.bak.$PID '/apinames/d' $1
+sed -i.bak.$PID '/[\t]false$/d' $1
+sed -i.bak.$PID '/[\t]true$/d' $1
+sed -i.bak.$PID '/^Install /d' $1
+sed -i.bak.$PID '/^  CPPAS    /d' $1
+sed -i.bak.$PID '/^`echo \/bin\/sh/d' $1
+
+sed -i.bak.$PID '/^$/{n;/^$/d}' $1
+
 rm -rf $1.bak.$PID
