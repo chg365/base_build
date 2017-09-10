@@ -6025,7 +6025,7 @@ function compile_gitbook_cli()
         #return 1;
         exit 1;
     fi
-    compile_gitbook_pdf
+    #compile_gitbook_pdf
 }
 # }}}
 # {{{ function compile_gitbook()
