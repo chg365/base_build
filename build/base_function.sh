@@ -6008,6 +6008,7 @@ function compile_calibre()
 function compile_gitbook_cli()
 {
     compile_nodejs
+
     is_installed gitbook_cli ${GITBOOK_CLI_BASE}
     if [ "$?" = "0" ];then
         return;
@@ -6041,12 +6042,12 @@ function compile_gitbook_cli()
 # {{{ function compile_gitbook()
 function compile_gitbook()
 {
+    compile_nodejs
+
     is_installed gitbook ${GITBOOK_BASE}
     if [ "$?" = "0" ];then
         return;
     fi
-
-    compile_nodejs
 
     echo_build_start gitbook
 
@@ -6072,13 +6073,15 @@ function compile_gitbook()
 # {{{ function compile_gitbook_pdf()
 function compile_gitbook_pdf()
 {
+    compile_nodejs
+    compile_phantomjs
+    compile_gitbook_cli
+
     is_installed gitbook_pdf ${GITBOOK_BASE}
     if [ "$?" = "0" ];then
         return;
     fi
 
-    compile_nodejs
-    compile_gitbook_cli
 
     echo_build_start gitbook-pdf
 
