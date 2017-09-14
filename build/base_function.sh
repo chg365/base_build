@@ -4412,6 +4412,11 @@ function compile_php_extension_propro()
 # {{{ function compile_php_extension_pecl_http()
 function compile_php_extension_pecl_http()
 {
+    compile_zlib
+    compile_curl
+    compile_libevent
+    compile_icu
+
     is_installed_php_extension http
     if [ "$?" = "0" ];then
         return;
@@ -4421,6 +4426,7 @@ function compile_php_extension_pecl_http()
     ./configure --with-php-config=$PHP_BASE/bin/php-config --with-http \
                 --with-http-zlib-dir=$ZLIB_BASE \
                 --with-http-libcurl-dir=$CURL_BASE \
+                --with-http-libicu-dir=$ICU_BASE
                 --with-http-libevent-dir=$LIBEVENT_BASE
     "
                 # --with-http-libidn-dir=
