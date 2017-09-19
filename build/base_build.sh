@@ -26,14 +26,14 @@ fi
 # autoconf，automake，autopoint，pkg-config
 #wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-6.repo
 if [ ! -f $HOME/.chg_base_compile_env -a "$OS_NAME" = "linux" ]; then
-    yum install -y cmake gcc xz texinfo bzip2 xz-devel gcc-c++ ncurses-devel ncurses byacc file re2c libtool-ltdl-devel popt-devel re2c wget curl libtool coreutils
-    yum install -y curl nss cyrus-sasl cyrus-sasl-devel cyrus-sasl-lib libacl libacl-devel libattr libattr-devel gperf pam pam-devel krb5-devel krb5-libs uuid uuid-devel
+    sudo yum install -y cmake gcc xz texinfo bzip2 xz-devel gcc-c++ ncurses-devel ncurses byacc file re2c libtool-ltdl-devel popt-devel re2c wget curl libtool coreutils
+    sudo yum install -y curl nss cyrus-sasl cyrus-sasl-devel cyrus-sasl-lib libacl libacl-devel libattr libattr-devel gperf pam pam-devel krb5-devel krb5-libs uuid uuid-devel
 
     #wget http://dl.fedoraproject.org/pub/epel/7/x86_64/r/re2c-0.14.3-2.el7.x86_64.rpm
-    yum install -y autoconf m4 automake pkg-config gettext-devel
+    sudo yum install -y autoconf m4 automake pkg-config gettext-devel
 
     if uname -r|grep -q 'el7' ;then
-        yum -y install systemd-devel
+        sudo yum -y install systemd-devel
     fi
 
     touch $HOME/.chg_base_compile_env
@@ -175,8 +175,6 @@ export LANG=C
 pkg_config_path_init
 #check_soft_updates
 #exit;
-#compile_gitbook_pdf
-#exit;
 compile_patchelf
 compile_nodejs
 compile_openssl
@@ -246,7 +244,6 @@ cp_GeoLite2_data
 install_web_service_common_php
 install_geoip2_php
 compile_gitbook_cli
-#compile_gitbook_pdf
 compile_calibre
 
 $PHP_BASE/bin/php --ini
