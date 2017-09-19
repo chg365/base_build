@@ -3224,7 +3224,8 @@ function compile_glib()
         # 需要libmount,没有时，才编译
         pkg-config --modversion mount >/dev/null 2>&1
         if [ "$?" != "0" ]; then
-            compile_util_linux
+            #compile_util_linux
+            sudo yum install libmount libmount-devel
         fi
     fi
 
