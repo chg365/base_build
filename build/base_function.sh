@@ -399,6 +399,7 @@ function wget_base_library()
     wget_lib $CALIBRE_FILE_NAME       "https://download.calibre-ebook.com/${CALIBRE_VERSION}/${CALIBRE_FILE_NAME}"
     wget_lib $GITBOOK_FILE_NAME       "https://github.com/GitbookIO/gitbook/archive/${GITBOOK_FILE_NAME##*-}"
     wget_lib $GITBOOK_CLI_FILE_NAME   "https://github.com/GitbookIO/gitbook-cli/archive/${GITBOOK_CLI_FILE_NAME##*-}"
+    wget_lib $NGHTTP2_FILE_NAME       "https://github.com/nghttp2/nghttp2/releases/download/v${NGHTTP2_VERSION}/${NGHTTP2_FILE_NAME}"
     wget_lib $PHP_FILE_NAME           "http://cn2.php.net/distributions/$PHP_FILE_NAME"
     wget_lib $PTHREADS_FILE_NAME      "http://pecl.php.net/get/$PTHREADS_FILE_NAME"
     wget_lib $SWOOLE_FILE_NAME        "http://pecl.php.net/get/$SWOOLE_FILE_NAME"
@@ -1401,6 +1402,20 @@ function is_installed_curl()
     fi
     local version=`pkg-config --modversion $FILENAME`
     if [ "${version}" != "$CURL_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
+# {{{ function is_installed_nghttp2()
+function is_installed_nghttp2()
+{
+    local FILENAME="$NGHTTP2_BASE/lib/pkgconfig/nghttp2.pc"
+    if [ ! -f "$FILENAME" ];then
+        return 1;
+    fi
+    local version=`pkg-config --modversion $FILENAME`
+    if [ "${version}" != "$NGHTTP2_VERSION" ];then
         return 1;
     fi
     return;
@@ -3085,6 +3100,7 @@ function compile_curl()
 {
     compile_zlib
     compile_openssl
+    compile_nghttp2
 
     is_installed curl "$CURL_BASE"
     if [ "$?" = "0" ];then
@@ -3103,6 +3119,39 @@ function compile_curl()
         do
             repair_elf_file_rpath $i;
         done
+    fi
+}
+# }}}
+# {{{ function compile_nghttp2()
+function compile_nghttp2()
+{
+    compile_zlib
+    compile_openssl
+    compile_libevent
+    compile_libxml2
+    compile_boost
+
+    is_installed nghttp2 "$NGHTTP2_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    NGHTTP2_CONFIGURE="
+        ./configure --prefix=$NGHTTP2_BASE \
+                    --with-libxml2 \
+                    --with-systemd \
+                    --with-boost=$BOOST_BASE
+    "
+                    # --with-jemalloc \
+
+    compile "nghttp2" "$NGHTTP2_FILE_NAME" "nghttp2-$NGHTTP2_VERSION" "$NGHTTP2_BASE" "NGHTTP2_CONFIGURE"
+
+    if [ "$OS_NAME" = "linux" ]; then
+        :
+        #for i in `find $NGHTTP2_BASE/lib/libnghttp2*.so* -type f`;
+        #do
+        #    repair_elf_file_rpath $i;
+        #done
     fi
 }
 # }}}
@@ -3735,6 +3784,7 @@ function compile_postgresql()
 # {{{ function compile_apache()
 function compile_apache()
 {
+    compile_nghttp2
     compile_pcre
     compile_openssl
     compile_apr
@@ -3761,11 +3811,10 @@ function compile_apache()
                 --with-ssl=$OPENSSL_BASE \
                 --with-apr=$APR_BASE \
                 --with-apr-util=$APR_UTIL_BASE \
+                --with-nghttp2=$NGHTTP2_BASE \
                 --with-pcre=$PCRE_BASE/bin/pcre-config
     "
                 #--enable-http2 \
-                #--with-nghttp2=
-                #https://github.com/nghttp2/nghttp2/releases/
 
     compile "apache" "$APACHE_FILE_NAME" "httpd-$APACHE_VERSION" "$APACHE_BASE" "APACHE_CONFIGURE"
 }
@@ -5483,6 +5532,7 @@ configure_curl_command()
 {
     ./configure --prefix=$CURL_BASE \
                 --with-zlib=$ZLIB_BASE \
+                --with-nghttp2=$NGHTTP2_BASE \
                 --with-ssl=$OPENSSL_BASE
 }
 # }}}
@@ -6171,6 +6221,7 @@ function check_soft_updates()
 #check_version swfupload
 #    exit;
     local array=(
+            nghttp2
             calibre
             gitbook
             gitbook_cli
@@ -6677,6 +6728,12 @@ function check_nginx_sticky_module_version()
 function check_json_c_version()
 {
     check_github_soft_version json-c $JSON_VERSION "https://github.com/json-c/json-c/releases" "json-c-\([0-9.]\{1,\}\)-[0-9.]\{1,\}.tar.gz" 1
+}
+# }}}
+# {{{ function check_nghttp2_version()
+function check_nghttp2_version()
+{
+    check_github_soft_version nghttp2 $NGHTTP2_VERSION "https://github.com/nghttp2/nghttp2/releases"
 }
 # }}}
 # {{{ function check_libfastjson_version()
