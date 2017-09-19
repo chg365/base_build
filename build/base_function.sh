@@ -5208,7 +5208,7 @@ function compile_geoipupdate()
     "
 
     compile "geoipupdate" "$GEOIPUPDATE_FILE_NAME" "geoipupdate-$GEOIPUPDATE_VERSION" "$GEOIPUPDATE_BASE" "GEOIPUPDATE_CONFIGURE"
-    sudo sed -i.bak.$$ "s/^# DatabaseDirectory .*$/DatabaseDirectory $(sed_quote2 $GEOIP2_DATA_DIR)/" $BASE_DIR/etc/GeoIP.conf
+    sed -i.bak.$$ "s/^# DatabaseDirectory .*$/DatabaseDirectory $(sed_quote2 $GEOIP2_DATA_DIR)/" $BASE_DIR/etc/GeoIP.conf
     if [ "$?" != "0" ]; then
         echo "mod $BASE_DIR/etc/GeoIP.conf faild." >&2;
         return 1;
