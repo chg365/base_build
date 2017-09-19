@@ -3269,7 +3269,9 @@ function compile_util_linux()
     fi
 
     UTIL_LINUX_CONFIGURE="
-        ./configure --prefix=$UTIL_LINUX_BASE
+        ./configure --prefix=$UTIL_LINUX_BASE \
+                    --with-libiconv-prefix=$LIBICONV_BASE \
+                    --with-systemd
     "
 
     compile "util-linux" "$UTIL_LINUX_FILE_NAME" "util-linux-$UTIL_LINUX_VERSION" "$UTIL_LINUX_BASE" "UTIL_LINUX_CONFIGURE"
