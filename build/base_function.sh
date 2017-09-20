@@ -2381,7 +2381,7 @@ function compile_icu()
 function compile_boost()
 {
     compile_icu
-    compile_libuuid
+    #compile_libuuid
 
     is_installed boost "$BOOST_BASE"
     if [ "$?" = "0" ];then
@@ -3880,7 +3880,7 @@ function compile_libuuid()
 # {{{ function compile_rsyslog()
 function compile_rsyslog()
 {
-    compile_libuuid
+    #compile_libuuid
     compile_liblogging
     compile_libgcrypt
     compile_libestr
