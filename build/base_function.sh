@@ -511,6 +511,7 @@ function wget_base_library()
     wget_lib $LARAVEL_FRAMEWORK_FILE_NAME "https://github.com/laravel/framework/archive/v${LARAVEL_FRAMEWORK_FILE_NAME#*-}"
     wget_lib $ZEND_FILE_NAME          "https://packages.zendframework.com/releases/ZendFramework-$ZEND_VERSION/$ZEND_FILE_NAME"
     wget_lib $SMARTY_FILE_NAME        "https://github.com/smarty-php/smarty/archive/v${SMARTY_FILE_NAME#*-}"
+    wget_lib $HTMLPURIFIER_FILE_NAME  "https://github.com/ezyang/htmlpurifier/archive/v${HTMLPURIFIER_FILE_NAME#*-}"
     wget_lib $CKEDITOR_FILE_NAME      "http://download.cksource.com/CKEditor/CKEditor/CKEditor%20$CKEDITOR_VERSION/$CKEDITOR_FILE_NAME"
     wget_lib $JQUERY_FILE_NAME        "http://code.jquery.com/$JQUERY_FILE_NAME"
     wget_lib $RABBITMQ_C_FILE_NAME    "https://github.com/alanxz/rabbitmq-c/archive/v${RABBITMQ_C_FILE_NAME##*-}"
@@ -5386,6 +5387,21 @@ function compile_smarty()
     /bin/rm -rf smarty-$SMARTY_VERSION
 }
 # }}}
+# {{{ function compile_htmlpurifier()
+function compile_htmlpurifier()
+{
+#    is_installed htmlpurifier $HTMLPURIFIER_BASE
+#    if [ "$?" = "0" ];then
+#        return;
+#    fi
+
+    echo_build_start htmlpurifier
+    decompress $HTMLPURIFIER_FILE_NAME
+    mkdir -p $HTMLPURIFIER_BASE
+    cp -r htmlpurifier-$HTMLPURIFIER_VERSION/library/* $HTMLPURIFIER_BASE
+    /bin/rm -rf htmlpurifier-$HTMLPURIFIER_VERSION
+}
+# }}}
 # {{{ function compile_composer()
 function compile_composer()
 {
@@ -6342,6 +6358,7 @@ function check_soft_updates()
             pecl_libsodium
 
             smarty
+            htmlpurifier
             rabbitmq
             libmaxminddb
             maxmind_db_reader_php
@@ -6878,6 +6895,12 @@ function check_tidy_version()
 function check_smarty_version()
 {
     check_github_soft_version smarty $SMARTY_VERSION "https://github.com/smarty-php/smarty/releases"
+}
+# }}}
+# {{{ function check_htmlpurifier_version()
+function check_htmlpurifier_version()
+{
+    check_github_soft_version htmlpurifier $HTMLPURIFIER_VERSION "https://github.com/ezyang/htmlpurifier/releases"
 }
 # }}}
 # {{{ function check_ckeditor_version()

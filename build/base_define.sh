@@ -121,6 +121,7 @@ GRPC_BASE="$CONTRIB_BASE" # https://github.com/grpc/grpc/tree/master/src/php
 CODEIGNITER_BASE=$BASE_DIR/inc/codeigniter # https://github.com/bcit-ci/CodeIgniter/
 ZEND_BASE=$BASE_DIR/inc/zend
 SMARTY_BASE=$BASE_DIR/inc/smarty
+HTMLPURIFIER_BASE=$BASE_DIR/inc/htmlpurifier
 COMPOSER_BASE="$BASE_DIR/inc"
 LARAVEL_BASE=$BASE_DIR/inc/laravel
 
@@ -280,7 +281,8 @@ PHP_GRPC_VERSION="1.6.0"
 QRENCODE_VERSION="0.1.0"
 
 ZEND_VERSION="2.4.9" # http://framework.zend.com/downloads/latest
-SMARTY_VERSION="3.1.31" # www.smarty.net
+SMARTY_VERSION="3.1.31"
+HTMLPURIFIER_VERSION="4.9.3"
 LARAVEL_VERSION="5.5.0"
 LARAVEL_FRAMEWORK_VERSION="5.5.4"
 
@@ -421,6 +423,7 @@ PHP_ZMQ_FILE_NAME="php-zmq-${PHP_ZMQ_VERSION}.tar.gz"
 PHP_LIBSODIUM_FILE_NAME="libsodium-${PHP_LIBSODIUM_VERSION}.tgz"
 ZEND_FILE_NAME="ZendFramework-${ZEND_VERSION}.tgz"
 SMARTY_FILE_NAME="smarty-${SMARTY_VERSION}.tar.gz"
+HTMLPURIFIER_FILE_NAME="htmlpurifier-${HTMLPURIFIER_VERSION}.tar.gz"
 LARAVEL_FILE_NAME="laravel-${LARAVEL_VERSION}.tar.gz"
 LARAVEL_FRAMEWORK_FILE_NAME="framework-${LARAVEL_FRAMEWORK_VERSION}.tar.gz"
 CKEDITOR_FILE_NAME="ckeditor_${CKEDITOR_VERSION}_full.tar.gz"

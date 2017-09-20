@@ -245,6 +245,8 @@ install_web_service_common_php
 install_geoip2_php
 compile_gitbook_cli
 compile_calibre
+compile_smarty
+compile_htmlpurifier
 
 $PHP_BASE/bin/php --ini
 
