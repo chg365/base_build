@@ -3901,10 +3901,6 @@ function compile_rsyslog()
         configure_rsyslog_command
     "
 
-    # No package 'systemd' found
-
-    # --enable-libgcrypt
-
     compile "rsyslog" "$RSYSLOG_FILE_NAME" "rsyslog-$RSYSLOG_VERSION" "$RSYSLOG_BASE" "RSYSLOG_CONFIGURE" "after_rsyslog_make_install"
 
 }
@@ -3933,9 +3929,14 @@ function configure_rsyslog_command()
     #PKG_CONFIG_PATH="/usr/local/chg/base/contrib/lib/pkgconfig"
     ./configure --prefix=$RSYSLOG_BASE \
                 --sysconfdir=$RSYSLOG_CONFIG_DIR \
+                $( has_systemd && echo "--with-systemdsystemunitdir=$RSYSLOG_BASE/systemd" ) \
                 --enable-elasticsearch \
                 $(is_installed_mysql && echo --enable-mysql ) \
                 --enable-mail
+
+        # No package 'systemd' found
+
+        # --enable-libgcrypt
 
         # error: Net-SNMP is missing
         # --enable-snmp \
