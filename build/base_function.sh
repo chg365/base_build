@@ -1410,7 +1410,7 @@ function is_installed_curl()
 # {{{ function is_installed_nghttp2()
 function is_installed_nghttp2()
 {
-    local FILENAME="$NGHTTP2_BASE/lib/pkgconfig/nghttp2.pc"
+    local FILENAME="$NGHTTP2_BASE/lib/pkgconfig/libnghttp2.pc"
     if [ ! -f "$FILENAME" ];then
         return 1;
     fi
