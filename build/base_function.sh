@@ -5470,6 +5470,7 @@ function compile_famous()
 {
     echo_build_start famous
     mkdir -p $FAMOUS_BASE
+    mkdir -p $CSS_BASE
 
     decompress ${FAMOUS_FILE_NAME}
     if [ "$?" != "0" ];then
@@ -5486,6 +5487,7 @@ function compile_famous_angular()
 {
     echo_build_start famous-angular
     mkdir -p $FAMOUS_BASE
+    mkdir -p $CSS_BASE
 
     decompress ${FAMOUS_ANGULAR_FILE_NAME}
     if [ "$?" != "0" ];then
