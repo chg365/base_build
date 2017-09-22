@@ -18,8 +18,8 @@ COMPILE_BASE=$(dirname $BASE_DIR)/compile
 CONTRIB_BASE=$BASE_DIR/contrib
 OPT_BASE=$BASE_DIR/opt
 WEB_BASE=$BASE_DIR/web
-JS_BASE=$WEB_DIR/public/js
-CSS_BASE=$WEB_DIR/public/css
+JS_BASE=$WEB_BASE/public/js
+CSS_BASE=$WEB_BASE/public/css
 
 # {{{ open source libray info
 # {{{ open source libray install base dir
