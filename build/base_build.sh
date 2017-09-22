@@ -264,6 +264,18 @@ echo $LD_LIBRARY_PATH
 #repair_file_rpath $LIBICU_BASE/lib/libicutu.so
 #repair_elf_file_rpath $LIBICU_BASE/lib/libicutu.so
 init_setup
+################################################################################
+# Install javascript lib
+################################################################################
+compile_jquery
+compile_ckeditor
+compile_famous
+compile_famous_angular
+
+exit;
+################################################################################
+# Install SWFUpload
+################################################################################
 cp $php_ini $PHP_CONFIG_DIR/php-cli.ini
 
 sed -i.bak.$$ '/extension=pthreads.so/d' $php_ini

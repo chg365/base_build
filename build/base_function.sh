@@ -5468,7 +5468,7 @@ function compile_jquery()
 # {{{ function compile_famous()
 function compile_famous()
 {
-    echo_build_start famous $FAMOUS_BASE
+    echo_build_start famous
     mkdir -p $FAMOUS_BASE
 
     decompress ${FAMOUS_FILE_NAME}
@@ -5477,21 +5477,24 @@ function compile_famous()
         exit 1;
     fi
 
-    famous.css            famous-global.js      famous-global.min.js  famous.js             famous.min.js
     cp famous-${FAMOUS_VERSION}/dist/*.min.js $FAMOUS_BASE/
     cp famous-${FAMOUS_VERSION}/dist/*.css $CSS_BASE/
-    cd famous-0.3.5
-    cp dist/famous
+}
+# }}}
+# {{{ function compile_famous_angular()
+function compile_famous_angular()
+{
+    echo_build_start famous-angular
+    mkdir -p $FAMOUS_BASE
 
-    famous.css            famous-global.js      famous-global.min.js  famous.js             famous.min.js
+    decompress ${FAMOUS_ANGULAR_FILE_NAME}
+    if [ "$?" != "0" ];then
+        # return 1;
+        exit 1;
+    fi
 
-
-
-
-
-     famous-angular-0.5.2]# ls dist/
-     famous-angular.css  famous-angular.js  famous-angular.min.css  famous-angular.min.js
-
+    cp famous-angular-${FAMOUS_ANGULAR_VERSION}/dist/famous-angular.min.js $FAMOUS_BASE/
+    cp famous-angular-${FAMOUS_ANGULAR_VERSION}/dist/famous-angular.min.css $CSS_BASE/
 
 }
 # }}}

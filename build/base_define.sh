@@ -19,6 +19,7 @@ CONTRIB_BASE=$BASE_DIR/contrib
 OPT_BASE=$BASE_DIR/opt
 WEB_BASE=$BASE_DIR/web
 JS_BASE=$WEB_DIR/public/js
+CSS_BASE=$WEB_DIR/public/css
 
 # {{{ open source libray info
 # {{{ open source libray install base dir
@@ -129,7 +130,7 @@ LARAVEL_BASE=$BASE_DIR/inc/laravel
 
 CKEDITOR_BASE=$JS_BASE/ckeditor
 JQUERY_BASE=$JS_BASE/
-FAMOUS_BASE=$JS_BASE/
+FAMOUS_BASE=$JS_BASE/famous
 SWFUPLOAD_BASE=$JS_BASE/swfupload
 
 # 编译nginx的geoip2模块时，影响http_upload模块，单独放到一个目录下没有问题，应该是有其他lib影响了。
