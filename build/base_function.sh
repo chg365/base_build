@@ -514,6 +514,7 @@ function wget_base_library()
     wget_lib $HTMLPURIFIER_FILE_NAME  "https://github.com/ezyang/htmlpurifier/archive/v${HTMLPURIFIER_FILE_NAME#*-}"
     wget_lib $CKEDITOR_FILE_NAME      "http://download.cksource.com/CKEditor/CKEditor/CKEditor%20$CKEDITOR_VERSION/$CKEDITOR_FILE_NAME"
     wget_lib $JQUERY_FILE_NAME        "http://code.jquery.com/$JQUERY_FILE_NAME"
+    wget_lib $JQUERY3_FILE_NAME       "http://code.jquery.com/$JQUERY3_FILE_NAME"
     wget_lib $RABBITMQ_C_FILE_NAME    "https://github.com/alanxz/rabbitmq-c/archive/v${RABBITMQ_C_FILE_NAME##*-}"
 
     wget_lib $ZEROMQ_FILE_NAME        "https://github.com/zeromq/libzmq/releases/download/v${ZEROMQ_VERSION}/$ZEROMQ_FILE_NAME"
@@ -5457,10 +5458,11 @@ function compile_jquery()
 #    fi
 
     echo_build_start jquery
+
     mkdir -p $JQUERY_BASE
-    cp jquery-$JQUERY_VERSION.js $JQUERY_BASE/jquery.js
 
-
+    cp $JQUERY_FILE_NAME $JQUERY_BASE/
+    cp $JQUERY3_FILE_NAME $JQUERY_BASE/
 }
 # }}}
 # {{{ function compile_famous()
@@ -6359,6 +6361,8 @@ function check_soft_updates()
             pecl_libsodium
 
             smarty
+            jquery
+            jquery3
             htmlpurifier
             rabbitmq
             libmaxminddb
@@ -6695,6 +6699,19 @@ function check_nodejs_version()
     #https://nodejs.org/en/download/
     check_ftp_version nodejs ${NODEJS_VERSION} https://nodejs.org/en/download/ 's/^.\{1,\}[> ]node-v\([0-9.]\{1,\}\)\.tar\.gz[< ]*.\{0,\}$/\1/p'
     check_ftp_version nodejs ${NODEJS_VERSION} https://nodejs.org/en/download/current/ 's/^.\{1,\}[> ]node-v\([0-9.]\{1,\}\)\.tar\.gz[< ]*.\{0,\}$/\1/p'
+}
+# }}}
+# {{{ function check_jquery_version()
+function check_jquery_version()
+{
+    check_ftp_version jquery ${JQUERY_VERSION%%.min} https://code.jquery.com/jquery/ 's/^.\{1,\}jquery-\(1.[0-9.]\{1,\}\)\.js.\{1,\}$/\1/p'
+    #check_ftp_version jquery ${JQUERY_VERSION%%.min} https://code.jquery.com/jquery/ 's/^.\{1,\}jquery-\([0-9.]\{1,\}\)\.js.\{1,\}$/\1/p'
+}
+# }}}
+# {{{ function check_jquery3_version()
+function check_jquery3_version()
+{
+    check_ftp_version jquery3 ${JQUERY3_VERSION%%.min} https://code.jquery.com/jquery/ 's/^.\{1,\}jquery-\([0-9.]\{1,\}\)\.js.\{1,\}$/\1/p'
 }
 # }}}
 # {{{ function check_calibre_version()
