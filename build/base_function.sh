@@ -7295,6 +7295,7 @@ function check_libestr_version()
 function check_libpng_version()
 {
     check_github_soft_version libpng $LIBPNG_VERSION "https://github.com/glennrp/libpng/releases" "v\([0-9.]\{5,\}\)\.tar\.gz" 1
+    check_github_soft_version libpng $LIBPNG_VERSION "https://github.com/glennrp/libpng/releases" "v\([0-9.]\{5,\}\(beta\)\{0,1\}\(rc\)\{0,1\}[0-9]\{0,\}\)\.tar\.gz" 1
 }
 # }}}
 # {{{ function check_kerberos_version()
