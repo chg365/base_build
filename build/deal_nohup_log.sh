@@ -87,14 +87,13 @@ sed -i.bak.$PID '/^autoreconf: /d' $1
 sed -i.bak.$PID '/^configure.ac:/d' $1
 sed -i.bak.$PID '/^[a-z0-9A-Z.\/]\{0,\}libtool /d' $1
 sed -i.bak.$PID '/^[a-z0-9A-Z.\/]\{0,\}libtoolize: /d' $1
-sed -i.bak.$PID '/^ g++ .\{1,\}\.o$/d' $1
-#sed -i.bak.$PID '/^g++ /d' $1
+sed -i.bak.$PID '/^ \{0,1\}g++ /d' $1
 sed -i.bak.$PID '/^clang++ /d' $1
 sed -i.bak.$PID '/^\(\/.\{1,\}\)\{0,1\}\/usr\/bin\/make/d' $1
 sed -i.bak.$PID '/^pkgdata:/d' $1
 sed -i.bak.$PID '/^Building shared library/d' $1
 sed -i.bak.$PID '/^+ /d' $1
-sed -i.bak.$PID '/^In file included from /d' $1
+#sed -i.bak.$PID '/^In file included from .\{1,\}[^,:]$/d' $1
 sed -i.bak.$PID '/^ \{1,\}clang+\{0,\}.\{1,\}\.\{3\}/d' $1
 #sed -i.bak.$PID '/^install .\{1,\}.h -> .\{1,\}.h/d' $1
 sed -i.bak.$PID '/^  CCLD /d' $1
