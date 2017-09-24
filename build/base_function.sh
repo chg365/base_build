@@ -3141,7 +3141,7 @@ function compile_nghttp2()
     NGHTTP2_CONFIGURE="
         ./configure --prefix=$NGHTTP2_BASE \
                     --with-libxml2 \
-                    --with-systemd \
+                    $( has_systemd && echo "--with-systemd" ) \
                     --with-boost=$BOOST_BASE
     "
                     # --with-jemalloc \
@@ -3274,7 +3274,7 @@ function compile_util_linux()
     UTIL_LINUX_CONFIGURE="
         ./configure --prefix=$UTIL_LINUX_BASE \
                     --with-libiconv-prefix=$LIBICONV_BASE \
-                    --with-systemd
+                    $( has_systemd && echo "--with-systemd" )
     "
 
     compile "util-linux" "$UTIL_LINUX_FILE_NAME" "util-linux-$UTIL_LINUX_VERSION" "$UTIL_LINUX_BASE" "UTIL_LINUX_CONFIGURE"
