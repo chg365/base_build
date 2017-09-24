@@ -829,10 +829,10 @@ function init_nginx_conf()
 # function init_dehydrated_conf() {{{
 function init_dehydrated_conf()
 {
-    sed -i.bak.$$ "s/^ \{0,\}#\{0,\} \{0,\}\(BASEDIR=\).\{,\}$/\1\"$(sed_quote2 $DEHYDRATED_CONFIG_DIR )\"/g" $DEHYDRATED_CONFIG_DIR/config
-    sed -i.bak.$$ "s/^ \{0,\}#\{0,\} \{0,\}\(WELLKNOWN=\).\{,\}$/\1\"$(sed_quote2 $TMP_DATA_DIR/dehydrated )\"/g" $DEHYDRATED_CONFIG_DIR/config
-    sed -i.bak.$$ "s/^ \{0,\}#\{0,\} \{0,\}\(OPENSSL_CNF=\).\{,\}$/\1\"$(sed_quote2 $SSL_CONFIG_DIR/openssl.cnf )\"/g" $DEHYDRATED_CONFIG_DIR/config
-    sed -i.bak.$$ "s/^ \{0,\}#\{0,\} \{0,\}\(LOCKFILE=\).\{,\}$/\1\"$(sed_quote2 $BASE_DIR/run/dehydrated.lock )\"/g" $DEHYDRATED_CONFIG_DIR/config
+    sed -i.bak.$$ "s/^ \{0,\}#\{0,\} \{0,\}\(BASEDIR=\).\{0,\}$/\1\"$(sed_quote2 $DEHYDRATED_CONFIG_DIR )\"/g" $DEHYDRATED_CONFIG_DIR/config
+    sed -i.bak.$$ "s/^ \{0,\}#\{0,\} \{0,\}\(WELLKNOWN=\).\{0,\}$/\1\"$(sed_quote2 $TMP_DATA_DIR/dehydrated )\"/g" $DEHYDRATED_CONFIG_DIR/config
+    sed -i.bak.$$ "s/^ \{0,\}#\{0,\} \{0,\}\(OPENSSL_CNF=\).\{0,\}$/\1\"$(sed_quote2 $SSL_CONFIG_DIR/openssl.cnf )\"/g" $DEHYDRATED_CONFIG_DIR/config
+    sed -i.bak.$$ "s/^ \{0,\}#\{0,\} \{0,\}\(LOCKFILE=\).\{0,\}$/\1\"$(sed_quote2 $BASE_DIR/run/dehydrated.lock )\"/g" $DEHYDRATED_CONFIG_DIR/config
 
     rm_bak_file $DEHYDRATED_CONFIG_DIR/config.bak.*
 
@@ -2382,7 +2382,9 @@ function compile_icu()
 function compile_boost()
 {
     compile_icu
-    #compile_libuuid
+    if [ "$OS_NAME" = "darwin" ];then
+        compile_libuuid
+    fi
 
     is_installed boost "$BOOST_BASE"
     if [ "$?" = "0" ];then
@@ -3881,7 +3883,9 @@ function compile_libuuid()
 # {{{ function compile_rsyslog()
 function compile_rsyslog()
 {
-    #compile_libuuid
+    if [ "$OS_NAME" = "darwin" ];then
+        compile_libuuid
+    fi
     compile_liblogging
     compile_libgcrypt
     compile_libestr
