@@ -185,6 +185,7 @@ compile_zeromq
 compile_zlib
 compile_libgd
 compile_apache
+compile_postgresql
 compile_php
 compile_memcached
 compile_sphinx
@@ -225,6 +226,7 @@ compile_php_extension_mailparse
 compile_php_extension_redis
 compile_php_extension_solr
 compile_php_extension_mongodb
+compile_php_extension_pdo_pgsql
 compile_php_extension_swoole
 if [ "$gcc_new_version" != "$gcc_minimum_version" ]; then
     compile_php_extension_grpc
