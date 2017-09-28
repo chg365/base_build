@@ -593,7 +593,7 @@ function wget_env_library()
     wget_lib $GLIBC_FILE_NAME "http://ftp.gnu.org/gnu/glibc/$GLIBC_FILE_NAME"
     wget_lib $MAKE_FILE_NAME "http://ftp.gnu.org/gnu/make/$MAKE_FILE_NAME"
     wget_lib $PATCH_FILE_NAME "http://ftp.gnu.org/gnu/patch/$PATCH_FILE_NAME"
-    wget_lib $READLINE_FILE_NAME "http://ftp.gnu.org/gnu/readline/$READLINE_FILE_NAME"
+    # wget_lib $READLINE_FILE_NAME "http://ftp.gnu.org/gnu/readline/$READLINE_FILE_NAME"
 
     wget_lib $RE2C_FILE_NAME "https://sourceforge.net/projects/re2c/files/$RE2C_VERSION/$RE2C_FILE_NAME/download"
     wget_lib $FLEX_FILE_NAME "https://sourceforge.net/projects/flex/files/$FLEX_FILE_NAME/download"
@@ -3776,13 +3776,18 @@ function compile_apr_util()
 # {{{ function compile_postgresql()
 function compile_postgresql()
 {
+    compile_zlib
+    compile_libxml2
+    compile_libxslt
+    compile_openssl
+
     is_installed postgresql "$POSTGRESQL_BASE"
     if [ "$?" = "0" ];then
         return;
     fi
 
     POSTGRESQL_CONFIGURE="
-    ./configure --prefix=$POSTGRESQL_BASE
+        configure_postgresql_command
     "
 
     compile "postgresql" "$POSTGRESQL_FILE_NAME" "postgresql-$POSTGRESQL_VERSION" "$POSTGRESQL_BASE" "POSTGRESQL_CONFIGURE"
@@ -4331,7 +4336,8 @@ function compile_php_extension_pdo_pgsql()
     fi
 
     PHP_EXTENSION_PDO_PGSQL_CONFIGURE="
-    ./configure --with-php-config=$PHP_BASE/bin/php-config --with-pdo-pgsql=$POSTGRESQL_BASE
+    ./configure --with-php-config=$PHP_BASE/bin/php-config \
+                --with-pdo-pgsql=$POSTGRESQL_BASE
     "
     compile "php_extension_pdo_pgsql" "$PHP_FILE_NAME" "php-$PHP_VERSION/ext/pdo_pgsql/" "pdo_pgsql.so" "PHP_EXTENSION_PDO_PGSQL_CONFIGURE"
 }
@@ -5708,6 +5714,23 @@ configure_icu_command()
                 #--enable-rpath
                 #$( [ "$OS_NAME" = "darwin" ] && echo 'LDFLAGS="-headerpad_max_install_names"')
 
+}
+# }}}
+# {{{ configure_postgresql_command()
+configure_postgresql_command()
+{
+    # yum install readline readline-devel
+    CFLAGS="$(get_cppflags $ZLIB_BASE/include $OPENSSL_BASE/include $LIBXML2_BASE/include $LIBXSLT_BASE/include)" \
+    CPPFLAGS="$(get_cppflags $ZLIB_BASE/include $OPENSSL_BASE/include $LIBXML2_BASE/include $LIBXSLT_BASE/include)" \
+    LDFLAGS="$(get_ldflags $ZLIB_BASE/lib $OPENSSL_BASE/lib $LIBXML2_BASE/lib $LIBXSLT_BASE/lib)" \
+    ./configure --prefix=$POSTGRESQL_BASE \
+                --with-libxml \
+                --with-libxslt \
+                --with-ossp-uuid \
+                --with-systemd \
+                --with-openssl \
+                --enable-nls=zh_CN \
+                --without-readline
 }
 # }}}
 # {{{ configure_nginx_command()
