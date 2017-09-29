@@ -5753,7 +5753,7 @@ configure_postgresql_command()
                 --with-libxml \
                 --with-libxslt \
                 --with-ossp-uuid \
-                --with-systemd \
+                $( has_systemd && echo "--with-systemd" ) \
                 --with-openssl \
                 --enable-nls=zh_CN
 }
