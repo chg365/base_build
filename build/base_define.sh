@@ -23,6 +23,7 @@ CSS_BASE=$WEB_BASE/public/css
 
 # {{{ open source libray info
 # {{{ open source libray install base dir
+READLINE_BASE=$CONTRIB_BASE
 PATCHELF_BASE=$CONTRIB_BASE
 RE2C_BASE="$COMPILE_BASE"
 PCRE_BASE=$CONTRIB_BASE
@@ -145,6 +146,7 @@ DEHYDRATED_BASE=$CONTRIB_BASE
 PKGCONFIG_VERSION="0.29.2" # http://pkgconfig.freedesktop.org/releases/
 RE2C_VERSION="1.0.2" # http://re2c.org/about/about.html#version
 PATCHELF_VERSION="0.9"
+READLINE_VERSION="7.0"
 
 PCRE_VERSION="8.41"
 #PCRE_VERSION="10.23" # pcre2 编译apache时报错
@@ -321,6 +323,7 @@ NGINX_UPLOAD_MODULE_VERSION="2.2.0"
 
 # }}}
 # {{{ open source libray file name
+READLINE_FILE_NAME="readline-${READLINE_VERSION}.tar.gz"
 PATCHELF_FILE_NAME="patchelf-${PATCHELF_VERSION}.tar.gz"
 RE2C_FILE_NAME="re2c-${RE2C_VERSION}.tar.gz"
 OPENSSL_FILE_NAME="openssl-${OPENSSL_VERSION}.tar.gz"

@@ -379,6 +379,7 @@ function wget_base_library()
     # http://cdnetworks-kr-2.dl.sourceforge.net/project/libpng/zlib/$ZLIB_VERSION/$ZLIB_FILE_NAME
     wget_lib $ZLIB_FILE_NAME          "http://zlib.net/$ZLIB_FILE_NAME"
     wget_lib $LIBZIP_FILE_NAME        "http://www.nih.at/libzip/$LIBZIP_FILE_NAME"
+    wget_lib $READLINE_FILE_NAME      "http://ftp.gnu.org/gnu/readline/$READLINE_FILE_NAME"
     wget_lib $GETTEXT_FILE_NAME       "http://ftp.gnu.org/gnu/gettext/$GETTEXT_FILE_NAME"
     wget_lib $LIBICONV_FILE_NAME      "http://ftp.gnu.org/gnu/libiconv/$LIBICONV_FILE_NAME"
     wget_lib $LIBXML2_FILE_NAME       "ftp://xmlsoft.org/libxml2/$LIBXML2_FILE_NAME"
@@ -593,7 +594,6 @@ function wget_env_library()
     wget_lib $GLIBC_FILE_NAME "http://ftp.gnu.org/gnu/glibc/$GLIBC_FILE_NAME"
     wget_lib $MAKE_FILE_NAME "http://ftp.gnu.org/gnu/make/$MAKE_FILE_NAME"
     wget_lib $PATCH_FILE_NAME "http://ftp.gnu.org/gnu/patch/$PATCH_FILE_NAME"
-    # wget_lib $READLINE_FILE_NAME "http://ftp.gnu.org/gnu/readline/$READLINE_FILE_NAME"
 
     wget_lib $RE2C_FILE_NAME "https://sourceforge.net/projects/re2c/files/$RE2C_VERSION/$RE2C_FILE_NAME/download"
     wget_lib $FLEX_FILE_NAME "https://sourceforge.net/projects/flex/files/$FLEX_FILE_NAME/download"
@@ -997,6 +997,16 @@ function is_installed_gearmand()
     fi
     local version=`pkg-config --modversion $FILENAME`
     if [ "$version" != "$GEARMAND_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
+# {{{ function is_installed_readline()
+function is_installed_readline()
+{
+    local FILENAME="$READLINE_BASE/lib/libreadline.so.${READLINE_VERSION}"
+    if [ ! -f "$FILENAME" ];then
         return 1;
     fi
     return;
@@ -2703,6 +2713,22 @@ function compile_patchelf()
     compile "patchelf" "$PATCHELF_FILE_NAME" "patchelf-${PATCHELF_VERSION}" "$PATCHELF_BASE" "PATCHELF_CONFIGURE"
 }
 # }}}
+# {{{ function compile_readline()
+function compile_readline()
+{
+    is_installed readline "$READLINE_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    READLINE_CONFIGURE="
+        ./configure --prefix=$READLINE_BASE \
+                    --enable-multibyte
+    "
+
+    compile "readline" "$READLINE_FILE_NAME" "readline-${READLINE_VERSION}" "$READLINE_BASE" "READLINE_CONFIGURE"
+}
+# }}}
 # {{{ function compile_jpeg()
 function compile_jpeg()
 {
@@ -3777,6 +3803,7 @@ function compile_apr_util()
 function compile_postgresql()
 {
     compile_zlib
+    compile_readline
     compile_libxml2
     compile_libxslt
     compile_openssl
@@ -5719,18 +5746,16 @@ configure_icu_command()
 # {{{ configure_postgresql_command()
 configure_postgresql_command()
 {
-    # yum install readline readline-devel
-    CFLAGS="$(get_cppflags $ZLIB_BASE/include $OPENSSL_BASE/include $LIBXML2_BASE/include $LIBXSLT_BASE/include)" \
-    CPPFLAGS="$(get_cppflags $ZLIB_BASE/include $OPENSSL_BASE/include $LIBXML2_BASE/include $LIBXSLT_BASE/include)" \
-    LDFLAGS="$(get_ldflags $ZLIB_BASE/lib $OPENSSL_BASE/lib $LIBXML2_BASE/lib $LIBXSLT_BASE/lib)" \
+    CFLAGS="$(get_cppflags $ZLIB_BASE/include $OPENSSL_BASE/include $LIBXML2_BASE/include $LIBXSLT_BASE/include $READLINE_BASE/include)" \
+    CPPFLAGS="$(get_cppflags $ZLIB_BASE/include $OPENSSL_BASE/include $LIBXML2_BASE/include $LIBXSLT_BASE/include $READLINE_BASE/include)" \
+    LDFLAGS="$(get_ldflags $ZLIB_BASE/lib $OPENSSL_BASE/lib $LIBXML2_BASE/lib $LIBXSLT_BASE/lib $READLINE_BASE/lib)" \
     ./configure --prefix=$POSTGRESQL_BASE \
                 --with-libxml \
                 --with-libxslt \
                 --with-ossp-uuid \
                 --with-systemd \
                 --with-openssl \
-                --enable-nls=zh_CN \
-                --without-readline
+                --enable-nls=zh_CN
 }
 # }}}
 # {{{ configure_nginx_command()
@@ -6321,6 +6346,7 @@ function check_soft_updates()
             libxslt
             libxml2
             gettext
+            readline
             libiconv
             libjpeg
             pcre
@@ -7267,6 +7293,12 @@ function check_libgpg_error_version()
     fi
 
     echo -e "libgpg-error current version: \033[0;33m${LIBGPG_ERROR_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+}
+# }}}
+# {{{ function check_readline_version()
+function check_readline_version()
+{
+    check_ftp_gnu_org_version readline $READLINE_VERSION
 }
 # }}}
 # {{{ function check_gettext_version()
