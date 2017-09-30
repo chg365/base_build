@@ -7355,8 +7355,14 @@ function check_libestr_version()
 # {{{ function check_libpng_version()
 function check_libpng_version()
 {
-    check_github_soft_version libpng $LIBPNG_VERSION "https://github.com/glennrp/libpng/releases" "v\([0-9.]\{5,\}\)\.tar\.gz" 1
-    check_github_soft_version libpng $LIBPNG_VERSION "https://github.com/glennrp/libpng/releases" "v\([0-9.]\{5,\}\(beta\)\{0,1\}\(rc\)\{0,1\}[0-9]\{0,\}\)\.tar\.gz" 1
+    local tmp_str=`echo ${LIBPNG_VERSION%.*}|tr -d .`;
+    local tmp_str2=`check_sourceforge_soft_version libpng $tmp_str 's/^ \{0,\}<tr \{1,\}title="libpng\([0-9]\{1,\}\)" \{1,\}class=" \{0,\}folder \{0,\}" \{0,\}> \{0,\}$/\1/p' 0`
+    if echo "$tmp_str2"|grep -q 'new version'; then
+        tmp_str2=$(echo ${tmp_str2##* }|sed -n "s/^$(echo -e "\033\[0;35m")\([0-9]\{1,\}\)$(echo -e "\033\[0m")\$/\1/p")
+        check_sourceforge_soft_version libpng ${LIBPNG_VERSION} 's/^.\{0,\}<tr title="\([0-9.a-zA-Z]\{1,\}\)" class="folder \{0,\}"> \{0,\}$/\1/p' libpng${tmp_str2}
+    fi
+
+    check_sourceforge_soft_version libpng ${LIBPNG_VERSION} 's/^.\{0,\}<tr title="\([0-9.]\{1,\}\)" class="folder \{0,\}"> \{0,\}$/\1/p' libpng${tmp_str}
 }
 # }}}
 # {{{ function check_kerberos_version()
