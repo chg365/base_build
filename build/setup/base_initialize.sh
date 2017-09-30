@@ -199,6 +199,70 @@ function mysql_data_init()
     return 0;
 }
 # }}}
+# {{{ function postgresql_init()
+function postgresql_init()
+{
+    if [ ! -d "$POSTGRESQL_BASE" ]; then
+        return 1;
+    fi
+    if [ "$init_dir_only" = "1" ];then
+        #pssql_dir_init
+        return $?;
+    fi
+    #for i in `ps -ef|grep mysqld|grep -v grep |awk '{ print $2;}'`; do { kill -9 $i; } done
+    #sudo rm -rf $MYSQL_RUN_DIR/* $MYSQL_CONFIG_DIR/.mysql_secret $MYSQL_DATA_DIR/*
+    echo "Initialize PostgreSQL Data..."
+    postgresql_user_init
+    if [ "$?" != "0" ]; then
+        return 1;
+    fi
+    postgresql_dir_init
+    if [ "$?" != "0" ]; then
+        return 1;
+    fi
+    postgresql_data_init
+    if [ "$?" != "0" ]; then
+        return 1;
+    fi
+
+    if has_systemd ;then
+        postgresql_systemd_init
+        if [ "$?" != "0" ]; then
+            return 1;
+        fi
+    fi
+    echo "Initialize PostgreSQL Data finished."
+}
+# }}}
+# {{{ function postgresql_user_init()
+function postgresql_user_init()
+{
+    system_user_init "$POSTGRESQL_USER" "$POSTGRESQL_GROUP"
+    if [ "$?" != "0" ]; then
+        return 1;
+    fi
+}
+# }}}
+# {{{ function postgresql_data_init()
+# #BASE_DIR
+# #MYSQL_BASE
+# $mysql_cnf
+# $MYSQL_CONFIG_DIR
+function postgresql_data_init()
+{
+    $POSTGRESQL_BASE/bin/initdb -D $POSTGRESQL_DATA_DIR
+    #$POSTGRESQL_BASE/bin/postgres -D $POSTGRESQL_DATA_DIR > $LOG_DIR/pgsql/pgsql.log 2>&1 &
+    #$POSTGRESQL_BASE/bin/createdb test
+    #$POSTGRESQL_BASE/bin/psql test
+}
+# }}}
+# {{{ function postgresql_dir_init()
+function postgresql_dir_init()
+{
+    mkdir -p $POSTGRESQL_RUN_DIR $POSTGRESQL_DATA_DIR ${LOG_DIR}/pgsql
+    chown -R $POSTGRESQL_USER:$POSTGRESQL_GROUP $POSTGRESQL_DATA_DIR ${LOG_DIR}/pgsql
+}
+# }}}
 # {{{ function get_mysql_temp_password()
 function get_mysql_temp_password()
 {
