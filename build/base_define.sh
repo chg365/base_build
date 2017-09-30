@@ -163,7 +163,7 @@ if [ "$OS_NAME" != 'darwin' ];then
     if [ "$gcc_new_version" = "$gcc_minimum_version" ]; then
         ICU_VERSION="58.2"
     else
-        ICU_VERSION="59.1" #升级到 59.1后 PHP7.1.8的intl扩展编译不过去
+        ICU_VERSION="58.2" #升级到 59.1后 PHP7.1.8的intl扩展编译不过去
     fi
 fi
 LIBZIP_VERSION="1.3.0" # http://www.nih.at/libzip/index.html
