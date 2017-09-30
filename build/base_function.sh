@@ -257,6 +257,11 @@ function decompress()
             tmp_str="-d $exdir"
         fi
         unzip -q $FILE_NAME $tmp_str
+    elif [ "${FILE_NAME%%.dmg}" != "$FILE_NAME" ];then
+        if [ "$tmp_str" != "" ];then
+            tmp_str="-d $exdir"
+        fi
+        hdiutil attach $FILE_NAME
     else
         return 1;
     fi
@@ -6136,6 +6141,16 @@ function compile_calibre()
         #return 1;
         exit 1;
     fi
+
+    if [ "$OS_NAME" = "darwin" ];then
+        if [ ! -d "/Volumes/calibre-${CALIBRE_VERSION}/calibre.app/Contents/MacOS" ];then
+            echo "安装calibre失败. 没有找到解压后的目录" >&2
+            exit 1;
+        fi
+        cp -r /Volumes/calibre-${CALIBRE_VERSION}/calibre.app/Contents/MacOS/* $CALIBRE_BASE/
+        hdiutil detach /Volumes/calibre-${CALIBRE_VERSION}
+    fi
+
     [ "$OS_NAME" != "linux" ] || repair_dir_elf_rpath $CALIBRE_BASE
 }
 # }}}
