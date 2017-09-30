@@ -32,7 +32,7 @@
 #upgrade        6 package(s)
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-#yum install gcc gcc-c++ autoconf m4 libarchive cmake m4 bison xz bzip2 re2c file
+#yum install gcc gcc-c++ autoconf m4 libarchive cmake m4 bison xz bzip2 re2c file dos2unix
 
 curr_dir=$(cd "$(dirname "$0")"; pwd);
 
