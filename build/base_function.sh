@@ -1010,7 +1010,7 @@ function is_installed_gearmand()
 # {{{ function is_installed_readline()
 function is_installed_readline()
 {
-    local FILENAME="$READLINE_BASE/lib/libreadline.so.${READLINE_VERSION}"
+    local FILENAME="$READLINE_BASE/lib/libreadline$([ "$OS_NAME" != "darwin" ] && echo ".so").${READLINE_VERSION}$([ "$OS_NAME" = "darwin" ] && echo ".dylib")"
     if [ ! -f "$FILENAME" ];then
         return 1;
     fi
@@ -2529,7 +2529,6 @@ function compile_gettext()
                 --enable-threads \
                 --disable-java \
                 --disable-native-java \
-                --disable-nls \
                 --without-emacs
     "
 
@@ -3807,11 +3806,15 @@ function compile_apr_util()
 # {{{ function compile_postgresql()
 function compile_postgresql()
 {
+    if [ "$OS_NAME" = "darwin" ];then
+        compile_libuuid
+    fi
     compile_zlib
     compile_readline
     compile_libxml2
     compile_libxslt
     compile_openssl
+    compile_gettext
 
     is_installed postgresql "$POSTGRESQL_BASE"
     if [ "$?" = "0" ];then
@@ -5751,13 +5754,13 @@ configure_icu_command()
 # {{{ configure_postgresql_command()
 configure_postgresql_command()
 {
-    CFLAGS="$(get_cppflags $ZLIB_BASE/include $OPENSSL_BASE/include $LIBXML2_BASE/include $LIBXSLT_BASE/include $READLINE_BASE/include)" \
-    CPPFLAGS="$(get_cppflags $ZLIB_BASE/include $OPENSSL_BASE/include $LIBXML2_BASE/include $LIBXSLT_BASE/include $READLINE_BASE/include)" \
-    LDFLAGS="$(get_ldflags $ZLIB_BASE/lib $OPENSSL_BASE/lib $LIBXML2_BASE/lib $LIBXSLT_BASE/lib $READLINE_BASE/lib)" \
+    CFLAGS="$(get_cppflags $ZLIB_BASE/include $OPENSSL_BASE/include $LIBXML2_BASE/include $LIBXSLT_BASE/include $READLINE_BASE/include $GETTEXT_BASE/include)" \
+    CPPFLAGS="$(get_cppflags $ZLIB_BASE/include $OPENSSL_BASE/include $LIBXML2_BASE/include $LIBXSLT_BASE/include $READLINE_BASE/include $GETTEXT_BASE/include)" \
+    LDFLAGS="$(get_ldflags $ZLIB_BASE/lib $OPENSSL_BASE/lib $LIBXML2_BASE/lib $LIBXSLT_BASE/lib $READLINE_BASE/lib $GETTEXT_BASE/lib)" \
     ./configure --prefix=$POSTGRESQL_BASE \
                 --with-libxml \
                 --with-libxslt \
-                --with-ossp-uuid \
+                $( [ "$OS_NAME" = "darwin" ] && echo '--with-uuid=e2fs' || echo '--with-ossp-uuid') \
                 $( has_systemd && echo "--with-systemd" ) \
                 --with-openssl \
                 --enable-nls=zh_CN
