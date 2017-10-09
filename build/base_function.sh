@@ -2727,7 +2727,8 @@ function compile_readline()
 
     READLINE_CONFIGURE="
         ./configure --prefix=$READLINE_BASE \
-                    --enable-multibyte
+                    --enable-multibyte \
+                    --with-curses
     "
 
     compile "readline" "$READLINE_FILE_NAME" "readline-${READLINE_VERSION}" "$READLINE_BASE" "READLINE_CONFIGURE"
@@ -2816,10 +2817,20 @@ function compile_poppler()
 # {{{ configure_poppler_command()
 configure_poppler_command()
 {
-    CPPFLAGS="$(get_cppflags $ZLIB_BASE/include $LIBPNG_BASE/include $LIBJPEG_BASE/include $OPENJPEG_BASE/include $CAIRO_BASE/include $FONTFORGE_BASE/include)" \
-    LDFLAGS="$(get_ldflags $ZLIB_BASE/lib $LIBPNG_BASE/lib $LIBJPEG_BASE/lib $OPENJPEG_BASE/lib $CAIRO_BASE/lib $FONTFORGE_BASE/lib)" \
-    ./configure --prefix=$POPPLER_BASE \
-                --enable-xpdf-headers
+    CPPFLAGS="$(get_cppflags $ZLIB_BASE/include $LIBPNG_BASE/include $LIBJPEG_BASE/include $OPENJPEG_BASE/include $CAIRO_BASE/include $FONTFORGE_BASE/include)"
+    LDFLAGS="$(get_ldflags $ZLIB_BASE/lib $LIBPNG_BASE/lib $LIBJPEG_BASE/lib $OPENJPEG_BASE/lib $CAIRO_BASE/lib $FONTFORGE_BASE/lib)"
+
+    if is_new_version $POPPLER_VERSION "0.60.0" ; then
+        cmake . -DCMAKE_INSTALL_PREFIX=$POPPLER_BASE \
+                -DCMAKE_BUILD_TYPE=release \
+                -DCMAKE_CXX_FLAGS="$CPPFLAGS" \
+                -DCMAKE_LD_FLAGS="$LDFLAGS"
+    else
+        CPPFLAGS="$CPPFLAGS" \
+        LDFLAGS="$LDFLAGS" \
+        ./configure --prefix=$POPPLER_BASE \
+                    --enable-xpdf-headers
+    fi
 }
 # }}}
 # {{{ function compile_cairo()
@@ -3250,9 +3261,12 @@ function compile_glib()
 {
     compile_zlib
     # 使用这个，报错 checking for Unicode support in PCRE... no , 只能使用内部自己的
-    compile_pcre
+    #compile_pcre
     compile_libiconv
     compile_libffi
+    # compile_fam
+    #ftp://oss.sgi.com/projects/fam/download/stable/
+    #ftp://oss.sgi.com/projects/fam/download/stable/fam-2.7.0.tar.gz
 
     if [ "$OS_NAME" != "darwin" ]; then
         # 需要libmount,没有时，才编译
@@ -5586,13 +5600,25 @@ configure_fontforge_command()
 
     export PATH="$PATH" 
 
+    # 有readline的时候，报错:
+    #$READLINE_BASE/lib/libreadline.so: undefined reference to `tgetnum'
+    #$READLINE_BASE/lib/libreadline.so: undefined reference to `tgetent'
+    #$READLINE_BASE/lib/libreadline.so: undefined reference to `tgetstr'
+    #$READLINE_BASE/lib/libreadline.so: undefined reference to `tgoto'
+    #$READLINE_BASE/lib/libreadline.so: undefined reference to `UP'
+    #$READLINE_BASE/lib/libreadline.so: undefined reference to `BC'
+    #$READLINE_BASE/lib/libreadline.so: undefined reference to `tputs'
+    #$READLINE_BASE/lib/libreadline.so: undefined reference to `PC'
+    #$READLINE_BASE/lib/libreadline.so: undefined reference to `tgetflag'
+
     ./bootstrap && \
-    LIBPNG_CFLAGS="$(get_cppflags $LIBPNG_BASE/include /usr/local/include )" \
-    LIBPNG_LIBS="$(get_ldflags $LIBPNG_BASE/lib /usr/local/lib )" \
+    LIBPNG_CFLAGS="$(get_cppflags $LIBPNG_BASE/include )" \
+    LIBPNG_LIBS="$(get_ldflags $LIBPNG_BASE/lib )" \
     ./configure --prefix=$FONTFORGE_BASE \
                 --disable-python-scripting \
                 --disable-python-extension \
                 --enable-extra-encodings \
+                --without-libreadline \
                 --without-x
     local flag=$?
     #export PATH="$old_path"
