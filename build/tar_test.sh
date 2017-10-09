@@ -7,6 +7,8 @@ for FILE_NAME in `find $dir -mindepth 1 -maxdepth 1 -type f `;
 do
     if [ "${FILE_NAME%%.tar.xz}" != "$FILE_NAME" ];then
         type="J"
+    elif [ "${FILE_NAME%%.txz}" != "$FILE_NAME" ];then
+        type="J"
     elif [ "${FILE_NAME%%.tar.Z}" != "$FILE_NAME" ];then
         type="j"
     elif [ "${FILE_NAME%%.tar.bz2}" != "$FILE_NAME" ];then

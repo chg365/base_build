@@ -313,7 +313,6 @@ if [ "$OS_NAME" = 'darwin' ];then
 else
     PHANTOMJS_VERSION="1.9.7" # npm install gitbook-pdf -g 时用到这个版本，不能使用最新的版本
 fi
-PHANTOMJS_VERSION="2.1.1"
 DEHYDRATED_VERSION="0.4.0"
 
 NGINX_UPLOAD_PROGRESS_MODULE_VERSION="0.9.2"
