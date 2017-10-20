@@ -4481,6 +4481,8 @@ function compile_php_extension_xdebug()
         return;
     fi
 
+    # cp contrib/xt.vim ~/.vim/bundle/
+
     PHP_EXTENSION_XDEBUG_CONFIGURE="
     ./configure --with-php-config=$PHP_BASE/bin/php-config --enable-xdebug
     "

@@ -541,7 +541,8 @@ UPLOAD_TMP_DIR=$TMP_DATA_DIR/upload
 php_ini=$PHP_CONFIG_DIR/php.ini
 mysql_cnf=$MYSQL_CONFIG_DIR/my.cnf
 
-PHP_INCLUDE_PATH=".:$BASE_DIR/conf:$BASE_DIR/lib/php:$BASE_DIR/inc";
+PHP_INCLUDE_PATH="$BASE_DIR/conf:$BASE_DIR/lib/php:$BASE_DIR/inc";
+#PHP_INCLUDE_PATH="${PHP_INCLUDE_PATH}:$PHP_BASE/lib/php";
 
 APACHE_LOG_DIR=$LOG_DIR/apache
 APACHE_RUN_DIR=$BASE_DIR/run/apache
