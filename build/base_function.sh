@@ -6668,30 +6668,7 @@ function check_harfbuzz_version()
 # {{{ function check_libzip_version()
 function check_libzip_version()
 {
-    local versions=`curl -k https://nih.at/libzip/ 2>/dev/null|sed -n 's/^.\{0,\}"libzip-\([0-9a-zA-Z._]\{2,\}\).tar.gz".\{0,\}/\1/p'|sort -rV`
-    local new_version=`echo "$versions"|head -1`;
-    if [ -z "$new_version" ];then
-        echo -e "探测libzip新版本\033[0;31m失败\033[0m" >&2
-        return 1;
-    fi
-
-    echo "$new_version" |grep -iq 'RC'
-    if [ "$?" = "0" ]; then
-        local tmp_version1=`echo "$versions"|grep -iv 'RC' |head -1`;
-        local tmp_version2=`echo "$new_version"|sed -n 's/^\([0-9._-]\{1,\}\)\([Rr][Cc]\).\{1,\}$/\1/p'`;
-        if [ "$tmp_version1" = "$tmp_version2" ];then
-            new_version=$tmp_version2;
-        fi
-    fi
-
-    is_new_version $LIBZIP_VERSION ${new_version//_/.}
-    if [ "$?" = "0" ];then
-        [ "$is_echo_latest" = "" -o "$is_echo_latest" != "0" ] && \
-        echo -e "libzip version is \033[0;32mthe latest.\033[0m"
-        return 0;
-    fi
-
-    echo -e "libzip current version: \033[0;33m${LIBZIP_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+    check_ftp_version libzip ${LIBZIP_VERSION} https://nih.at/libzip/ 's/^.\{0,\}libzip-\([0-9a-zA-Z._]\{2,\}\).tar.gz.\{0,\}$/\1/p'
 }
 # }}}
 # {{{ function check_php_version()
@@ -7784,12 +7761,29 @@ function check_ftp_version()
         pattern="s/^.\{1,\}[> ]${soft}-\([0-9.]\{1,\}\)\.tar\.gz[< ]*.\{0,\}$/\1/p"
     fi
 
-    local new_version=`curl -Lk "${url}" 2>/dev/null |sed -n "$pattern"|sort -urV|head -1`
+    local versions=`curl -Lk "${url}" 2>/dev/null|sed -n "$pattern"|sort -urV`
+    local new_version=`echo "$versions"|head -1`;
+
     if [ -z "$new_version" ];then
         echo -e "探测${soft}新版本\033[0;31m失败\033[0m" >&2
         return 1;
     fi
 
+    echo "$new_version" |grep -iq 'RC'
+    if [ "$?" = "0" ]; then
+        local tmp_version1=`echo "$versions"|grep -iv 'RC' |head -1`;
+        local tmp_version2=`echo "$new_version"|sed -n 's/^\([0-9._-]\{1,\}\)\([Rr][Cc]\).\{1,\}$/\1/p'`;
+        if [ "$tmp_version1" != "" ] ;then
+            if is_new_version $current_version $tmp_version1; then
+                new_version = $tmp_version1;
+            fi
+            if [ "$tmp_version1" = "$tmp_version2" ];then
+                new_version=$tmp_version2;
+            fi
+        fi
+    fi
+
+    #${new_version//_/.}
     is_new_version $current_version $new_version
     if [ "$?" = "0" ];then
         [ "$is_echo_latest" = "" -o "$is_echo_latest" != "0" ] && \
@@ -8558,6 +8552,7 @@ function ping_usable()
 # {{{ function init_setup() #
 function init_setup()
 {
+    mkdir $BASE_DIR/setup
     cp $curr_dir/base_define.sh $BASE_DIR/setup/
     chmod u+x $BASE_DIR/setup/base_define.sh
     #sed -i.bak.$$ '/^.\{1,\}_VERSION=/d;/^.\{1,\}_FILE_NAME/d' $BASE_DIR/setup/base_define.sh
@@ -8565,7 +8560,7 @@ function init_setup()
     sed -i.bak.$$ '/^# {{{ open source libray file name/,/^# }}}/d' $BASE_DIR/setup/base_define.sh
     rm -rf $BASE_DIR/setup/base_define.sh.bak.*
 
-    cp $curr_dir/setup/*.sh $BASE_DIR/setup/
+    cp -r $curr_dir/setup/* $BASE_DIR/setup/
     chmod u+x $BASE_DIR/setup/*.sh
 }
 # }}}

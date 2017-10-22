@@ -1,4 +1,7 @@
 #!/bin/bash
+# https://github.com/cockroachdb/cockroach
+# https://github.com/pingcap/tidb
+# https://github.com/pingcap/docs-cn
 
 project_name="chg base"
 project_abbreviation="chg_base"
@@ -171,7 +174,7 @@ GETTEXT_VERSION="0.19.8.1" # http://ftp.gnu.org/gnu/gettext/
 LIBICONV_VERSION="1.15" # http://ftp.gnu.org/gnu/libiconv/
 LIBXML2_VERSION="2.9.6"
 JSON_VERSION="0.12.1" # https://github.com/json-c/json-c/releases
-LIBFASTJSON_VERSION="0.99.6" # https://github.com/rsyslog/libfastjson/releases
+LIBFASTJSON_VERSION="0.99.7" # https://github.com/rsyslog/libfastjson/releases
 LIBMCRYPT_VERSION="2.5.8" # http://sourceforge.net/projects/mcrypt/files/Libmcrypt/
 LIBXPM_VERSION="3.5.12"
 LIBXEXT_VERSION="1.3.3"
@@ -187,7 +190,7 @@ SPHINX_VERSION="2.2.11"
 PHP_SPHINX_VERSION="php7"
 
 LIBGD_VERSION="2.2.5"
-IMAGEMAGICK_VERSION="7.0.7-7"
+IMAGEMAGICK_VERSION="7.0.7-8"
 JPEG_VERSION="9b"
 LIBPNG_VERSION="1.6.34"
 NASM_VERSION="2.13.01"
@@ -198,9 +201,9 @@ PIXMAN_VERSION="0.34.0"
 EXPAT_VERSION="2.2.4"
 FREETYPE_VERSION="2.8.1"
 GLIB_VERSION="2.52.3" # 2.52.3没编译过去,报错 libblkid.so: undefined reference to `uuid_unparse@UUID_1.0'
-UTIL_LINUX_VERSION="2.30.2"
+UTIL_LINUX_VERSION="2.31"
 LIBFFI_VERSION="3.2.1"
-HARFBUZZ_VERSION="1.5.1"
+HARFBUZZ_VERSION="1.6.0"
 FONTCONFIG_VERSION="2.12.6"
 POPPLER_VERSION="0.57.0" #0.58.0 0.59.0 编译 pdf2htmlEX时报错 0.14.6;  0.60.1需要CMake 3.1.0
 PANGO_VERSION="1.40.12"
@@ -233,16 +236,16 @@ POSTGRESQL_VERSION="10.0"
 APR_VERSION="1.6.2"
 APR_UTIL_VERSION="1.6.0"
 
-APACHE_VERSION="2.4.28"
-MYSQL_VERSION="5.7.19"
+APACHE_VERSION="2.4.29"
+MYSQL_VERSION="5.7.20"
 BOOST_VERSION="1_65_0" # 1_61_0
-NGINX_VERSION="1.12.1"
-NODEJS_VERSION="8.6.0" #8.4.0 gitbook-pdf安装时， phantomjs安装不上，参数不启作用了
-CALIBRE_VERSION="3.9.0"
+NGINX_VERSION="1.12.2"
+NODEJS_VERSION="8.7.0" #8.4.0 gitbook-pdf安装时， phantomjs安装不上，参数不启作用了
+CALIBRE_VERSION="3.10.0"
 GITBOOK_VERSION="3.2.2"
 GITBOOK_CLI_VERSION="2.3.2"
-RSYSLOG_VERSION="8.29.0"
-LOGROTATE_VERSION="3.12.3"
+RSYSLOG_VERSION="8.30.0"
+LOGROTATE_VERSION="3.13.0"
 LIBUUID_VERSION="1.0.3"
 LIBLOGGING_VERSION="1.0.6"
 LIBGCRYPT_VERSION="1.8.1"
@@ -252,7 +255,7 @@ PHP_VERSION="7.1.10"
 COMPOSER_VERSION="1.5.2"
 
 if [ `echo "${PHP_VERSION}" "7.1.99"|tr " " "\n"|sort -rV|head -1` = "7.1.99" ]; then
-    PHP_LIBSODIUM_VERSION="1.0.6"
+    PHP_LIBSODIUM_VERSION="1.0.7"
 else
     PHP_LIBSODIUM_VERSION="2.0.4"
 fi
@@ -266,16 +269,16 @@ PHP_LIBEVENT_VERSION="0.1.0" # http://pecl.php.net/package/libevent
 APCU_VERSION="5.1.8"
 APCU_BC_VERSION="1.0.3"
 YAF_VERSION="3.0.5"
-PHALCON_VERSION="3.2.2"
+PHALCON_VERSION="3.2.3"
 XDEBUG_VERSION="2.5.5"
 RAPHF_VERSION="2.0.0"
 PROPRO_VERSION="2.0.1"
 PECL_HTTP_VERSION="3.1.1RC1"
-AMQP_VERSION="1.9.1"
+AMQP_VERSION="1.9.3"
 MAILPARSE_VERSION="3.0.2"
 PHP_REDIS_VERSION="3.1.4"
 PHP_GEARMAN_VERSION="2.0.3"
-PHP_MONGODB_VERSION="1.3.0"
+PHP_MONGODB_VERSION="1.3.1"
 SOLR_VERSION="2.4.0"
 IMAGICK_VERSION="3.4.3" # http://pecl.php.net/package/imagick
 PTHREADS_VERSION="3.1.6" # http://pecl.php.net/package/pthreads
@@ -289,7 +292,7 @@ ZEND_VERSION="2.4.9" # http://framework.zend.com/downloads/latest
 SMARTY_VERSION="3.1.31"
 HTMLPURIFIER_VERSION="4.9.3"
 LARAVEL_VERSION="5.5.0"
-LARAVEL_FRAMEWORK_VERSION="5.5.14"
+LARAVEL_FRAMEWORK_VERSION="5.5.18"
 
 CKEDITOR_VERSION="4.7.3"
 JQUERY_VERSION="1.12.4.min"
