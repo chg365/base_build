@@ -72,19 +72,16 @@ function system_user_init()
     fi
 }
 # }}}
+
 # {{{ function mysql_init()
 function mysql_init()
 {
     if [ ! -d "$MYSQL_BASE" ]; then
         return 1;
     fi
-    if [ "$init_dir_only" = "1" ];then
-        mysql_dir_init
-        return $?;
-    fi
     #for i in `ps -ef|grep mysqld|grep -v grep |awk '{ print $2;}'`; do { kill -9 $i; } done
     #sudo rm -rf $MYSQL_RUN_DIR/* $MYSQL_CONFIG_DIR/.mysql_secret $MYSQL_DATA_DIR/*
-    echo "Initialize MySQL Data..."
+    echo "Initialize MySQL ..."
     mysql_user_init
     if [ "$?" != "0" ]; then
         return 1;
@@ -93,10 +90,17 @@ function mysql_init()
     if [ "$?" != "0" ]; then
         return 1;
     fi
+    if [ "$init_dir_only" = "1" ];then
+        echo "Initialize MySQL finished."
+        return 0;
+    fi
+
+    echo "Initialize MySQL Data..."
     mysql_data_init
     if [ "$?" != "0" ]; then
         return 1;
     fi
+    echo "Initialize MySQL Data finished."
 
     if has_systemd ;then
         mysql_systemd_init
@@ -104,7 +108,7 @@ function mysql_init()
             return 1;
         fi
     fi
-    echo "Initialize MySQL Data finished."
+    echo "Initialize MySQL finished."
 }
 # }}}
 # {{{ function mysql_user_init()
@@ -116,6 +120,15 @@ function mysql_user_init()
     fi
     sed -i.bak.$$ "s/^ \{0,\}\(user \{0,\}= \{0,\}\)[^ ]\{0,\} \{0,\}$/\1${MYSQL_USER}/" $mysql_cnf;
     rm -rf ${mysql_cnf}.bak.*
+}
+# }}}
+# {{{ function mysql_dir_init()
+function mysql_dir_init()
+{
+    mkdir -p $MYSQL_RUN_DIR $MYSQL_DATA_DIR ${LOG_DIR}/mysql
+    #chown -R root:root $MYSQL_BASE
+    chown -R $MYSQL_USER:$MYSQL_GROUP $MYSQL_DATA_DIR ${LOG_DIR}/mysql $MYSQL_RUN_DIR
+    #chown -R $MYSQL_USER:$MYSQL_GROUP $MYSQL_RUN_DIR
 }
 # }}}
 # {{{ function mysql_data_init()
@@ -133,12 +146,24 @@ function mysql_data_init()
         echo "ERROR: Can't find my.cnf file. file: $mysql_cnf" >&2;
         return 1;
     fi
-    local random_password=`get_mysql_temp_password`
+    local random_password=""
+    local log_file=`get_mysql_log_file_name`
+    if [ -z "$log_file" ];then
+        return 1;
+    fi
+    if [ -f "$log_file" ];then
+        random_password=`get_mysql_temp_password`
+    fi
     if [ -z "$random_password" ];then
         # cat /root/.mysql_secret
         $MYSQL_BASE/bin/mysqld --defaults-file=$mysql_cnf --initialize
+        if [ "$?" != "0" ];then
+            echo "mysql初始化失败" >&2
+            return 1;
+        fi
         random_password=`get_mysql_temp_password`
         if [ "$?" != "0" ];then
+            echo "获得随机密码失败" >&2
             return 1;
         fi
     fi
@@ -163,25 +188,61 @@ function mysql_data_init()
         echo $NEW_PASSWORD > $MYSQL_CONFIG_DIR/.mysql_secret
     fi
 
-    $MYSQL_BASE/bin/mysqld --defaults-file=$mysql_cnf --daemonize > /dev/null &
+    # mysql是否已经启动
+    local pid_file=`get_mysql_pid_file_name`;
+    if [ -z "$pid_file" ];then
+        return 1;
+    fi
+    local is_run="1" # 0是已经启动
+    if [ -f "$pid_file" ];then
+        local pid=`cat $pid_file|head -1`;
+        if [ -n "$pid" ];then
+            # S 状态码 D 不可中断 R 运行 S 中断 T 停止 Z 僵死
+            # D    uninterruptible sleep (usually IO)  不间断睡眠（通常为IO）
+            # R    running or runnable (on run queue)  运行或可运行（运行队列）
+            # S    interruptible sleep (waiting for an event to complete) 可中断睡眠（等待事件完成）
+            # T    stopped by job control signal  由作业控制信号停止
+            # t    stopped by debugger during the tracing 在跟踪期间由调试器停止
+            # W    paging (not valid since the 2.6.xx kernel)
+            # X    dead (should never be seen) 死了（不应该看到）
+            # Z    defunct ("zombie") process, terminated but not reaped by its parent 停止（“僵尸”）进程，终止，但没有被父母收获
+            ps -lf -p $pid 1>/dev/null
+            is_run=$?
+        fi
+    fi
+
+    if [ "$is_run" != "0" ];then
+        $MYSQL_BASE/bin/mysqld --defaults-file=$mysql_cnf --daemonize > /dev/null &
+    fi
 
     if [ "$?" != "0" ];then
         echo "Start MySQL service failed." >&2;
         return 1;
     fi
 
+    # 这里如果只要服务启动了，密码错误也不会报错
     ping_mysql "$random_password"
-
     if [ "$?" != "0" ];then
         echo "Start MySQL service failed." >&2;
         return 1;
     fi
 
-    $MYSQL_BASE/bin/mysqladmin --defaults-file=$mysql_cnf -u root password "$NEW_PASSWORD" -p"$random_password" 2>/dev/null
-
+    $MYSQL_BASE/bin/mysql -u root -p${random_password} -e quit >/dev/null 2>&1
     if [ "$?" != "0" ];then
-        echo "Failed to modify the root MySQL account password." >&2;
-        return 1;
+        $MYSQL_BASE/bin/mysql -u root -p${NEW_PASSWORD} -e quit >/dev/null 2>&1
+        if [ "$?" != "0" ];then
+            echo "mysql 测试随机密码和新密码都失败" >&2
+            return 1;
+        fi
+        random_password=${NEW_PASSWORD}
+    fi
+
+    if [ "$random_password" != "$NEW_PASSWORD" ];then
+        $MYSQL_BASE/bin/mysqladmin --defaults-file=$mysql_cnf -u root password "$NEW_PASSWORD" -p"$random_password" 2>/dev/null
+        if [ "$?" != "0" ];then
+            echo "Failed to modify the root MySQL account password." >&2;
+            return 1;
+        fi
     fi
 
     sql_init $NEW_PASSWORD
@@ -199,6 +260,111 @@ function mysql_data_init()
     return 0;
 }
 # }}}
+# {{{ function mysql_systemd_init()
+function mysql_systemd_init()
+{
+    if [ ! -f "$MYSQL_BASE/usr/lib/systemd/system/mysqld.service" ]; then
+        echo "mysqld.service file not exists." >&2
+        return 1;
+    fi
+    local service_file="/usr/lib/systemd/system/${project_abbreviation}.mysqld.service"
+    cp $MYSQL_BASE/usr/lib/systemd/system/mysqld.service $service_file
+
+    local pid_file=`get_mysql_pid_file_name`
+    if [ -z "$pid_file" ];then
+        return 1;
+    fi
+
+    sed -i.bak.$$ "s/^User=.\{1,\}$/User=$MYSQL_USER/" $service_file
+    sed -i.bak.$$ "s/^Group=.\{1,\}$/Group=$MYSQL_GROUP/" $service_file
+    sed -i.bak.$$ "s/^PIDFile=.\{1,\}$/PIDFile=$( sed_quote2 $pid_file)/" $service_file
+    sed -i.bak.$$ 's/^\(ExecStartPre=\)/# \1/' $service_file
+    sed -i.bak.$$ "s/^ExecStart=.\{1,\}$/ExecStart=$( sed_quote2 $MYSQL_BASE/bin/mysqld ) --defaults-file=$(sed_quote2 ${mysql_cnf}) --daemonize/" $service_file
+    sed -i.bak.$$ 's/^\(After=syslog.target\)/# \1/' $service_file
+    sed -i.bak.$$ 's/^EnvironmentFile=/# EnvironmentFile=/' $service_file
+
+    rm -rf ${service_file}.bak.*
+
+    # 
+    systemctl enable `basename $service_file`
+    systemctl daemon-reload
+}
+# }}}
+# {{{ function ping_mysql()
+function ping_mysql()
+{
+    local mysql_password=$1
+    local ping_res="1";
+    local mysql_sleep=0;
+    local cmd_mysql_ping="$MYSQL_BASE/bin/mysqladmin --defaults-file=$mysql_cnf -u root -p\"$mysql_password\" ping > /dev/null 2>&1"
+
+    #Ping mysql
+    while test 0 != "$ping_res";
+    do
+        sleep 1
+
+        mysql_sleep=$((mysql_sleep + 1))
+
+        if test $mysql_sleep -gt 30;then
+            return 1;
+        fi
+
+        if [ ! -S "$MYSQL_RUN_DIR/mysql.sock" ];then
+            continue
+        fi
+
+        eval $cmd_mysql_ping
+
+        ping_res=$?
+    done
+}
+# }}}
+# {{{ function get_mysql_pid_file_name()
+function get_mysql_pid_file_name()
+{
+    local pid_file=`sed -n 's/^ \{0,\}pid-file \{0,\}= \{0,\}\(.\{1,\}\) \{0,\}$/\1/p' $mysql_cnf`
+
+    if [ -z "$pid_file" ];then
+        echo "my.cnf文件中没有设置pid-file参数" >&2
+        return 1;
+    fi
+
+    echo "$pid_file"
+    return;
+}
+# }}}
+# {{{ function get_mysql_log_file_name()
+function get_mysql_log_file_name()
+{
+    local log_file=`sed -n 's/^ \{0,\}log_error \{0,\}= \{0,\}\(.\{1,\}\) \{0,\}$/\1/p' $mysql_cnf`
+
+    if [ -z "$log_file" ];then
+        echo "my.cnf文件中没有设置log_error参数" >&2
+        return 1;
+    fi
+
+    echo "$log_file"
+    return;
+}
+# }}}
+# {{{ function get_mysql_temp_password()
+function get_mysql_temp_password()
+{
+    local log_file=`get_mysql_log_file_name`
+    if [ ! -f "$log_file" ];then
+        echo "文件不存在 file: $log_file" >&2
+        return 1;
+    fi
+
+    local password=`grep 'A temporary password is generated' $log_file|awk -F": " '{print $NF;}'`
+    if [ -z "$password" ];then
+        echo "获得mysql初始化密码失败" >&2
+        return 1;
+    fi
+    echo $password;
+}
+# }}}
+
 # {{{ function postgresql_init()
 function postgresql_init()
 {
@@ -263,95 +429,7 @@ function postgresql_dir_init()
     chown -R $POSTGRESQL_USER:$POSTGRESQL_GROUP $POSTGRESQL_DATA_DIR ${LOG_DIR}/pgsql
 }
 # }}}
-# {{{ function get_mysql_temp_password()
-function get_mysql_temp_password()
-{
-    local log_file=`sed -n 's/^ \{0,\}log_error \{0,\}= \{0,\}\(.\{1,\}\) \{0,\}$/\1/p' $mysql_cnf`
 
-    if [ -z "$log_file" ];then
-        echo "my.cnf文件中没有设置log_error参数" >&2
-        return 1;
-    fi
-
-    if [ ! -f "$log_file" ];then
-        return 1;
-    fi
-
-    local password=`grep 'A temporary password is generated' $log_file|awk -F": " '{print $NF;}'`
-    if [ -z "$password" ];then
-        echo "获得mysql初始化密码失败" >&2
-        return 1;
-    fi
-    echo $password;
-}
-# }}}
-# {{{ function mysql_dir_init()
-function mysql_dir_init()
-{
-    mkdir -p $MYSQL_RUN_DIR $MYSQL_DATA_DIR ${LOG_DIR}/mysql
-    #chown -R root:root $MYSQL_BASE
-    chown -R $MYSQL_USER:$MYSQL_GROUP $MYSQL_DATA_DIR ${LOG_DIR}/mysql $MYSQL_RUN_DIR
-    #chown -R $MYSQL_USER:$MYSQL_GROUP $MYSQL_RUN_DIR
-}
-# }}}
-# {{{ function mysql_systemd_init()
-function mysql_systemd_init()
-{
-    if [ ! -f "$MYSQL_BASE/usr/lib/systemd/system/mysqld.service" ]; then
-        echo "mysqld.service file not exists." >&2
-        return 1;
-    fi
-    local service_file="/usr/lib/systemd/system/${project_abbreviation}.mysqld.service"
-    cp $MYSQL_BASE/usr/lib/systemd/system/mysqld.service $service_file
-
-    local pid_file=`sed -n 's/^ \{0,\}pid-file \{1,\}= \{0,\}\(.\{1,\}\) \{0,\}$/\1/p' $mysql_cnf`
-
-    sed -i.bak.$$ "s/^User=.\{1,\}$/User=$MYSQL_USER/" $service_file
-    sed -i.bak.$$ "s/^Group=.\{1,\}$/Group=$MYSQL_GROUP/" $service_file
-    sed -i.bak.$$ "s/^PIDFile=.\{1,\}$/PIDFile=$( sed_quote2 $pid_file)/" $service_file
-    sed -i.bak.$$ 's/^\(ExecStartPre=\)/# \1/' $service_file
-    sed -i.bak.$$ "s/^ExecStart=.\{1,\}$/ExecStart=$( sed_quote2 $MYSQL_BASE/bin/mysqld ) --defaults-file=$(sed_quote2 ${mysql_cnf}) --daemonize/" $service_file
-    sed -i.bak.$$ 's/^\(After=syslog.target\)/# \1/' $service_file
-    sed -i.bak.$$ 's/^EnvironmentFile=/# EnvironmentFile=/' $service_file
-
-    rm -rf ${service_file}.bak.*
-
-    # 
-    systemctl enable `basename $service_file`
-    systemctl daemon-reload
-}
-# }}}
-# {{{ function ping_mysql()
-function ping_mysql()
-{
-    local mysql_password=$1
-    local ping_res="1";
-    local mysql_sleep=0;
-    local cmd_mysql_ping="$MYSQL_BASE/bin/mysqladmin --defaults-file=$mysql_cnf -u root -p\"$mysql_password\" ping > /dev/null 2>&1"
-
-    #Ping mysql
-    while test 0 != "$ping_res";
-    do
-        sleep 1
-
-        mysql_sleep=$((mysql_sleep + 1))
-
-        if test $mysql_sleep -gt 30;then
-            return 1;
-        fi
-
-        if [ ! -S "$MYSQL_RUN_DIR/mysql.sock" ];then
-            continue
-        fi
-
-        eval $cmd_mysql_ping
-
-        ping_res=$?
-    done
-
-    sleep 1
-}
-# }}}
 # {{{ function openssl_init()
 function openssl_init()
 {
@@ -363,25 +441,27 @@ function openssl_init()
         cp $ca_file $SSL_CONFIG_DIR/certs/ca-bundle.crt
     else
         curl https://curl.haxx.se/ca/cacert.pem -o $SSL_CONFIG_DIR/certs/ca-bundle.crt 1>/dev/null 2>&1
-        if [ "$?" != "0" ];then
-            return 1;
-        fi
+    fi
+    if [ "$?" != "0" ];then
+        echo "init openssl ca-bundle.crt file faild." >&2
+        return 1;
     fi
 }
 # }}}
+
 # {{{ function php_fpm_init()
 function php_fpm_init()
 {
     if [ ! -d "$PHP_BASE" ]; then
         return 1;
     fi
-    if [ "$init_dir_only" = "1" ];then
-        php_fpm_dir_init
-        return $?;
-    fi
     echo "Initialize php-fpm..."
     php_fpm_user_init
     php_fpm_dir_init
+    if [ "$init_dir_only" = "1" ];then
+        echo "Initialize php-fpm dir finished."
+        return $?;
+    fi
     #php_fpm_data_init
 
     if has_systemd ;then
@@ -423,6 +503,11 @@ function php_fpm_systemd_init()
     fi
 
     local service_file="/usr/lib/systemd/system/${project_abbreviation}.php-fpm.service"
+    #if [ -f "$service_file" ];then
+    #    echo "${service_file##*/} file is exists." >&2
+    #    return;
+    #fi
+
     cp $curr_dir/service/php-fpm.service $service_file
 
     local pid_file=`sed -n 's/^ \{0,\}pid \{0,\}= \{0,\}\(.\{1,\}\)$/\1/p' $PHP_FPM_CONFIG_DIR/php-fpm.conf`
@@ -437,20 +522,21 @@ function php_fpm_systemd_init()
     systemctl daemon-reload
 }
 # }}}
+
 # {{{ function nginx_init()
 function nginx_init()
 {
     if [ ! -d "$NGINX_BASE" ]; then
         return 1;
     fi
-    if [ "$init_dir_only" = "1" ];then
-        nginx_dir_init
-        return $?;
-    fi
     echo "Initialize nginx ..."
     nginx_user_init
     nginx_dir_init
-    #nginx_data_init
+    local res=$?
+    if [ "$init_dir_only" = "1" ];then
+        echo "Initialize nginx dir finished."
+        return $res;
+    fi
 
     if has_systemd ;then
         nginx_systemd_init
@@ -503,17 +589,26 @@ function nginx_systemd_init()
     systemctl enable `basename $service_file`
     systemctl daemon-reload
 
+    firewall-cmd --state 1>/dev/null 2>&1
+    local firewall_status=$?
+    
+
     for i in `sed -n 's/^ \{0,\}listen \{1,\}\([0-9]\{1,\}\).\{0,\};$/\1/p' $NGINX_CONFIG_DIR/conf/nginx.conf`;
     do
-        firewall-cmd --zone=public --add-port=${i}/tcp --permanent
+        if [ "$firewall_status" = "0" ];then
+            firewall-cmd --zone=public --add-port=${i}/tcp --permanent
+        fi
     done
 
-    #firewall-cmd --permanent --add-service=http
-    #firewall-cmd --permanent --add-service=https
+    if [ "$firewall_status" = "0" ];then
+        #firewall-cmd --permanent --add-service=http
+        #firewall-cmd --permanent --add-service=https
 
-    firewall-cmd --reload
+        firewall-cmd --reload
+    fi
 }
 # }}}
+
 # {{{ function dehydrated_init()
 function dehydrated_init()
 {
@@ -534,7 +629,7 @@ function dehydrated_init()
     grep -q '.\{1,\}\..\{1,\}' $DEHYDRATED_CONFIG_DIR/domains.txt
     if [ "$?" != "0" ];then
         echo "not find domain name" >&2
-        return;
+        return 1;
     fi
     create_certificates
     if [ "$?" != "0" ];then
@@ -607,12 +702,18 @@ function domain_init()
         fi
     fi
 
-    while read -t30 -p 'Please input domains: [Ctrl + D] or [quit] is finished\x0a    Example: example.com www.example.com' line;
+    local line=""
+    echo "Please input domains: [Ctrl + D] or [quit] is finished"
+    echo "    Example: example.com www.example.com"
+    while read -t30 -p '' line;
     do
+        line=`echo "$line"|sed -n 's/^ \{0,\}\(.\{1,\}\) \{0,\}$/\1/p'`
         if [ "$line" == "quit" -o "$line" = "exit" ]; then
             break;
         fi
-        echo $line >> $DEHYDRATED_CONFIG_DIR/domains.txt
+        if [ "$line" != "" ]; then
+            echo $line >> $DEHYDRATED_CONFIG_DIR/domains.txt
+        fi
     done
 }
 # }}}
@@ -652,6 +753,7 @@ function renew_cret_crontab_init()
     fi
 }
 # }}}
+
 # {{{ function mod_php_config_mysql_password() php配置文件中mysql密码修改在这里
 function mod_php_config_mysql_password()
 {

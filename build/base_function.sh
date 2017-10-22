@@ -5336,7 +5336,9 @@ function install_dehydrated()
 
     cp -f dehydrated-${DEHYDRATED_VERSION}/dehydrated $DEHYDRATED_BASE/sbin/ && \
     cp -f dehydrated-${DEHYDRATED_VERSION}/docs/examples/config $DEHYDRATED_CONFIG_DIR/ && \
-    cp -f dehydrated-${DEHYDRATED_VERSION}/docs/examples/domains.txt $DEHYDRATED_CONFIG_DIR/ && \
+    touch $DEHYDRATED_CONFIG_DIR/domains.txt
+    #cp -f dehydrated-${DEHYDRATED_VERSION}/docs/examples/domains.txt $DEHYDRATED_CONFIG_DIR/
+
     if [ "$?" != "0" ];then
         echo "copy file faild. command: cp ...." >&2
         # return 1;
