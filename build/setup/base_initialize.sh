@@ -724,7 +724,7 @@ function renew_cret_crontab_init()
         if ! systemctl -a|grep -q crond.service ;then
             systemctl enable crond
         fi
-        if ! systemctl status crond.service; then
+        if ! systemctl status crond.service >/dev/null 2>&1; then
             systemctl start crond
         fi
     fi
@@ -736,11 +736,11 @@ function renew_cret_crontab_init()
 
     local day=`date +%e`;
     day=${day## }
-    if [ "$day" -gt 28];then
+    if [ "$day" -gt 28 ];then
         day=28
     fi
 
-    local CRONTAB_CMD="#每周日凌晨4:15 更新ssl证书\
+    local CRONTAB_CMD="#每周日凌晨4:15 更新ssl证书
 15 4 $day * * $PROGRAM > $BASE_DIR/log/dehydrated.log 2>&1 &"
 
     echo "$CRONTAB_CMD" | crontab -
