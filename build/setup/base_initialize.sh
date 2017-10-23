@@ -672,7 +672,7 @@ function create_certificates()
             do
                 if [ "$i" = "$j" ];then
                     domain=$i;
-                    break 2;
+                    break 3;
                 fi
             done
         done
@@ -685,6 +685,8 @@ function create_certificates()
 
     # 更改nginx使用的证书
     sed -i.bak.$$ "s/example.com/$domain/" $NGINX_CONFIG_DIR/conf/nginx.conf
+    # 更新nginx服务器的服务器名
+    sed -i.bak.$$ "s/SERVER_NAME/$(grep "\<${domain}\>" $DEHYDRATED_CONFIG_DIR/domains.txt)/" $NGINX_CONFIG_DIR/conf/nginx.conf
     rm -rf $NGINX_CONFIG_DIR/conf/nginx.conf.bak.*
 }
 # }}}
