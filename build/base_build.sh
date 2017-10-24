@@ -270,6 +270,7 @@ init_setup
 # Install javascript lib
 ################################################################################
 compile_jquery
+compile_chartjs
 compile_ckeditor
 compile_famous
 compile_famous_angular

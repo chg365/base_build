@@ -521,6 +521,7 @@ function wget_base_library()
     wget_lib $CKEDITOR_FILE_NAME      "http://download.cksource.com/CKEditor/CKEditor/CKEditor%20$CKEDITOR_VERSION/$CKEDITOR_FILE_NAME"
     wget_lib $JQUERY_FILE_NAME        "http://code.jquery.com/$JQUERY_FILE_NAME"
     wget_lib $JQUERY3_FILE_NAME       "http://code.jquery.com/$JQUERY3_FILE_NAME"
+    wget_lib $CHARTJS_FILE_NAME       "https://github.com/chartjs/Chart.js/archive/v${CHARTJS_FILE_NAME#*-}"
     wget_lib $RABBITMQ_C_FILE_NAME    "https://github.com/alanxz/rabbitmq-c/archive/v${RABBITMQ_C_FILE_NAME##*-}"
 
     wget_lib $ZEROMQ_FILE_NAME        "https://github.com/zeromq/libzmq/releases/download/v${ZEROMQ_VERSION}/$ZEROMQ_FILE_NAME"
@@ -5543,6 +5544,24 @@ function compile_famous()
 
     cp famous-${FAMOUS_VERSION}/dist/*.min.js $FAMOUS_BASE/
     cp famous-${FAMOUS_VERSION}/dist/*.css $CSS_BASE/
+    rm -rf famous-${FAMOUS_VERSION}
+}
+# }}}
+# {{{ function compile_chartjs()
+function compile_chartjs()
+{
+
+    echo_build_start chartjs
+    mkdir -p $CHARTJS_BASE
+
+    decompress ${CHARTJS_FILE_NAME}
+    if [ "$?" != "0" ];then
+        # return 1;
+        exit 1;
+    fi
+
+    cp Chart.js-${CHARTJS_VERSION}/dist/Chart.*min.js $CHARTJS_BASE/
+    rm -rf Chart.js-${CHARTJS_VERSION}
 }
 # }}}
 # {{{ function compile_famous_angular()
@@ -6469,6 +6488,7 @@ function check_soft_updates()
             smarty
             jquery
             jquery3
+            chartjs
             htmlpurifier
             rabbitmq
             libmaxminddb
@@ -6795,6 +6815,12 @@ function check_jquery_version()
 function check_jquery3_version()
 {
     check_ftp_version jquery3 ${JQUERY3_VERSION%%.min} https://code.jquery.com/jquery/ 's/^.\{1,\}jquery-\([0-9.]\{1,\}\)\.js.\{1,\}$/\1/p'
+}
+# }}}
+# {{{ function check_chartjs_version()
+function check_chartjs_version()
+{
+    check_github_soft_version Chart.js ${CHARTJS_VERSION} https://github.com/chartjs/Chart.js/releases
 }
 # }}}
 # {{{ function check_calibre_version()
