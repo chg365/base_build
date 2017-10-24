@@ -13,16 +13,13 @@ if [ ! -f $base_define_file ]; then
     exit 1;
 fi
 
-. $base_define_file
-
 #if [ "$USER" != "root" ]; then
 if [ `whoami` != "root" ]; then
-    sudo su
-    if [ "$?" != 0 ]; then
-        echo "No sudo permissions." >&2;
-        return;
-    fi
+    echo "请使用root用户执行此脚本." >&2
+    exit 1;
 fi
+
+. $base_define_file
 
 chown -R root:root $BASE_DIR
 
@@ -153,6 +150,10 @@ function mysql_data_init()
     fi
     if [ -f "$log_file" ];then
         random_password=`get_mysql_temp_password`
+        if [ "$?" != "0" ];then
+            echo "获得随机密码失败" >&2
+            return 1;
+        fi
     fi
     if [ -z "$random_password" ];then
         # cat /root/.mysql_secret
@@ -170,7 +171,7 @@ function mysql_data_init()
 
     # echo $random_password;
 
-    if [ "$random_password" = "" ];then
+    if [ -z "$random_password" ];then
         echo "初始化mysql密码失败" >&2
         return 1;
     fi
@@ -227,7 +228,7 @@ function mysql_data_init()
         return 1;
     fi
 
-    $MYSQL_BASE/bin/mysql -u root -p${random_password} -e quit >/dev/null 2>&1
+    $MYSQL_BASE/bin/mysql -u root -p${random_password} --connect-expired-password -e quit >/dev/null 2>&1
     if [ "$?" != "0" ];then
         $MYSQL_BASE/bin/mysql -u root -p${NEW_PASSWORD} -e quit >/dev/null 2>&1
         if [ "$?" != "0" ];then
@@ -285,7 +286,7 @@ function mysql_systemd_init()
 
     rm -rf ${service_file}.bak.*
 
-    # 
+    #
     systemctl enable `basename $service_file`
     systemctl daemon-reload
 }
@@ -439,6 +440,41 @@ function postgresql_dir_init()
 {
     mkdir -p $POSTGRESQL_RUN_DIR $POSTGRESQL_DATA_DIR ${LOG_DIR}/pgsql
     chown -R $POSTGRESQL_USER:$POSTGRESQL_GROUP $POSTGRESQL_DATA_DIR ${LOG_DIR}/pgsql
+}
+# }}}
+# {{{ function postgresql_systemd_init()
+function postgresql_systemd_init()
+{
+    local src_file="$curr_dir/service/postgresql.service"
+    if [ ! -f "$src_file" ]; then
+        echo "postgresql.service file not exists." >&2
+        return 1;
+    fi
+
+    local service_file="/usr/lib/systemd/system/${project_abbreviation}.postgresql.service"
+    cp $src_file $service_file
+
+    sed -i.bak.$$ "s/POSTGRESQL_BASE/$(sed_quote2 $POSTGRESQL_BASE)/g" $service_file
+    sed -i.bak.$$ "s/POSTGRESQL_DATA_DIR/$(sed_quote2 $POSTGRESQL_DATA_DIR)/g" $service_file
+
+    rm -rf ${service_file}.bak.*
+
+    systemctl enable `basename $service_file`
+    systemctl daemon-reload
+
+    firewall-cmd --state 1>/dev/null 2>&1
+    local firewall_status=$?
+
+
+    # 只是本机用，默认就不开防火墙了
+    POSTGRESQL_PORT="5432"
+    if [ "$firewall_status" = "0" ];then
+        :
+        #firewall-cmd --permanent --zone=public --add-port=${POSTGRESQL_PORT}/tcp
+        #firewall-cmd --permanent --zone=public --add-service=postgresql
+
+        #firewall-cmd --reload
+    fi
 }
 # }}}
 
@@ -603,12 +639,11 @@ function nginx_systemd_init()
 
     firewall-cmd --state 1>/dev/null 2>&1
     local firewall_status=$?
-    
 
     for i in `sed -n 's/^ \{0,\}listen \{1,\}\([0-9]\{1,\}\).\{0,\};$/\1/p' $NGINX_CONFIG_DIR/conf/nginx.conf`;
     do
         if [ "$firewall_status" = "0" ];then
-            firewall-cmd --zone=public --add-port=${i}/tcp --permanent
+            firewall-cmd --permanent --zone=public --add-port=${i}/tcp
         fi
     done
 
@@ -664,7 +699,7 @@ function create_certificates()
     echo "Start create certificates ...."
 
     $BASE_DIR/sbin/renew_cert.sh
-    if [ ! -d "$DEHYDRATED_CONFIG_DIR/certs" ];then
+    if [ "$?" != "0" -o ! -d "$DEHYDRATED_CONFIG_DIR/certs" ];then
         echo "Create certificates faild." >&2
         $NGINX_BASE/sbin/nginx -s stop
         return 1;
@@ -694,6 +729,24 @@ function create_certificates()
         echo "get domain name faild." >&2
         return 1;
     fi
+
+    #成功后，强制使用https,把http跳转https的配置的注释去掉
+    local line1=`sed -n '/http_301\.conf/=' $NGINX_CONFIG_DIR/conf/nginx.conf|head -1`
+    local line2="0"
+    local d=10000
+    local a=""
+    for i in `sed -n '/default_locations\.conf/=' $NGINX_CONFIG_DIR/conf/nginx.conf`;
+    do
+        a=$((${i}-${line1}))
+        a=${a/-/};
+        if [ "$a" -lt "$d" ];then
+            d=$a;
+            line2=$i;
+        fi
+    done
+
+    sed -i.bak.$$ "${line1}s/^\([\t ]\{0,\}\)#\{1,\}/\1/" $NGINX_CONFIG_DIR/conf/nginx.conf
+    sed -i.bak.$$ "${line2}s/^\([\t ]\{0,\}\)include/\1#include/" $NGINX_CONFIG_DIR/conf/nginx.conf
 
     # 更改nginx使用的证书
     sed -i.bak.$$ "s/example.com/$domain/" $NGINX_CONFIG_DIR/conf/nginx.conf

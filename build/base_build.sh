@@ -275,11 +275,13 @@ compile_ckeditor
 compile_famous
 compile_famous_angular
 
-exit;
 cp $php_ini $PHP_CONFIG_DIR/php-cli.ini
 
 sed -i.bak.$$ '/extension=pthreads.so/d' $php_ini
 rm -rf ${php_ini}.bak*
+
+# 测试index.php
+cp $curr_dir/../src/web/index.php $WEB_BASE/
 exit;
 ################################################################################
 # Install SWFUpload
