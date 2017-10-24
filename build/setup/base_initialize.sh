@@ -371,13 +371,7 @@ function postgresql_init()
     if [ ! -d "$POSTGRESQL_BASE" ]; then
         return 1;
     fi
-    if [ "$init_dir_only" = "1" ];then
-        #pssql_dir_init
-        return $?;
-    fi
-    #for i in `ps -ef|grep mysqld|grep -v grep |awk '{ print $2;}'`; do { kill -9 $i; } done
-    #sudo rm -rf $MYSQL_RUN_DIR/* $MYSQL_CONFIG_DIR/.mysql_secret $MYSQL_DATA_DIR/*
-    echo "Initialize PostgreSQL Data..."
+    echo "Initialize PostgreSQL ..."
     postgresql_user_init
     if [ "$?" != "0" ]; then
         return 1;
@@ -385,6 +379,10 @@ function postgresql_init()
     postgresql_dir_init
     if [ "$?" != "0" ]; then
         return 1;
+    fi
+    if [ "$init_dir_only" = "1" ];then
+        echo "Initialize PostgreSQL finished."
+        return $?;
     fi
     postgresql_data_init
     if [ "$?" != "0" ]; then
@@ -397,7 +395,7 @@ function postgresql_init()
             return 1;
         fi
     fi
-    echo "Initialize PostgreSQL Data finished."
+    echo "Initialize PostgreSQL finished."
 }
 # }}}
 # {{{ function postgresql_user_init()
@@ -416,10 +414,24 @@ function postgresql_user_init()
 # $MYSQL_CONFIG_DIR
 function postgresql_data_init()
 {
-    $POSTGRESQL_BASE/bin/initdb -D $POSTGRESQL_DATA_DIR
-    #$POSTGRESQL_BASE/bin/postgres -D $POSTGRESQL_DATA_DIR > $LOG_DIR/pgsql/pgsql.log 2>&1 &
-    #$POSTGRESQL_BASE/bin/createdb test
-    #$POSTGRESQL_BASE/bin/psql test
+    sudo -u $POSTGRESQL_USER $POSTGRESQL_BASE/bin/pg_ctl -D $POSTGRESQL_DATA_DIR initdb
+    # 启动服务
+    # sudo -u $POSTGRESQL_USER $POSTGRESQL_BASE/bin/pg_ctl -D $POSTGRESQL_DATA_DIR -l $LOG_DIR/pgsql/pgsql.log start
+    # 创建数据库
+    #sudo -u $POSTGRESQL_USER $POSTGRESQL_BASE/bin/createdb test
+    #sudo -u $POSTGRESQL_USER $POSTGRESQL_BASE/bin/psql test
+#        initdb: 无法为本地化语言环境"zh_CN.utf-8"找到合适的文本搜索配置
+#        缺省的文本搜索配置将会被设置到"simple"
+#
+#        禁止为数据页生成校验和.
+#
+#        警告:为本地连接启动了 "trust" 认证.
+#        你可以通过编辑 pg_hba.conf 更改或你下次
+#        行 initdb 时使用 -A或者--auth-local和--auth-host选项.
+#
+#        Success. You can now start the database server using:
+#
+
 }
 # }}}
 # {{{ function postgresql_dir_init()
@@ -847,3 +859,9 @@ nginx_init
 #                         dehydrated init                             #
 ##################################################################
 dehydrated_init
+
+##################################################################
+#                         postgresql init                             #
+##################################################################
+
+postgresql_init

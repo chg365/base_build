@@ -484,8 +484,8 @@ function wget_base_library()
     wget_lib $PHP_GEARMAN_FILE_NAME   "https://github.com/wcgallego/pecl-gearman/archive/gearman-${PHP_GEARMAN_VERSION}.tar.gz"
     wget_lib $LIBQRENCODE_FILE_NAME   "http://fukuchi.org/works/qrencode/$LIBQRENCODE_FILE_NAME"
     wget_lib $POSTGRESQL_FILE_NAME    "https://ftp.postgresql.org/pub/source/v$POSTGRESQL_VERSION/$POSTGRESQL_FILE_NAME"
-    wget_lib $APR_FILE_NAME           "http://mirrors.cnnic.cn/apache//apr/$APR_FILE_NAME"
-    wget_lib $APR_UTIL_FILE_NAME      "http://mirror.bit.edu.cn/apache//apr/$APR_UTIL_FILE_NAME"
+    wget_lib $APR_FILE_NAME           "http://mirror.bit.edu.cn/apache/apr/$APR_FILE_NAME"
+    wget_lib $APR_UTIL_FILE_NAME      "http://mirror.bit.edu.cn/apache/apr/$APR_UTIL_FILE_NAME"
     # http://mirror.bjtu.edu.cn/apache/httpd/$APACHE_FILE_NAME
     wget_lib $APACHE_FILE_NAME        "http://archive.apache.org/dist/httpd/$APACHE_FILE_NAME"
     wget_lib $APCU_FILE_NAME          "http://pecl.php.net/get/$APCU_FILE_NAME"
@@ -5809,6 +5809,7 @@ configure_postgresql_command()
     ./configure --prefix=$POSTGRESQL_BASE \
                 --with-libxml \
                 --with-libxslt \
+                --sysconfdir=$POSTGRESQL_CONFIG_DIR \
                 $( [ "$OS_NAME" = "darwin" ] && echo '--with-uuid=e2fs' || echo '--with-ossp-uuid') \
                 $( has_systemd && echo "--with-systemd" ) \
                 --with-openssl \
