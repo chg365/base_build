@@ -6540,7 +6540,7 @@ function check_openssl_version()
         local tmp=${OPENSSL_VERSION%.*}
     fi
 
-    local versions=`curl -k https://www.openssl.org/source/ 2>/dev/null|sed -n "s/^.\{1,\}>openssl-\($tmp[0-9a-zA-Z.]\{2,\}\).tar.gz.\{1,\}/\1/p"|sort -rV`
+    local versions=`curl -Lk https://www.openssl.org/source/ 2>/dev/null|sed -n "s/^.\{1,\}>openssl-\($tmp[0-9a-zA-Z.]\{2,\}\).tar.gz.\{1,\}/\1/p"|sort -rV`
     local new_version=`echo "$versions"|head -1`
     if [ -z "$new_version" ];then
         echo -e "探测openssl新版本\033[0;31m失败\033[0m" >&2
@@ -6560,7 +6560,7 @@ function check_openssl_version()
 # {{{ function check_redis_version()
 function check_redis_version()
 {
-    local versions=`curl -k https://redis.io/ 2>/dev/null|sed -n 's/^.\{1,\}redis-\([0-9a-zA-Z.]\{2,\}\).tar.gz.\{1,\}/\1/p'|sort -rV`
+    local versions=`curl -Lk https://redis.io/ 2>/dev/null|sed -n 's/^.\{1,\}redis-\([0-9a-zA-Z.]\{2,\}\).tar.gz.\{1,\}/\1/p'|sort -rV`
     local new_version=`echo "$versions"|head -1`;
     if [ -z "$new_version" ];then
         echo -e "探测redis新版本\033[0;31m失败\033[0m" >&2
@@ -6590,7 +6590,7 @@ function check_redis_version()
 function check_icu_version()
 {
     # http://site.icu-project.org/download
-    local new_version=`curl -k https://fossies.org/linux/misc/ 2>/dev/null|sed -n 's/^.\{1,\}>icu4c-\([0-9a-zA-Z._]\{2,\}\)-src.tgz<.\{1,\}/\1/p'|sort -rV|head -1`
+    local new_version=`curl -Lk https://fossies.org/linux/misc/ 2>/dev/null|sed -n 's/^.\{1,\}>icu4c-\([0-9a-zA-Z._]\{2,\}\)-src.tgz<.\{1,\}/\1/p'|sort -rV|head -1`
     if [ -z "$new_version" ];then
         echo -e "探测icu新版本\033[0;31m失败\033[0m" >&2
         return 1;
@@ -6609,7 +6609,7 @@ function check_icu_version()
 # {{{ function check_curl_version()
 function check_curl_version()
 {
-    local new_version=`curl -k https://curl.haxx.se/download/ 2>/dev/null|sed -n 's/^.\{1,\}>curl-\([0-9a-zA-Z._]\{2,\}\).tar.gz<.\{1,\}/\1/p'|sort -rV|head -1`
+    local new_version=`curl -Lk https://curl.haxx.se/download/ 2>/dev/null|sed -n 's/^.\{1,\}>curl-\([0-9a-zA-Z._]\{2,\}\).tar.gz<.\{1,\}/\1/p'|sort -rV|head -1`
     if [ -z "$new_version" ];then
         echo -e "探测curl新版本\033[0;31m失败\033[0m" >&2
         return 1;
@@ -6628,7 +6628,7 @@ function check_curl_version()
 # {{{ function check_zlib_version()
 function check_zlib_version()
 {
-    local new_version=`curl -k http://zlib.net 2>/dev/null|sed -n 's/^.\{0,\}"zlib-\([0-9a-zA-Z._]\{2,\}\).tar.gz".\{0,\}/\1/p'|sort -rV|head -1`
+    local new_version=`curl -Lk http://zlib.net 2>/dev/null|sed -n 's/^.\{0,\}"zlib-\([0-9a-zA-Z._]\{2,\}\).tar.gz".\{0,\}/\1/p'|sort -rV|head -1`
     if [ -z "$new_version" ];then
         echo -e "探测zlib新版本\033[0;31m失败\033[0m" >&2
         return 1;
@@ -6647,7 +6647,7 @@ function check_zlib_version()
 # {{{ function check_libunwind_version()
 function check_libunwind_version()
 {
-    local new_version=`curl -k http://download.savannah.gnu.org/releases/libunwind/ 2>/dev/null|sed -n 's/^.\{0,\}"libunwind-\([0-9a-zA-Z._]\{2,\}\).tar.gz".\{0,\}/\1/p'|sort -rV|head -1`
+    local new_version=`curl -Lk http://download.savannah.gnu.org/releases/libunwind/ 2>/dev/null|sed -n 's/^.\{0,\}"libunwind-\([0-9a-zA-Z._]\{2,\}\).tar.gz".\{0,\}/\1/p'|sort -rV|head -1`
     if [ -z "$new_version" ];then
         echo -e "探测libunwind新版本\033[0;31m失败\033[0m" >&2
         return 1;
@@ -6666,7 +6666,7 @@ function check_libunwind_version()
 # {{{ function check_freetype_version()
 function check_freetype_version()
 {
-    local new_version=`curl -k https://www.freetype.org/ 2>/dev/null|sed -n 's/^.\{0,\}<h4>FreeType \([0-9.]\{3,\}\)<\/h4>.\{0,\}$/\1/p'|sort -rV|head -1`
+    local new_version=`curl -Lk https://www.freetype.org/ 2>/dev/null|sed -n 's/^.\{0,\}<h4>FreeType \([0-9.]\{3,\}\)<\/h4>.\{0,\}$/\1/p'|sort -rV|head -1`
     if [ -z "$new_version" ];then
         echo -e "探测freetype新版本\033[0;31m失败\033[0m" >&2
         return 1;
@@ -6755,7 +6755,7 @@ function check_gmp_version()
 # {{{ function check_mysql_version()
 function check_mysql_version()
 {
-    local new_version=`curl -k https://dev.mysql.com/downloads/mysql/ 2>/dev/null |sed -n 's/<h1> \{0,\}MySQL \{1,\}Community \{1,\}Server \{0,\}\(.\{1,\}\) \{0,\}<\/h1>/\1/p'|sort -rV|head -1`;
+    local new_version=`curl -Lk https://dev.mysql.com/downloads/mysql/ 2>/dev/null |sed -n 's/<h1> \{0,\}MySQL \{1,\}Community \{1,\}Server \{0,\}\(.\{1,\}\) \{0,\}<\/h1>/\1/p'|sort -rV|head -1`;
     new_version=${new_version// /}
     if [ -z "$new_version" ];then
         echo -e "探测mysql新版本\033[0;31m失败\033[0m" >&2
@@ -6779,7 +6779,7 @@ function check_nginx_version()
     # Stable version
     # Legacy versions
     # 难点是取到stable中的版本
-    local new_version=`curl -k http://nginx.org/en/download.html 2>/dev/null |sed -n 's/^.\{1,\}Stable version\(.\{1,\}\)Legacy versions.\{1,\}$/\1/p'|sed -n 's/^.\{1,\}nginx-\([0-9.]\{1,\}\)\.tar\.gz".\{1,\}$/\1/gp'|sort -rV|head -1`;
+    local new_version=`curl -Lk http://nginx.org/en/download.html 2>/dev/null |sed -n 's/^.\{1,\}Stable version\(.\{1,\}\)Legacy versions.\{1,\}$/\1/p'|sed -n 's/^.\{1,\}nginx-\([0-9.]\{1,\}\)\.tar\.gz".\{1,\}$/\1/gp'|sort -rV|head -1`;
     new_version=${new_version// /}
     if [ -z "$new_version" ];then
         echo -e "探测nginx新版本\033[0;31m失败\033[0m" >&2
@@ -6922,7 +6922,7 @@ function check_imagemagick_version()
 # {{{ function check_pkgconfig_version()
 function check_pkgconfig_version()
 {
-    local new_version=`curl -k https://pkg-config.freedesktop.org/releases/ 2>/dev/null |sed -n 's/^.\{1,\} href="pkg-config-\([0-9.]\{1,\}\).tar.gz">.\{1,\}$/\1/p'|sort -rV|head -1`
+    local new_version=`curl -Lk https://pkg-config.freedesktop.org/releases/ 2>/dev/null |sed -n 's/^.\{1,\} href="pkg-config-\([0-9.]\{1,\}\).tar.gz">.\{1,\}$/\1/p'|sort -rV|head -1`
     if [ -z "$new_version" ];then
         echo -e "探测pkgconfig新版本\033[0;31m失败\033[0m" >&2
         return 1;
@@ -6995,7 +6995,7 @@ function check_dehydrated_version()
 # {{{ function check_nasm_version()
 function check_nasm_version()
 {
-    local new_version=`curl -k http://www.nasm.us/ 2>/dev/null |sed -n '/The latest stable version of NASM is/{n;s/^.\{1,\}>\([0-9].\{1,\}\)<.\{1,\}$/\1/p;}'`;
+    local new_version=`curl -Lk http://www.nasm.us/ 2>/dev/null |sed -n '/The latest stable version of NASM is/{n;s/^.\{1,\}>\([0-9].\{1,\}\)<.\{1,\}$/\1/p;}'`;
     new_version=${new_version// /}
     if [ -z "$new_version" ];then
         echo -e "探测nasm新版本\033[0;31m失败\033[0m" >&2
@@ -7312,7 +7312,7 @@ function check_liblogging_version()
 # {{{ function check_libgcrypt_version()
 function check_libgcrypt_version()
 {
-    local new_version=`curl -k ftp://ftp.gnupg.org/gcrypt/libgcrypt/ 2>/dev/null |sed -n 's/^.\{1,\} libgcrypt-\([0-9.]\{1,\}\).tar.gz$/\1/p'|sort -rV|head -1`
+    local new_version=`curl -Lk ftp://ftp.gnupg.org/gcrypt/libgcrypt/ 2>/dev/null |sed -n 's/^.\{1,\} libgcrypt-\([0-9.]\{1,\}\).tar.gz$/\1/p'|sort -rV|head -1`
     if [ -z "$new_version" ];then
         echo -e "探测libgcrypt新版本\033[0;31m失败\033[0m" >&2
         return 1;
@@ -7331,7 +7331,7 @@ function check_libgcrypt_version()
 # {{{ function check_libgpg_error_version()
 function check_libgpg_error_version()
 {
-    local new_version=`curl -k ftp://ftp.gnupg.org/gcrypt/libgpg-error/ 2>/dev/null |sed -n 's/^.\{1,\} libgpg-error-\([0-9.]\{1,\}\).tar.gz$/\1/p'|sort -rV|head -1`
+    local new_version=`curl -Lk ftp://ftp.gnupg.org/gcrypt/libgpg-error/ 2>/dev/null |sed -n 's/^.\{1,\} libgpg-error-\([0-9.]\{1,\}\).tar.gz$/\1/p'|sort -rV|head -1`
     if [ -z "$new_version" ];then
         echo -e "探测libgpg-error新版本\033[0;31m失败\033[0m" >&2
         return 1;
@@ -7368,7 +7368,7 @@ function check_libiconv_version()
 # {{{ function check_glib_version()
 function check_glib_version()
 {
-    local new_version=`curl -k https://developer.gnome.org/glib/ 2>/dev/null |sed -n 's/^.\{1,\}>\([0-9._-]\{1,\}\)<\/a><\/li>.\{0,\}$/\1/p'|sort -rV|head -1`
+    local new_version=`curl -Lk https://developer.gnome.org/glib/ 2>/dev/null |sed -n 's/^.\{1,\}>\([0-9._-]\{1,\}\)<\/a><\/li>.\{0,\}$/\1/p'|sort -rV|head -1`
     if [ -z "$new_version" ];then
         echo -e "探测glib新版本\033[0;31m失败\033[0m" >&2
         return 1;
@@ -7420,7 +7420,7 @@ function check_libpng_version()
 # {{{ function check_kerberos_version()
 function check_kerberos_version()
 {
-    local new_version=`curl -k http://web.mit.edu/kerberos/dist/ 2>/dev/null |sed -n 's/.\{1,\}>krb5-\([0-9.-]\{1,\}\).tar.gz<.\{1,\}$/\1/p'|tr - .|sort -rV|head -1`
+    local new_version=`curl -Lk http://web.mit.edu/kerberos/dist/ 2>/dev/null |sed -n 's/.\{1,\}>krb5-\([0-9.-]\{1,\}\).tar.gz<.\{1,\}$/\1/p'|tr - .|sort -rV|head -1`
     if [ -z "$new_version" ];then
         echo -e "探测kerberos新版本\033[0;31m失败\033[0m" >&2
         return 1;
@@ -7440,7 +7440,7 @@ function check_kerberos_version()
 function check_sqlite_version()
 {
     # check_github_soft_version sqlite $SQLITE_VERSION "https://github.com/mackyle/sqlite/releases" "version-\([0-9.]\{5,\}\)\.tar\.gz" 1
-    local new_version=`curl -k https://www.sqlite.org/download.html 2>/dev/null |sed -n 's/^.\{1,\}\/sqlite-autoconf-\([0-9.]\{1,\}\).tar.gz.\{1,\}$/\1/p'|sort -rV|head -1`
+    local new_version=`curl -Lk https://www.sqlite.org/download.html 2>/dev/null |sed -n 's/^.\{1,\}\/sqlite-autoconf-\([0-9.]\{1,\}\).tar.gz.\{1,\}$/\1/p'|sort -rV|head -1`
     if [ -z "$new_version" ];then
         echo -e "探测sqlite新版本\033[0;31m失败\033[0m" >&2
         return 1;
@@ -7459,7 +7459,7 @@ function check_sqlite_version()
 # {{{ function check_imap_version()
 function check_imap_version()
 {
-    local new_version=`curl -k https://www.mirrorservice.org/sites/ftp.cac.washington.edu/imap/ 2>/dev/null |sed -n 's/^.\{1,\}>imap-\([0-9a-zA-Z.-]\{1,\}\).tar.gz<.\{1,\}$/\1/p'|sort -rV|head -1`
+    local new_version=`curl -Lk https://www.mirrorservice.org/sites/ftp.cac.washington.edu/imap/ 2>/dev/null |sed -n 's/^.\{1,\}>imap-\([0-9a-zA-Z.-]\{1,\}\).tar.gz<.\{1,\}$/\1/p'|sort -rV|head -1`
     if [ -z "$new_version" ];then
         echo -e "探测imap新版本\033[0;31m失败\033[0m" >&2
         return 1;
@@ -7478,7 +7478,7 @@ function check_imap_version()
 # {{{ function check_libmemcached_version()
 function check_libmemcached_version()
 {
-    local new_version=`curl -k "https://launchpad.net/libmemcached/+download" 2>/dev/null |sed -n 's/^.*>libmemcached-\([0-9.-]\{1,\}\).tar.gz<.*$/\1/p'|sort -rV|head -1`
+    local new_version=`curl -Lk "https://launchpad.net/libmemcached/+download" 2>/dev/null |sed -n 's/^.*>libmemcached-\([0-9.-]\{1,\}\).tar.gz<.*$/\1/p'|sort -rV|head -1`
     if [ -z "$new_version" ];then
         echo -e "探测libmemcached新版本\033[0;31m失败\033[0m" >&2
         return 1;
@@ -7497,7 +7497,7 @@ function check_libmemcached_version()
 # {{{ function check_qrencode_version()
 function check_qrencode_version()
 {
-    local new_version=`curl -k https://fukuchi.org/works/qrencode/ 2>/dev/null |sed -n 's/^.*>qrencode-\([0-9.-]\{1,\}\).tar.gz<.*$/\1/p'|sort -rV|head -1`
+    local new_version=`curl -Lk https://fukuchi.org/works/qrencode/ 2>/dev/null |sed -n 's/^.*>qrencode-\([0-9.-]\{1,\}\).tar.gz<.*$/\1/p'|sort -rV|head -1`
     if [ -z "$new_version" ];then
         echo -e "探测qrencode新版本\033[0;31m失败\033[0m" >&2
         return 1;
@@ -7516,7 +7516,7 @@ function check_qrencode_version()
 # {{{ function check_jpeg_version()
 function check_jpeg_version()
 {
-    local new_version=`curl -k http://www.ijg.org/files/ 2>/dev/null |sed -n 's/^.*>jpegsrc\.v\([0-9a-zA-Z.]\{1,\}\).tar.gz<.*$/\1/p'|sort -rV|head -1`
+    local new_version=`curl -Lk http://www.ijg.org/files/ 2>/dev/null |sed -n 's/^.*>jpegsrc\.v\([0-9a-zA-Z.]\{1,\}\).tar.gz<.*$/\1/p'|sort -rV|head -1`
     if [ -z "$new_version" ];then
         echo -e "探测jpeg新版本\033[0;31m失败\033[0m" >&2
         return 1;
@@ -7555,7 +7555,7 @@ function check_libxslt_version()
 function check_boost_version()
 {
     #check_sourceforge_soft_version boost ${BOOST_VERSION//_/.} 's/^.\{0,\}<tr title="\([0-9.]\{1,\}\)" class="folder \{0,\}"> \{0,\}$/\1/p'
-    local new_version=`curl -k http://www.boost.org/ 2>/dev/null |sed -n 's/^.\{1,\}Version \([0-9._-]\{1,\}\).\{1,\}>Download<.\{1,\}/\1/p'|sort -rV|head -1`
+    local new_version=`curl -Lk http://www.boost.org/ 2>/dev/null |sed -n 's/^.\{1,\}Version \([0-9._-]\{1,\}\).\{1,\}>Download<.\{1,\}/\1/p'|sort -rV|head -1`
     if [ -z "$new_version" ];then
         echo -e "探测boost新版本\033[0;31m失败\033[0m" >&2
         return 1;
@@ -7844,7 +7844,7 @@ function check_github_soft_version()
 
     pattern="s/^.\{1,\} href=\"[^\\\"]\{1,\}${soft}[^\\\"]\{0,\}\/archive\/$pattern\"[^>]\{0,\}>.\{0,\}$/\\${num}/p";
 
-    local versions=`curl -k $url 2>/dev/null |sed -n "$pattern" |sort -rV`
+    local versions=`curl -Lk $url 2>/dev/null |sed -n "$pattern" |sort -rV`
     local new_version=`echo "$versions"|head -1`;
 
     if [ -z "$new_version" ];then
@@ -7913,7 +7913,7 @@ function check_php_pecl_version()
     local ext=$1;
     local current_version=$2;
 
-    local versions=`curl -k http://pecl.php.net/package/${ext} 2>/dev/null|sed -n "s/^.\{1,\} href=\"\/get\/${ext}-\([0-9._]\{1,\}\(\(RC\)\{0,1\}[0-9]\{1,\}\)\{0,1\}\).tgz\"[^>]\{0,\}>.\{0,\}$/\1/p"|sort -rV`;
+    local versions=`curl -Lk http://pecl.php.net/package/${ext} 2>/dev/null|sed -n "s/^.\{1,\} href=\"\/get\/${ext}-\([0-9._]\{1,\}\(\(RC\)\{0,1\}[0-9]\{1,\}\)\{0,1\}\).tgz\"[^>]\{0,\}>.\{0,\}$/\1/p"|sort -rV`;
     local new_version=`echo "$versions"|head -1`;
 
     if [ -z "$new_version" -o -z "$current_version" ];then
