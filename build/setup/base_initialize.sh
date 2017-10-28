@@ -696,7 +696,7 @@ function create_certificates()
         return 1;
     fi
 
-    echo "Start create certificates ...."
+    echo "Create certificates start ...."
 
     $BASE_DIR/sbin/renew_cert.sh
     if [ "$?" != "0" -o ! -d "$DEHYDRATED_CONFIG_DIR/certs" ];then
@@ -753,6 +753,7 @@ function create_certificates()
     # 更新nginx服务器的服务器名
     sed -i.bak.$$ "s/SERVER_NAME/$(grep "\<${domain}\>" $DEHYDRATED_CONFIG_DIR/domains.txt)/" $NGINX_CONFIG_DIR/conf/nginx.conf
     rm -rf $NGINX_CONFIG_DIR/conf/nginx.conf.bak.*
+    echo "Create certificates finished ...."
 }
 # }}}
 # {{{ function domain_init()
