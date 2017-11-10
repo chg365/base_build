@@ -180,7 +180,8 @@ compile_nodejs
 compile_openssl
 compile_ImageMagick
 compile_redis
-compile_tesseract # 图片文字识别 OCR （Optical Character Recognition，光学字符识别）
+#  error: Leptonica 1.74 or higher is required. Try to install libleptonica-dev package.
+#compile_tesseract # 图片文字识别 OCR （Optical Character Recognition，光学字符识别）
 #compile_libunwind
 compile_zeromq
 compile_zlib
