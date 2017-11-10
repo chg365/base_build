@@ -25,15 +25,20 @@ fi
 # screen tmux
 # autoconf，automake，autopoint，pkg-config
 #wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-6.repo
-if [ ! -f $HOME/.chg_base_compile_env -a "$OS_NAME" = "linux" ]; then
-    sudo yum install -y cmake gcc xz texinfo bzip2 xz-devel gcc-c++ ncurses-devel ncurses byacc file re2c libtool-ltdl-devel popt-devel re2c wget curl libtool coreutils
-    sudo yum install -y curl nss cyrus-sasl cyrus-sasl-devel cyrus-sasl-lib libacl libacl-devel libattr libattr-devel gperf pam pam-devel krb5-devel krb5-libs uuid uuid-devel libmount libmount-devel libuuid-devel libuuid
+if [ ! -f $HOME/.chg_base_compile_env ]; then
+    if [ "$OS_NAME" = "linux" ]; then
+        sudo yum install -y cmake gcc xz texinfo bzip2 xz-devel gcc-c++ ncurses-devel ncurses byacc file re2c libtool-ltdl-devel popt-devel re2c wget curl libtool coreutils
+        sudo yum install -y curl nss cyrus-sasl cyrus-sasl-devel cyrus-sasl-lib libacl libacl-devel libattr libattr-devel gperf pam pam-devel krb5-devel krb5-libs uuid uuid-devel libmount libmount-devel libuuid-devel libuuid
 
-    #wget http://dl.fedoraproject.org/pub/epel/7/x86_64/r/re2c-0.14.3-2.el7.x86_64.rpm
-    sudo yum install -y autoconf m4 automake pkg-config gettext-devel
+        #wget http://dl.fedoraproject.org/pub/epel/7/x86_64/r/re2c-0.14.3-2.el7.x86_64.rpm
+        sudo yum install -y autoconf m4 automake pkg-config gettext-devel
 
-    if uname -r|grep -q 'el7' ;then
-        sudo yum -y install systemd-devel
+        if uname -r|grep -q 'el7' ;then
+            sudo yum -y install systemd-devel
+        fi
+    elif ["$OS_NAME" = "darwin" ];then
+        # curl: (56) SSLRead() return error -9841
+        brew install --with-openssl curl
     fi
 
     touch $HOME/.chg_base_compile_env
@@ -173,6 +178,15 @@ fi
 export LC_CTYPE=C 
 export LANG=C
 pkg_config_path_init
+if [ "$OS_NAME" = 'darwin' ];then
+    for i in `find /usr/local/Cellar/ -mindepth 0 -maxdepth 3 -a \( -name bin -o -name sbin \) -type d`;
+    do
+        i=${i%/*}
+        deal_path $i
+    done
+fi
+#wget https://www.rarlab.com/rar/rarlinux-x64-5.5.0.tar.gz
+#wget https://www.rarlab.com/rar/rarosx-5.5.0.tar.gz
 #check_soft_updates
 #exit;
 compile_patchelf

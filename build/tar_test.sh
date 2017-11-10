@@ -31,7 +31,28 @@ do
             echo "${FILE_NAME} 文件可能已经损坏." >&2
         fi
         continue;
+    elif [ "${FILE_NAME%%.dmg}" != "$FILE_NAME" ];then
+        #hdiutil attach $FILE_NAME  > /dev/null
+        hdiutil imageinfo $FILE_NAME  > /dev/null
+        if [ "$?" != "0" ];then
+            echo "${FILE_NAME} 文件可能已经损坏." >&2
+        fi
+        #hdiutil detach /Volumes/${FILE_NAME%.*} >/dev/null
+        continue
+#elif [ "${FILE_NAME%%.rar}" != "$FILE_NAME" ];then
+#        # unrar e $FILE_NAME
+#        #unrar t $FILE_NAME
+#        if [ "$?" != "0" ];then
+#            echo "${FILE_NAME} 文件可能已经损坏." >&2
+#        fi
+#        continue
     else
+        if [ "${FILE_NAME##*/}" = ".DS_Store" ];then
+            continue
+        fi
+        if [ "${FILE_NAME##*.}" = "js" ];then
+            continue
+        fi
         echo "$FILE_NAME 未知文件类型"
         continue;
     fi
