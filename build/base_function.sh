@@ -407,10 +407,10 @@ function wget_base_library()
     wget_lib $GITBOOK_CLI_FILE_NAME   "https://github.com/GitbookIO/gitbook-cli/archive/${GITBOOK_CLI_FILE_NAME##*-}"
     wget_lib $NGHTTP2_FILE_NAME       "https://github.com/nghttp2/nghttp2/releases/download/v${NGHTTP2_VERSION}/${NGHTTP2_FILE_NAME}"
     wget_lib $PHP_FILE_NAME           "http://cn2.php.net/distributions/$PHP_FILE_NAME"
-    wget_lib $PTHREADS_FILE_NAME      "http://pecl.php.net/get/$PTHREADS_FILE_NAME"
-    wget_lib $SWOOLE_FILE_NAME        "http://pecl.php.net/get/$SWOOLE_FILE_NAME"
-    wget_lib $PHP_PROTOBUF_FILE_NAME  "http://pecl.php.net/get/$PHP_PROTOBUF_FILE_NAME"
-    wget_lib $PHP_GRPC_FILE_NAME      "http://pecl.php.net/get/$PHP_GRPC_FILE_NAME"
+    wget_lib $PTHREADS_FILE_NAME      "https://pecl.php.net/get/$PTHREADS_FILE_NAME"
+    wget_lib $SWOOLE_FILE_NAME        "https://pecl.php.net/get/$SWOOLE_FILE_NAME"
+    wget_lib $PHP_PROTOBUF_FILE_NAME  "https://pecl.php.net/get/$PHP_PROTOBUF_FILE_NAME"
+    wget_lib $PHP_GRPC_FILE_NAME      "https://pecl.php.net/get/$PHP_GRPC_FILE_NAME"
     wget_lib $LIBXSLT_FILE_NAME       "ftp://xmlsoft.org/libxslt/$LIBXSLT_FILE_NAME"
     wget_lib $TIDY_FILE_NAME          "https://github.com/htacg/tidy-html5/archive/${TIDY_FILE_NAME##*-}"
     wget_lib $SPHINX_FILE_NAME        "https://github.com/sphinxsearch/sphinx/archive/${SPHINX_FILE_NAME#*-}"
@@ -488,26 +488,26 @@ function wget_base_library()
     wget_lib $APR_UTIL_FILE_NAME      "http://mirror.bit.edu.cn/apache/apr/$APR_UTIL_FILE_NAME"
     # http://mirror.bjtu.edu.cn/apache/httpd/$APACHE_FILE_NAME
     wget_lib $APACHE_FILE_NAME        "http://archive.apache.org/dist/httpd/$APACHE_FILE_NAME"
-    wget_lib $APCU_FILE_NAME          "http://pecl.php.net/get/$APCU_FILE_NAME"
-    wget_lib $APCU_BC_FILE_NAME       "http://pecl.php.net/get/$APCU_BC_FILE_NAME"
-    wget_lib $YAF_FILE_NAME           "http://pecl.php.net/get/$YAF_FILE_NAME"
+    wget_lib $APCU_FILE_NAME          "https://pecl.php.net/get/$APCU_FILE_NAME"
+    wget_lib $APCU_BC_FILE_NAME       "https://pecl.php.net/get/$APCU_BC_FILE_NAME"
+    wget_lib $YAF_FILE_NAME           "https://pecl.php.net/get/$YAF_FILE_NAME"
     wget_lib $PHALCON_FILE_NAME       "https://github.com/phalcon/cphalcon/archive/v${PHALCON_FILE_NAME#*-}"
-    wget_lib $XDEBUG_FILE_NAME        "http://pecl.php.net/get/$XDEBUG_FILE_NAME"
-    wget_lib $RAPHF_FILE_NAME         "http://pecl.php.net/get/$RAPHF_FILE_NAME"
-    wget_lib $PROPRO_FILE_NAME        "http://pecl.php.net/get/$PROPRO_FILE_NAME"
-    wget_lib $PECL_HTTP_FILE_NAME     "http://pecl.php.net/get/$PECL_HTTP_FILE_NAME"
-    wget_lib $AMQP_FILE_NAME          "http://pecl.php.net/get/$AMQP_FILE_NAME"
-    wget_lib $MAILPARSE_FILE_NAME     "http://pecl.php.net/get/$MAILPARSE_FILE_NAME"
-    wget_lib $PHP_REDIS_FILE_NAME     "http://pecl.php.net/get/$PHP_REDIS_FILE_NAME"
-    wget_lib $PHP_MONGODB_FILE_NAME   "http://pecl.php.net/get/$PHP_MONGODB_FILE_NAME"
-    wget_lib $SOLR_FILE_NAME          "http://pecl.php.net/get/$SOLR_FILE_NAME"
+    wget_lib $XDEBUG_FILE_NAME        "https://pecl.php.net/get/$XDEBUG_FILE_NAME"
+    wget_lib $RAPHF_FILE_NAME         "https://pecl.php.net/get/$RAPHF_FILE_NAME"
+    wget_lib $PROPRO_FILE_NAME        "https://pecl.php.net/get/$PROPRO_FILE_NAME"
+    wget_lib $PECL_HTTP_FILE_NAME     "https://pecl.php.net/get/$PECL_HTTP_FILE_NAME"
+    wget_lib $AMQP_FILE_NAME          "https://pecl.php.net/get/$AMQP_FILE_NAME"
+    wget_lib $MAILPARSE_FILE_NAME     "https://pecl.php.net/get/$MAILPARSE_FILE_NAME"
+    wget_lib $PHP_REDIS_FILE_NAME     "https://pecl.php.net/get/$PHP_REDIS_FILE_NAME"
+    wget_lib $PHP_MONGODB_FILE_NAME   "https://pecl.php.net/get/$PHP_MONGODB_FILE_NAME"
+    wget_lib $SOLR_FILE_NAME          "https://pecl.php.net/get/$SOLR_FILE_NAME"
 
-    wget_lib $PHP_MEMCACHED_FILE_NAME "http://pecl.php.net/get/$PHP_MEMCACHED_FILE_NAME"
-    wget_lib $EVENT_FILE_NAME         "http://pecl.php.net/get/$EVENT_FILE_NAME"
-    wget_lib $DIO_FILE_NAME           "http://pecl.php.net/get/$DIO_FILE_NAME"
-    wget_lib $PHP_LIBEVENT_FILE_NAME  "http://pecl.php.net/get/$PHP_LIBEVENT_FILE_NAME"
-    wget_lib $IMAGICK_FILE_NAME       "http://pecl.php.net/get/$IMAGICK_FILE_NAME"
-    wget_lib $PHP_LIBSODIUM_FILE_NAME "http://pecl.php.net/get/$PHP_LIBSODIUM_FILE_NAME"
+    wget_lib $PHP_MEMCACHED_FILE_NAME "https://pecl.php.net/get/$PHP_MEMCACHED_FILE_NAME"
+    wget_lib $EVENT_FILE_NAME         "https://pecl.php.net/get/$EVENT_FILE_NAME"
+    wget_lib $DIO_FILE_NAME           "https://pecl.php.net/get/$DIO_FILE_NAME"
+    wget_lib $PHP_LIBEVENT_FILE_NAME  "https://pecl.php.net/get/$PHP_LIBEVENT_FILE_NAME"
+    wget_lib $IMAGICK_FILE_NAME       "https://pecl.php.net/get/$IMAGICK_FILE_NAME"
+    wget_lib $PHP_LIBSODIUM_FILE_NAME "https://pecl.php.net/get/$PHP_LIBSODIUM_FILE_NAME"
     wget_lib $QRENCODE_FILE_NAME      "https://github.com/chg365/qrencode/archive/${QRENCODE_FILE_NAME#*-}"
     wget_lib $COMPOSER_FILE_NAME      "https://github.com/composer/composer/archive/${COMPOSER_FILE_NAME#*-}"
     wget_lib $PATCHELF_FILE_NAME      "https://github.com/NixOS/patchelf/archive/${PATCHELF_FILE_NAME##*-}"
@@ -6358,7 +6358,7 @@ function compile_php_extension_rabbitmq()
     compile "php_extension_rabbitmq" "$rabbitmq_FILE_NAME" "rabbitmq-$rabbitmq_VERSION" "rabbitmq.so" "PHP_EXTENSION_rabbitmq_CONFIGURE"
 
     /bin/rm -rf package.xml
-#http://pecl.php.net/get/amqp-1.7.1.tgz
+#https://pecl.php.net/get/amqp-1.7.1.tgz
 echo_build_start rabbitmq
 tar zxf ""
 cd
@@ -7950,7 +7950,7 @@ function check_php_pecl_version()
     local ext=$1;
     local current_version=$2;
 
-    local versions=`curl -Lk http://pecl.php.net/package/${ext} 2>/dev/null|sed -n "s/^.\{1,\} href=\"\/get\/${ext}-\([0-9._]\{1,\}\(\(RC\)\{0,1\}[0-9]\{1,\}\)\{0,1\}\).tgz\"[^>]\{0,\}>.\{0,\}$/\1/p"|sort -rV`;
+    local versions=`curl -Lk https://pecl.php.net/package/${ext} 2>/dev/null|sed -n "s/^.\{1,\} href=\"\/get\/${ext}-\([0-9._]\{1,\}\(\(RC\)\{0,1\}[0-9]\{1,\}\)\{0,1\}\).tgz\"[^>]\{0,\}>.\{0,\}$/\1/p"|sort -rV`;
     local new_version=`echo "$versions"|head -1`;
 
     if [ -z "$new_version" -o -z "$current_version" ];then
