@@ -511,6 +511,7 @@ function wget_base_library()
     wget_lib $QRENCODE_FILE_NAME      "https://github.com/chg365/qrencode/archive/${QRENCODE_FILE_NAME#*-}"
     wget_lib $COMPOSER_FILE_NAME      "https://github.com/composer/composer/archive/${COMPOSER_FILE_NAME#*-}"
     wget_lib $PATCHELF_FILE_NAME      "https://github.com/NixOS/patchelf/archive/${PATCHELF_FILE_NAME##*-}"
+    wget_lib $TESSERACT_FILE_NAME     "https://github.com/tesseract-ocr/tesseract/archive/${TESSERACT_FILE_NAME##*-}"
 
     wget_lib $LARAVEL_FILE_NAME       "https://github.com/laravel/laravel/archive/v${LARAVEL_FILE_NAME#*-}"
     wget_lib $HIREDIS_FILE_NAME       "https://github.com/redis/hiredis/archive/v${HIREDIS_FILE_NAME#*-}"
@@ -1349,6 +1350,20 @@ function is_installed_patchelf()
     fi
     local version=`$FILENAME --version|awk '{print $NF;}'`
     if [ "$version" != "$PATCHELF_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
+# {{{ function is_installed_tesseract()
+function is_installed_tesseract()
+{
+    local FILENAME=$TESSERACT_BASE/bin/tesseract;
+    if [ ! -f "$FILENAME" ];then
+        return 1;
+    fi
+    local version=`$FILENAME --version|awk '{print $NF;}'`
+    if [ "$version" != "$TESSERACT_VERSION" ];then
         return 1;
     fi
     return;
@@ -2716,6 +2731,21 @@ function compile_patchelf()
     "
 
     compile "patchelf" "$PATCHELF_FILE_NAME" "patchelf-${PATCHELF_VERSION}" "$PATCHELF_BASE" "PATCHELF_CONFIGURE"
+}
+# }}}
+# {{{ function compile_tesseract()
+function compile_tesseract()
+{
+    is_installed tesseract "$TESSERACT_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    TESSERACT_CONFIGURE="
+        ./configure --prefix=$TESSERACT_BASE
+    "
+
+    compile "tesseract" "$TESSERACT_FILE_NAME" "tesseract-${TESSERACT_VERSION}" "$TESSERACT_BASE" "TESSERACT_CONFIGURE"
 }
 # }}}
 # {{{ function compile_readline()
@@ -6376,6 +6406,7 @@ function check_soft_updates()
             logrotate
             dehydrated
             patchelf
+            tesseract
             ckeditor
             composer
             memcached
@@ -7283,6 +7314,12 @@ function check_libevent_version()
 function check_patchelf_version()
 {
     check_github_soft_version patchelf $PATCHELF_VERSION "https://github.com/NixOS/patchelf/releases"
+}
+# }}}
+# {{{ function check_tesseract_version()
+function check_tesseract_version()
+{
+    check_github_soft_version tesseract $TESSERACT_VERSION "https://github.com/tesseract-ocr/tesseract/releases"
 }
 # }}}
 # {{{ function check_rsyslog_version()

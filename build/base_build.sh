@@ -180,6 +180,7 @@ compile_nodejs
 compile_openssl
 compile_ImageMagick
 compile_redis
+compile_tesseract # 图片文字识别 OCR （Optical Character Recognition，光学字符识别）
 #compile_libunwind
 compile_zeromq
 compile_zlib
@@ -383,3 +384,12 @@ wget --content-disposition --no-check-certificate https://github.com/phpDocument
 ftp://ftp.cyrusimap.org/cyrus-sasl/
 ftp://ftp.cyrusimap.org/cyrus-imapd/
 https://www.cyrusimap.org/sasl/sasl/installation.html#quick-install-guide
+
+# js css 压缩
+npm config set registry http://registry.npm.taobao.org
+npm install gulp-cli -g
+npm install gulp -D
+npm install --save-dev gulp-uglify gulp-jshint gulp-rename gulp-concat gulp-clean-css jshint
+npm config delete registry
+gulp
+
