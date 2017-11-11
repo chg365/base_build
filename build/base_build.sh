@@ -39,6 +39,7 @@ if [ ! -f $HOME/.chg_base_compile_env ]; then
     elif ["$OS_NAME" = "darwin" ];then
         # curl: (56) SSLRead() return error -9841
         brew install --with-openssl curl
+        brew link curl --force
     fi
 
     touch $HOME/.chg_base_compile_env
