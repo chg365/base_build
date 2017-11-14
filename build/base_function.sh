@@ -7349,39 +7349,13 @@ function check_liblogging_version()
 # {{{ function check_libgcrypt_version()
 function check_libgcrypt_version()
 {
-    local new_version=`curl -Lk ftp://ftp.gnupg.org/gcrypt/libgcrypt/ 2>/dev/null |sed -n 's/^.\{1,\} libgcrypt-\([0-9.]\{1,\}\).tar.gz$/\1/p'|sort -rV|head -1`
-    if [ -z "$new_version" ];then
-        echo -e "探测libgcrypt新版本\033[0;31m失败\033[0m" >&2
-        return 1;
-    fi
-
-    is_new_version $LIBGCRYPT_VERSION $new_version
-    if [ "$?" = "0" ];then
-        [ "$is_echo_latest" = "" -o "$is_echo_latest" != "0" ] && \
-        echo -e "libgcrypt version is \033[0;32mthe latest.\033[0m"
-        return 0;
-    fi
-
-    echo -e "libgcrypt current version: \033[0;33m${LIBGCRYPT_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+    check_http_version "libgcrypt" ${LIBGCRYPT_VERSION} https://gnupg.org/ftp/gcrypt/libgcrypt/
 }
 # }}}
 # {{{ function check_libgpg_error_version()
 function check_libgpg_error_version()
 {
-    local new_version=`curl -Lk ftp://ftp.gnupg.org/gcrypt/libgpg-error/ 2>/dev/null |sed -n 's/^.\{1,\} libgpg-error-\([0-9.]\{1,\}\).tar.gz$/\1/p'|sort -rV|head -1`
-    if [ -z "$new_version" ];then
-        echo -e "探测libgpg-error新版本\033[0;31m失败\033[0m" >&2
-        return 1;
-    fi
-
-    is_new_version $LIBGPG_ERROR_VERSION $new_version
-    if [ "$?" = "0" ];then
-        [ "$is_echo_latest" = "" -o "$is_echo_latest" != "0" ] && \
-        echo -e "libgpg-error version is \033[0;32mthe latest.\033[0m"
-        return 0;
-    fi
-
-    echo -e "libgpg-error current version: \033[0;33m${LIBGPG_ERROR_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+    check_http_version "libgpg-error" ${LIBGPG_ERROR_VERSION} https://gnupg.org/ftp/gcrypt/libgpg-error/
 }
 # }}}
 # {{{ function check_readline_version()
@@ -7636,85 +7610,85 @@ function check_expat_version()
 # {{{ function check_libXpm_version()
 function check_libXpm_version()
 {
-    check_freedesktop_soft_version libXpm ${LIBXPM_VERSION} https://www.x.org/releases/individual/lib/
+    check_http_version libXpm ${LIBXPM_VERSION} https://www.x.org/releases/individual/lib/
 }
 # }}}
 # {{{ function check_libXext_version()
 function check_libXext_version()
 {
-    check_freedesktop_soft_version libXext ${LIBXEXT_VERSION} https://www.x.org/releases/individual/lib/
+    check_http_version libXext ${LIBXEXT_VERSION} https://www.x.org/releases/individual/lib/
 }
 # }}}
 # {{{ function check_kbproto_version()
 function check_kbproto_version()
 {
-    check_freedesktop_soft_version kbproto ${KBPROTO_VERSION} https://www.x.org/archive/individual/proto/
+    check_http_version kbproto ${KBPROTO_VERSION} https://www.x.org/archive/individual/proto/
 }
 # }}}
 # {{{ function check_inputproto_version()
 function check_inputproto_version()
 {
-    check_freedesktop_soft_version inputproto ${INPUTPROTO_VERSION} https://www.x.org/archive/individual/proto/
+    check_http_version inputproto ${INPUTPROTO_VERSION} https://www.x.org/archive/individual/proto/
 }
 # }}}
 # {{{ function check_xextproto_version()
 function check_xextproto_version()
 {
-    check_freedesktop_soft_version xextproto ${XEXTPROTO_VERSION} https://www.x.org/archive/individual/proto/
+    check_http_version xextproto ${XEXTPROTO_VERSION} https://www.x.org/archive/individual/proto/
 }
 # }}}
 # {{{ function check_xproto_version()
 function check_xproto_version()
 {
-    check_freedesktop_soft_version xproto ${XPROTO_VERSION} https://www.x.org/archive/individual/proto/
+    check_http_version xproto ${XPROTO_VERSION} https://www.x.org/archive/individual/proto/
 }
 # }}}
 # {{{ function check_xtrans_version()
 function check_xtrans_version()
 {
-    check_freedesktop_soft_version xtrans ${XTRANS_VERSION} https://www.x.org/archive/individual/lib/
+    check_http_version xtrans ${XTRANS_VERSION} https://www.x.org/archive/individual/lib/
 }
 # }}}
 # {{{ function check_libXau_version()
 function check_libXau_version()
 {
-    check_freedesktop_soft_version libXau ${LIBXAU_VERSION} https://www.x.org/archive/individual/lib/
+    check_http_version libXau ${LIBXAU_VERSION} https://www.x.org/archive/individual/lib/
 }
 # }}}
 # {{{ function check_libX11_version()
 function check_libX11_version()
 {
-    check_freedesktop_soft_version libX11 ${LIBX11_VERSION} https://www.x.org/archive/individual/lib/
+    check_http_version libX11 ${LIBX11_VERSION} https://www.x.org/archive/individual/lib/
 }
 # }}}
 # {{{ function check_libpthread_stubs_version()
 function check_libpthread_stubs_version()
 {
-    check_freedesktop_soft_version libpthread-stubs ${LIBPTHREAD_STUBS_VERSION} https://www.x.org/archive/individual/xcb/
+    check_http_version libpthread-stubs ${LIBPTHREAD_STUBS_VERSION} https://www.x.org/archive/individual/xcb/
 }
 # }}}
 # {{{ function check_libxcb_version()
 function check_libxcb_version()
 {
-    check_freedesktop_soft_version libxcb ${LIBXCB_VERSION} https://www.x.org/archive/individual/xcb/
+    check_http_version libxcb ${LIBXCB_VERSION} https://www.x.org/archive/individual/xcb/
 }
 # }}}
 # {{{ function check_xcb_proto_version()
 function check_xcb_proto_version()
 {
-    check_freedesktop_soft_version xcb-proto ${XCB_PROTO_VERSION} https://www.x.org/archive/individual/xcb/
+    check_http_version xcb-proto ${XCB_PROTO_VERSION} https://www.x.org/archive/individual/xcb/
 }
 # }}}
 # {{{ function check_macros_version()
 function check_macros_version()
 {
-    check_freedesktop_soft_version util-macros ${MACROS_VERSION} https://www.x.org/archive/individual/util/
+    check_http_version util-macros ${MACROS_VERSION} https://www.x.org/archive/individual/util/
 }
 # }}}
 # {{{ function check_xf86bigfontproto_version()
 function check_xf86bigfontproto_version()
 {
-    check_freedesktop_soft_version xf86bigfontproto ${XF86BIGFONTPROTO_VERSION} https://www.x.org/archive/individual/proto/
+    check_http_version xf86bigfontproto ${XF86BIGFONTPROTO_VERSION} https://www.x.org/archive/individual/proto/
 }
 # }}}
 # {{{ function check_cairo_version()
@@ -8037,8 +8011,8 @@ function check_sourceforge_soft_version()
     echo -e "${soft} current version: \033[0;33m${current_version}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
-# {{{ function check_freedesktop_soft_version()
-function check_freedesktop_soft_version()
+# {{{ function check_http_version()
+function check_http_version()
 {
     local soft=$1
     local current_version=$2
