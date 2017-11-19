@@ -6924,7 +6924,7 @@ function check_libfastjson_version()
 # {{{ function check_imagemagick_version()
 function check_imagemagick_version()
 {
-    local versions=`curl http://www.imagemagick.org/download/releases/ 2>/dev/null|sed -n 's/^.\{1,\} href="ImageMagick-\([0-9.-]\{1,\}\).tar.gz">.\{1,\}$/\1/p'|sort -rV`
+    local versions=`curl http://www.imagemagick.org/download/releases/ 2>/dev/null|sed -n 's/^.\{1,\} href="ImageMagick-\([0-9.-]\{1,\}\).tar.[a-z0-9A-Z]\{1,\}">.\{1,\}$/\1/p'|sort -rV`
     local new_version=`echo "$versions"|head -1`;
     if [ -z "$new_version" ];then
         echo -e "探测imagemagick新版本\033[0;31m失败\033[0m" >&2
