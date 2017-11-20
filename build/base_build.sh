@@ -239,7 +239,7 @@ compile_php_extension_xdebug
 compile_php_extension_raphf
 compile_php_extension_propro
 # 编译上这个后，pthreads 报 段错误  3.1.0
-#compile_php_extension_pecl_http
+compile_php_extension_pecl_http
 compile_php_extension_amqp
 compile_php_extension_mailparse
 compile_php_extension_redis
@@ -264,7 +264,7 @@ install_dehydrated
 cp_GeoLite2_data
 install_web_service_common_php
 install_geoip2_php
-compile_gitbook_cli
+#compile_gitbook_cli
 compile_calibre
 compile_smarty
 compile_htmlpurifier
@@ -301,6 +301,8 @@ rm -rf ${php_ini}.bak*
 
 # 测试index.php
 cp $curr_dir/../src/web/index.php $WEB_BASE/
+# 容易出错，放这里
+compile_gitbook_cli
 exit;
 ################################################################################
 # Install SWFUpload
