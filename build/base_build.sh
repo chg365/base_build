@@ -161,7 +161,6 @@ fi
 mkdir -p $HOME/$project_abbreviation/pkgs
 cd $HOME/$project_abbreviation/pkgs
 
-wget_base_library
 ################################################################################
 # Check BASE DIR
 ################################################################################
@@ -190,8 +189,12 @@ if [ "$OS_NAME" = 'darwin' ];then
 fi
 #wget https://www.rarlab.com/rar/rarlinux-x64-5.5.0.tar.gz
 #wget https://www.rarlab.com/rar/rarosx-5.5.0.tar.gz
+# 检测开源软件新版本
 #check_soft_updates
 #exit;
+# 下载开源软件新版本
+wget_base_library
+
 compile_patchelf
 compile_nodejs
 compile_openssl

@@ -172,7 +172,7 @@ if [ "$OS_NAME" != 'darwin' ];then
         ICU_VERSION="58.2" #升级到 59.1后 PHP7.1.8的intl扩展编译不过去
     fi
 fi
-LIBZIP_VERSION="1.3.0" # http://www.nih.at/libzip/index.html
+LIBZIP_VERSION="1.3.2" # http://www.nih.at/libzip/index.html
 GETTEXT_VERSION="0.19.8.1" # http://ftp.gnu.org/gnu/gettext/
 LIBICONV_VERSION="1.15" # http://ftp.gnu.org/gnu/libiconv/
 LIBXML2_VERSION="2.9.7"
@@ -263,7 +263,7 @@ else
     PHP_LIBSODIUM_VERSION="2.0.4"
 fi
 MEMCACHED_VERSION="1.5.3"
-PHP_MEMCACHED_VERSION="3.0.3"
+PHP_MEMCACHED_VERSION="3.0.4"
 REDIS_VERSION="4.0.2"
 GEARMAND_VERSION="1.1.17"
 EVENT_VERSION="2.3.0"
@@ -281,12 +281,12 @@ AMQP_VERSION="1.9.3"
 MAILPARSE_VERSION="3.0.2"
 PHP_REDIS_VERSION="3.1.4"
 PHP_GEARMAN_VERSION="2.0.3"
-PHP_MONGODB_VERSION="1.3.2"
+PHP_MONGODB_VERSION="1.3.3"
 SOLR_VERSION="2.4.0"
 IMAGICK_VERSION="3.4.3" # http://pecl.php.net/package/imagick
 PTHREADS_VERSION="3.1.6" # http://pecl.php.net/package/pthreads
 SWOOLE_VERSION="2.0.9" # http://pecl.php.net/package/swoole
-PHP_PROTOBUF_VERSION="3.4.0"
+PHP_PROTOBUF_VERSION="3.5.0"
 PHP_GRPC_VERSION="1.7.0"
 #QRENCODE_VERSION="0.0.3"
 QRENCODE_VERSION="0.1.0"
