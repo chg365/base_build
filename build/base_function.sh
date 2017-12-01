@@ -507,7 +507,9 @@ function wget_base_library()
     wget_lib $DIO_FILE_NAME           "https://pecl.php.net/get/$DIO_FILE_NAME"
     wget_lib $PHP_LIBEVENT_FILE_NAME  "https://pecl.php.net/get/$PHP_LIBEVENT_FILE_NAME"
     wget_lib $IMAGICK_FILE_NAME       "https://pecl.php.net/get/$IMAGICK_FILE_NAME"
-    wget_lib $PHP_LIBSODIUM_FILE_NAME "https://pecl.php.net/get/$PHP_LIBSODIUM_FILE_NAME"
+    if [ `echo "${PHP_VERSION}" "7.1.99"|tr " " "\n"|sort -rV|head -1` = "7.1.99" ]; then
+        wget_lib $PHP_LIBSODIUM_FILE_NAME "https://pecl.php.net/get/$PHP_LIBSODIUM_FILE_NAME"
+    fi
     wget_lib $QRENCODE_FILE_NAME      "https://github.com/chg365/qrencode/archive/${QRENCODE_FILE_NAME#*-}"
     wget_lib $COMPOSER_FILE_NAME      "https://github.com/composer/composer/archive/${COMPOSER_FILE_NAME#*-}"
     wget_lib $PATCHELF_FILE_NAME      "https://github.com/NixOS/patchelf/archive/${PATCHELF_FILE_NAME##*-}"
@@ -1835,7 +1837,7 @@ function is_installed_logrotate()
     if [ ! -f "$FILENAME" ];then
         return 1;
     fi
-    local version=`$FILENAME --version 2>&1|awk '{print $NF;}'`
+    local version=`$FILENAME --version 2>&1|awk '{print $NF;}'|head -1`
     if [ "$version" != "$LOGROTATE_VERSION" ];then
         return 1;
     fi
@@ -1993,8 +1995,30 @@ function is_installed_php_extension()
         return 1;
     fi
 
-    $PHP_BASE/bin/php -m | grep -q "^$1\$"
+    local ext_name="$1"
+    local ext_ver="$2"
+
+    if [ -z "$ext_name" -o -z "$ext_ver" ];then
+        echo "is_installed_php_extension 参数错误. name: $ext_name  ext_ver: $ext_ver" >&2
+        return 1;
+    fi
+
+    $PHP_BASE/bin/php -m | grep -q "^${ext_name}\$"
     if [ "$?" != "0" ];then
+        return 1;
+    fi
+
+    if [ "$ext_ver" = "1" -o "$ext_ver" = "php7" ]; then
+        return ;
+    fi
+
+    local version=`$PHP_BASE/bin/php --ri ${ext_name}|grep -i '^version =>'|awk '{print $NF;}'`;
+    if [ "$version" = "" ]; then
+        return;
+    fi
+    # if [ "$version" != "$ext_ver" ];then
+    if ! is_new_version $version "$ext_ver" ; then
+        # echo "$ext_name  $version $ext_ver"
         return 1;
     fi
     return;
@@ -2940,7 +2964,7 @@ function compile_fontforge()
         configure_fontforge_command
     "
 
-    compile "fontforge" "$FONTFORGE_FILE_NAME" "fontforge-$FONTFORGE_VERSION" "$FONTFORGE_BASE" "FONTFORGE_CONFIGURE"
+    compile "fontforge" "$FONTFORGE_FILE_NAME" "fontforge-*${FONTFORGE_VERSION}" "$FONTFORGE_BASE" "FONTFORGE_CONFIGURE"
     export PATH="$old_path"
 }
 # }}}
@@ -4382,7 +4406,7 @@ function compile_php_extension_intl()
 {
     compile_icu
 
-    is_installed_php_extension intl
+    is_installed_php_extension intl 1
     if [ "$?" = "0" ];then
         return;
     fi
@@ -4410,7 +4434,7 @@ function compile_php_extension_pdo_pgsql()
 {
     compile_postgresql
 
-    is_installed_php_extension pdo_pgsql
+    is_installed_php_extension pdo_pgsql 1
     if [ "$?" = "0" ];then
         return;
     fi
@@ -4425,7 +4449,7 @@ function compile_php_extension_pdo_pgsql()
 # {{{ function compile_php_extension_apcu()
 function compile_php_extension_apcu()
 {
-    is_installed_php_extension apcu
+    is_installed_php_extension apcu $APCU_VERSION
     if [ "$?" = "0" ];then
         return;
     fi
@@ -4445,7 +4469,7 @@ function compile_php_extension_apcu_bc()
 {
     compile_php_extension_apcu
 
-    is_installed_php_extension apc
+    is_installed_php_extension apc $APCU_BC_VERSION
     if [ "$?" = "0" ];then
         return;
     fi
@@ -4461,7 +4485,7 @@ function compile_php_extension_apcu_bc()
 # {{{ function compile_php_extension_yaf()
 function compile_php_extension_yaf()
 {
-    is_installed_php_extension yaf
+    is_installed_php_extension yaf $YAF_VERSION
     if [ "$?" = "0" ];then
         return;
     fi
@@ -4479,7 +4503,7 @@ function compile_php_extension_phalcon()
 {
     compile_php
 
-    is_installed_php_extension phalcon
+    is_installed_php_extension phalcon $PHALCON_VERSION
     if [ "$?" = "0" ];then
         return;
     fi
@@ -4507,7 +4531,7 @@ function compile_php_extension_phalcon()
 # {{{ function compile_php_extension_xdebug()
 function compile_php_extension_xdebug()
 {
-    is_installed_php_extension xdebug
+    is_installed_php_extension xdebug $XDEBUG_VERSION
     if [ "$?" = "0" ];then
         return;
     fi
@@ -4527,7 +4551,7 @@ function compile_php_extension_xdebug()
 # {{{ function compile_php_extension_raphf()
 function compile_php_extension_raphf()
 {
-    is_installed_php_extension raphf
+    is_installed_php_extension raphf $RAPHF_VERSION
     if [ "$?" = "0" ];then
         return;
     fi
@@ -4543,7 +4567,7 @@ function compile_php_extension_raphf()
 # {{{ function compile_php_extension_propro()
 function compile_php_extension_propro()
 {
-    is_installed_php_extension propro
+    is_installed_php_extension propro $PROPRO_VERSION
     if [ "$?" = "0" ];then
         return;
     fi
@@ -4564,7 +4588,7 @@ function compile_php_extension_pecl_http()
     compile_libevent
     compile_icu
 
-    is_installed_php_extension http
+    is_installed_php_extension http $PECL_HTTP_VERSION
     if [ "$?" = "0" ];then
         return;
     fi
@@ -4600,7 +4624,7 @@ function compile_php_extension_amqp()
 {
     compile_rabbitmq_c
 
-    is_installed_php_extension amqp
+    is_installed_php_extension amqp $AMQP_VERSION
     if [ "$?" = "0" ];then
         return;
     fi
@@ -4617,7 +4641,7 @@ function compile_php_extension_amqp()
 # {{{ function compile_php_extension_mailparse()
 function compile_php_extension_mailparse()
 {
-    is_installed_php_extension mailparse
+    is_installed_php_extension mailparse $MAILPARSE_VERSION
     if [ "$?" = "0" ];then
         return;
     fi
@@ -4634,7 +4658,7 @@ function compile_php_extension_mailparse()
 # {{{ function compile_php_extension_redis()
 function compile_php_extension_redis()
 {
-    is_installed_php_extension redis
+    is_installed_php_extension redis $PHP_REDIS_VERSION
     if [ "$?" = "0" ];then
         return;
     fi
@@ -4655,7 +4679,8 @@ function compile_php_extension_gearman()
 {
     compile_gearmand
 
-    is_installed_php_extension gearman
+    is_installed_php_extension gearman $PHP_GEARMAN_VERSION
+
     if [ "$?" = "0" ];then
         return;
     fi
@@ -4676,7 +4701,7 @@ function compile_php_extension_mongodb()
     compile_openssl
     compile_pcre
 
-    is_installed_php_extension mongodb
+    is_installed_php_extension mongodb $PHP_MONGODB_VERSION
     if [ "$?" = "0" ];then
         return;
     fi
@@ -4697,7 +4722,7 @@ function compile_php_extension_solr()
     compile_curl
     compile_libxml2
 
-    is_installed_php_extension solr
+    is_installed_php_extension solr $SOLR_VERSION
     if [ "$?" = "0" ];then
         return;
     fi
@@ -4720,7 +4745,7 @@ function compile_php_extension_memcached()
     compile_zlib
     compile_libmemcached
 
-    is_installed_php_extension memcached
+    is_installed_php_extension memcached $PHP_MEMCACHED_VERSION
     if [ "$?" = "0" ];then
         return;
     fi
@@ -4755,7 +4780,7 @@ function configure_php_ext_memcached_command()
 # {{{ function compile_php_extension_pthreads()
 function compile_php_extension_pthreads()
 {
-    is_installed_php_extension pthreads
+    is_installed_php_extension pthreads $PTHREADS_VERSION
     if [ "$?" = "0" ];then
         return;
     fi
@@ -4778,7 +4803,7 @@ function compile_php_extension_swoole()
     compile_pcre
     compile_hiredis
 
-    is_installed_php_extension swoole
+    is_installed_php_extension swoole $SWOOLE_VERSION
     if [ "$?" = "0" ];then
         return;
     fi
@@ -4802,7 +4827,7 @@ function compile_php_extension_swoole()
 # {{{ function compile_php_extension_protobuf()
 function compile_php_extension_protobuf()
 {
-    is_installed_php_extension protobuf
+    is_installed_php_extension protobuf $PHP_PROTOBUF_VERSION
     if [ "$?" = "0" ];then
         return;
     fi
@@ -4819,7 +4844,7 @@ function compile_php_extension_protobuf()
 function compile_php_extension_grpc()
 {
     compile_zlib
-    is_installed_php_extension grpc
+    is_installed_php_extension grpc $PHP_GRPC_VERSION
     if [ "$?" = "0" ];then
         return;
     fi
@@ -4847,7 +4872,7 @@ function compile_php_extension_qrencode()
 {
     compile_qrencode
 
-    is_installed_php_extension qrencode
+    is_installed_php_extension qrencode $QRENCODE_VERSION
     if [ "$?" = "0" ];then
         return;
     fi
@@ -4865,7 +4890,7 @@ function compile_php_extension_qrencode()
 # {{{ function compile_php_extension_dio()
 function compile_php_extension_dio()
 {
-    is_installed_php_extension dio
+    is_installed_php_extension dio $DIO_VERSION
     if [ "$?" = "0" ];then
         return;
     fi
@@ -4885,7 +4910,7 @@ function compile_php_extension_event()
     compile_openssl
     compile_libevent
 
-    is_installed_php_extension event
+    is_installed_php_extension event $EVENT_VERSION
     if [ "$?" = "0" ];then
         return;
     fi
@@ -4906,7 +4931,7 @@ function compile_php_extension_libevent()
 {
     compile_libevent
 
-    is_installed_php_extension libevent
+    is_installed_php_extension libevent $PHP_LIBEVENT_VERSION
     if [ "$?" = "0" ];then
         return;
     fi
@@ -4925,7 +4950,7 @@ function compile_php_extension_imagick()
 {
     compile_ImageMagick
 
-    is_installed_php_extension imagick
+    is_installed_php_extension imagick $IMAGICK_VERSION
     if [ "$?" = "0" ];then
         return;
     fi
@@ -4944,7 +4969,7 @@ function compile_php_extension_zeromq()
 {
     compile_zeromq
 
-    is_installed_php_extension zmq
+    is_installed_php_extension zmq $PHP_ZMQ_VERSION
     if [ "$?" = "0" ];then
         return;
     fi
@@ -4964,17 +4989,35 @@ function compile_php_extension_libsodium()
 {
     compile_libsodium
 
-    is_installed_php_extension libsodium
+    is_installed_php_extension $( is_new_version 7.1.99 $PHP_VERSION && echo 'lib')sodium $( is_new_version 7.1.99 $PHP_VERSION && echo $PHP_LIBSODIUM_VERSION || echo 1)
     if [ "$?" = "0" ];then
         return;
     fi
 
     PHP_EXTENSION_LIBSODIUM_CONFIGURE="
-    ./configure --with-php-config=$PHP_BASE/bin/php-config --with-$( is_new_version 1.9.9 $LIBSODIUM_VERSION && echo 'lib')sodium=$LIBSODIUM_BASE
+        configure_php_ext_libsodium_command
     "
-    compile "php_extension_libsodium" "$PHP_LIBSODIUM_FILE_NAME" "libsodium-$PHP_LIBSODIUM_VERSION" "$( is_new_version 1.9.9 $LIBSODIUM_VERSION && echo 'lib')sodium.so" "PHP_EXTENSION_LIBSODIUM_CONFIGURE"
+
+    local file_name="$PHP_LIBSODIUM_FILE_NAME"
+    local dir_name="libsodium-$PHP_LIBSODIUM_VERSION"
+    local ext_name="$( is_new_version 7.1.99 $PHP_VERSION && echo 'lib')sodium.so"
+    if [ `echo "${PHP_VERSION}" "7.1.99"|tr " " "\n"|sort -rV|head -1` != "7.1.99" ]; then
+        file_name="${PHP_FILE_NAME}"
+        dir_name="php-${PHP_VERSION}/ext/sodium"
+        ext_name="sodium"
+    fi
+    compile "php_extension_libsodium" "$file_name" "$dir_name" "$ext_name" "PHP_EXTENSION_LIBSODIUM_CONFIGURE"
 
     /bin/rm -rf package.xml
+}
+# }}}
+# {{{ function configure_php_libsodium_command()
+function configure_php_ext_libsodium_command()
+{
+    CPPFLAGS="$(get_cppflags $LIBSODIUM_BASE/include)" \
+    LDFLAGS="$(get_ldflags $LIBSODIUM_BASE/lib)" \
+    ./configure --with-php-config=$PHP_BASE/bin/php-config \
+                --with-$( is_new_version 7.1.99 $PHP_VERSION && echo 'lib')sodium=$LIBSODIUM_BASE
 }
 # }}}
 # {{{ function compile_php_extension_tidy()
@@ -4982,7 +5025,7 @@ function compile_php_extension_tidy()
 {
     compile_tidy
 
-    is_installed_php_extension tidy
+    is_installed_php_extension tidy 1
     if [ "$?" = "0" ];then
         return;
     fi
@@ -5015,7 +5058,7 @@ function compile_php_extension_imap()
     #yum install -y libc-client-devel libc-client
     compile_openssl
 
-    is_installed_php_extension imap
+    is_installed_php_extension imap 1
     if [ "$?" = "0" ];then
         return;
     fi
@@ -5070,7 +5113,7 @@ function compile_php_extension_sphinx()
 {
     compile_sphinxclient
 
-    is_installed_php_extension sphinx
+    is_installed_php_extension sphinx $PHP_SPHINX_VERSION
     if [ "$?" = "0" ];then
         return;
     fi
@@ -5264,7 +5307,7 @@ function compile_php_extension_maxminddb()
 {
     compile_libmaxminddb
 
-    is_installed_php_extension maxminddb
+    is_installed_php_extension maxminddb $MAXMIND_DB_READER_PHP_VERSION
     if [ "$?" = "0" ];then
         return;
     fi
@@ -5664,7 +5707,15 @@ configure_fontforge_command()
     #$READLINE_BASE/lib/libreadline.so: undefined reference to `PC'
     #$READLINE_BASE/lib/libreadline.so: undefined reference to `tgetflag'
 
-    ./bootstrap && \
+    if [ ! -f "./configure" ] ;then
+        ./bootstrap
+        local flag=$?
+        if [ "$flag" != "0" ];then
+            return $flag;
+        fi
+    fi
+
+    #./bootstrap && \
     LIBPNG_CFLAGS="$(get_cppflags $LIBPNG_BASE/include )" \
     LIBPNG_LIBS="$(get_ldflags $LIBPNG_BASE/lib )" \
     ./configure --prefix=$FONTFORGE_BASE \
@@ -5673,6 +5724,7 @@ configure_fontforge_command()
                 --enable-extra-encodings \
                 --without-libreadline \
                 --without-x
+                # --without-libiconv \
     local flag=$?
     #export PATH="$old_path"
     return $flag
@@ -5719,7 +5771,7 @@ configure_php_command()
     ./configure --prefix=$PHP_BASE \
                 --sysconfdir=$PHP_FPM_CONFIG_DIR \
                 --with-config-file-path=$PHP_CONFIG_DIR \
-                --runstatedir=${BASE_DIR}/run \
+                $( [ `echo "$PHP_VERSION 7.2.0"|tr " " "\n"|sort -rV|head -1` = "$PHP_VERSION" ] && echo "" || echo "--runstatedir=${BASE_DIR}/run" ) \
                 $(is_installed_apache && echo --with-apxs2=$APACHE_BASE/bin/apxs || echo "") \
                 --with-openssl=$OPENSSL_BASE \
                 --enable-mysqlnd  \
@@ -6346,32 +6398,19 @@ function compile_php_extension_rabbitmq()
 
     echo "compile_php_extension_rabbitmq 未完成" >&2
     return 1;
-    is_installed_php_extension rabbitmq
+    is_installed_php_extension rabbitmq $RABBITMQ_VERSION
     if [ "$?" = "0" ];then
         return;
     fi
 
     PHP_EXTENSION_rabbitmq_CONFIGURE="
-    ./configure --with-php-config=$PHP_BASE/bin/php-config --with-librabbitmq-dir=$RABBITMQ_C_BASE
+    ./configure --with-php-config=$PHP_BASE/bin/php-config \
+                --with-librabbitmq-dir=$RABBITMQ_C_BASE
     "
 
-    compile "php_extension_rabbitmq" "$rabbitmq_FILE_NAME" "rabbitmq-$rabbitmq_VERSION" "rabbitmq.so" "PHP_EXTENSION_rabbitmq_CONFIGURE"
+    compile "php_extension_rabbitmq" "$RABBITMQ_FILE_NAME" "php-rabbitmq-$RABBITMQ_VERSION" "rabbitmq.so" "PHP_EXTENSION_RABBITMQ_CONFIGURE"
 
     /bin/rm -rf package.xml
-#https://pecl.php.net/get/amqp-1.7.1.tgz
-echo_build_start rabbitmq
-tar zxf ""
-cd
- $PHP_BASE/bin/phpize
- ./configure --with-php-config=$PHP_BASE/bin/php-config --with-librabbitmq-dir=$RABBITMQ_C_BASE
-make_run "$?/PHP rabbitmq"
-if [ "$?" != "0" ];then
-    exit 1;
-fi
-cd ..
-
-/bin/rm -rf php-rabbitmq-$RABBITMQ_VERSION
-
 
 #other ....
 # --with-wbxml=$WBXML_BASE
@@ -7222,6 +7261,9 @@ function check_pecl_xdebug_version()
 # {{{ function check_pecl_libsodium_version()
 function check_pecl_libsodium_version()
 {
+    if [ `echo "${PHP_VERSION}" "7.1.99"|tr " " "\n"|sort -rV|head -1` != "7.1.99" ]; then
+        return;
+    fi
     if is_new_version "7.1.99" $PHP_VERSION ;then
         check_github_soft_version libsodium-php $PHP_LIBSODIUM_VERSION "https://github.com/jedisct1/libsodium-php/releases" "\(1\.[0-9.]\{1,\}\).tar.gz" 1
     else
