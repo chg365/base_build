@@ -391,6 +391,7 @@ function wget_base_library()
     wget_lib $JSON_FILE_NAME          "https://s3.amazonaws.com/json-c_releases/releases/$JSON_FILE_NAME"
     # http://sourceforge.net/projects/mcrypt/files/MCrypt/2.6.8/mcrypt-2.6.8.tar.gz/download
     wget_lib $LIBMCRYPT_FILE_NAME     "http://sourceforge.net/projects/mcrypt/files/Libmcrypt/$LIBMCRYPT_VERSION/$LIBMCRYPT_FILE_NAME/download"
+    wget_lib $LIBWBXML_FILE_NAME      "https://sourceforge.net/projects/libwbxml/files/libwbxml/${LIBWBXML_VERSION}/${LIBWBXML_FILE_NAME}/download"
     wget_lib $LIBUUID_FILE_NAME       "https://sourceforge.net/projects/libuuid/files/$LIBUUID_FILE_NAME/download"
     wget_lib $SQLITE_FILE_NAME        "http://www.sqlite.org/2017/$SQLITE_FILE_NAME"
     wget_lib $CURL_FILE_NAME          "http://curl.haxx.se/download/$CURL_FILE_NAME"
@@ -1164,6 +1165,21 @@ function is_installed_libmcrypt()
     fi
     local version=`$LIBMCRYPT_BASE/bin/libmcrypt-config --version`
     if [ "$version" != "$LIBMCRYPT_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
+# {{{ function is_installed_libwbxml()
+function is_installed_libwbxml()
+{
+    local FILENAME="$LIBWBXML_BASE/lib/pkgconfig/libwbxml2.pc"
+    if [ ! -f "${FILENAME}" ];then
+        return 1;
+    fi
+    local version=`pkg-config --modversion $FILENAME`
+    if [ "$version" != "$LIBWBXML_VERSION" ];then
+        echo "bbb"
         return 1;
     fi
     return;
@@ -2723,6 +2739,32 @@ function compile_libmcrypt()
     "
 
     compile "libmcrypt" "$LIBMCRYPT_FILE_NAME" "libmcrypt-$LIBMCRYPT_VERSION" "$LIBMCRYPT_BASE" "LIBMCRYPT_CONFIGURE"
+}
+# }}}
+# {{{ function compile_libwbxml()
+function compile_libwbxml()
+{
+    is_installed libwbxml "$LIBWBXML_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    LIBWBXML_CONFIGURE="
+        cmake ../libwbxml-${LIBWBXML_VERSION}/ \
+              -DCMAKE_INSTALL_PREFIX=$LIBWBXML_BASE
+    "
+
+    mkdir libwbxml-${LIBWBXML_VERSION}-build
+
+    compile "libwbxml" "$LIBWBXML_FILE_NAME" "libwbxml-${LIBWBXML_VERSION}-build" "$LIBWBXML_BASE" "LIBWBXML_CONFIGURE"
+
+
+    if [ "$OS_NAME" = "linux" ]; then
+        repair_elf_file_rpath $LIBWBXML_BASE/bin/wbxml2xml
+        repair_elf_file_rpath $LIBWBXML_BASE/bin/xml2wbxml
+    fi
+
+    rm -rf libwbxml-${LIBWBXML_VERSION}
 }
 # }}}
 # {{{ function compile_libevent()
@@ -6481,6 +6523,7 @@ function check_soft_updates()
             libXpm
             libXext
             libmcrypt
+            libwbxml
             libxslt
             libxml2
             gettext
@@ -7628,6 +7671,12 @@ function check_boost_version()
 function check_libmcrypt_version()
 {
     check_sourceforge_soft_version mcrypt ${LIBMCRYPT_VERSION//_/.} 's/^.\{0,\}<tr title="\([0-9.]\{1,\}\)" class="folder \{0,\}"> \{0,\}$/\1/p' Libmcrypt
+}
+# }}}
+# {{{ function check_libwbxml_version()
+function check_libwbxml_version()
+{
+    check_sourceforge_soft_version libwbxml ${LIBWBXML_VERSION//_/.} 's/^.\{0,\}<tr title="\([0-9.]\{1,\}\)" class="folder \{0,\}"> \{0,\}$/\1/p'
 }
 # }}}
 # {{{ function check_libjpeg_version()
