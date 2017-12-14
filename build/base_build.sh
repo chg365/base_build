@@ -208,6 +208,7 @@ compile_zlib
 compile_libgd
 compile_apache
 compile_postgresql
+compile_pgbouncer
 compile_php
 compile_memcached
 compile_sphinx

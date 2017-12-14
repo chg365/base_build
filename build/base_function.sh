@@ -473,7 +473,11 @@ function wget_base_library()
     wget_lib $GMP_FILE_NAME           "ftp://ftp.gmplib.org/pub/gmp/$GMP_FILE_NAME"
     #wget_lib $IMAP_FILE_NAME          "ftp://ftp.cac.washington.edu/imap/$IMAP_FILE_NAME"
     wget_lib $IMAP_FILE_NAME          "https://www.mirrorservice.org/sites/ftp.cac.washington.edu/imap/$IMAP_FILE_NAME"
-    wget_lib $KERBEROS_FILE_NAME      "http://web.mit.edu/kerberos/dist/krb5/${KERBEROS_VERSION%.*}/$KERBEROS_FILE_NAME"
+    local version=${KERBEROS_VERSION%.*};
+    if [ "${version%.*}" = "${version}" ] ;then
+        local version=${KERBEROS_VERSION}
+    fi
+    wget_lib $KERBEROS_FILE_NAME      "http://web.mit.edu/kerberos/dist/krb5/${version}/$KERBEROS_FILE_NAME"
     wget_lib $LIBMEMCACHED_FILE_NAME  "https://launchpad.net/libmemcached/${LIBMEMCACHED_VERSION%.*}/$LIBMEMCACHED_VERSION/+download/$LIBMEMCACHED_FILE_NAME"
     wget_lib $MEMCACHED_FILE_NAME     "http://memcached.org/files/${MEMCACHED_FILE_NAME}"
     wget_lib $REDIS_FILE_NAME         "http://download.redis.io/releases/${REDIS_FILE_NAME}"
@@ -485,6 +489,7 @@ function wget_base_library()
     wget_lib $PHP_GEARMAN_FILE_NAME   "https://github.com/wcgallego/pecl-gearman/archive/gearman-${PHP_GEARMAN_VERSION}.tar.gz"
     wget_lib $LIBQRENCODE_FILE_NAME   "http://fukuchi.org/works/qrencode/$LIBQRENCODE_FILE_NAME"
     wget_lib $POSTGRESQL_FILE_NAME    "https://ftp.postgresql.org/pub/source/v$POSTGRESQL_VERSION/$POSTGRESQL_FILE_NAME"
+    wget_lib $PGBOUNCER_FILE_NAME     "https://pgbouncer.github.io/downloads/files/${PGBOUNCER_VERSION}/$PGBOUNCER_FILE_NAME"
     wget_lib $APR_FILE_NAME           "http://mirror.bit.edu.cn/apache/apr/$APR_FILE_NAME"
     wget_lib $APR_UTIL_FILE_NAME      "http://mirror.bit.edu.cn/apache/apr/$APR_UTIL_FILE_NAME"
     # http://mirror.bjtu.edu.cn/apache/httpd/$APACHE_FILE_NAME
@@ -1802,6 +1807,20 @@ function is_installed_postgresql()
     fi
     local version=`pkg-config --modversion $FILENAME`
     if [ "${version}" != "$POSTGRESQL_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
+# {{{ function is_installed_pgbouncer()
+function is_installed_pgbouncer()
+{
+    local FILENAME="$PGBOUNCER_BASE/bin/pgbouncer"
+    if [ ! -f "$FILENAME" ];then
+        return 1;
+    fi
+    local version=`$FILENAME --version|awk '{ print $NF;}'|head -1`
+    if [ "${version}" != "$PGBOUNCER_VERSION" ];then
         return 1;
     fi
     return;
@@ -3937,6 +3956,32 @@ function compile_postgresql()
     "
 
     compile "postgresql" "$POSTGRESQL_FILE_NAME" "postgresql-$POSTGRESQL_VERSION" "$POSTGRESQL_BASE" "POSTGRESQL_CONFIGURE"
+}
+# }}}
+# {{{ function compile_pgbouncer()
+function compile_pgbouncer()
+{
+    if [ "$OS_NAME" = "darwin" ];then
+        compile_libuuid
+    fi
+    compile_libevent
+
+    is_installed pgbouncer "$PGBOUNCER_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    PGBOUNCER_CONFIGURE="
+        ./configure --prefix=$PGBOUNCER_BASE \
+                    --with-libevent=$LIBEVENT_BASE \
+                    --without-openssl
+    "
+
+    compile "pgbouncer" "$PGBOUNCER_FILE_NAME" "pgbouncer-$PGBOUNCER_VERSION" "$PGBOUNCER_BASE" "PGBOUNCER_CONFIGURE"
+
+    if [ "$OS_NAME" = "linux" ]; then
+        repair_elf_file_rpath $PGBOUNCER_BASE/bin/pgbouncer
+    fi
 }
 # }}}
 # {{{ function compile_apache()
@@ -6494,6 +6539,7 @@ function check_soft_updates()
             apache
             apr
             apr_util
+            pgbouncer
             postgresql
             libsodium
             pango
@@ -7856,6 +7902,12 @@ function check_postgresql_version()
         return 1;
     fi
     check_ftp_version postgresql ${POSTGRESQL_VERSION} https://ftp.postgresql.org/pub/source/v${tmpdir}/
+}
+# }}}
+# {{{ function check_pgbouncer_version()
+function check_pgbouncer_version()
+{
+    check_ftp_version pgbouncer ${PGBOUNCER_VERSION} https://pgbouncer.github.io/
 }
 # }}}
 # {{{ function check_ftp_gnu_org_version()
