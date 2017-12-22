@@ -4416,7 +4416,7 @@ function compile_php()
     compile_libxml2
     compile_gettext
     compile_libiconv
-    compile_libmcrypt
+    [ `echo "$PHP_VERSION 7.1.999"|tr " " "\n"|sort -rV|head -1` != "$PHP_VERSION" ] && compile_libmcrypt
     compile_curl
     compile_gmp
     compile_libgd
@@ -5188,9 +5188,9 @@ function configure_php_ext_imap_command()
 
     ./configure --with-php-config=$PHP_BASE/bin/php-config \
                 --with-imap$(is_installed_imap && echo "=$IMAP_BASE" ) \
-                --with-kerberos=$KERBEROS_BASE \
                 --with-imap-ssl=$OPENSSL_BASE
 
+    #--with-kerberos=$KERBEROS_BASE \
     # CPPFLAGS="$(get_cppflags $OPENSSL_BASE/include)" LDFLAGS="$(get_ldflags $OPENSSL_BASE/lib)" \
                 # --with-libdir=lib64 \
 }
@@ -5871,7 +5871,7 @@ configure_php_command()
                 --with-libxml-dir=$LIBXML2_BASE \
                 --with-gettext=$GETTEXT_BASE \
                 --with-iconv=$LIBICONV_BASE \
-                --with-mcrypt=$LIBMCRYPT_BASE \
+                $( [ `echo "$PHP_VERSION 7.1.99"|tr " " "\n"|sort -rV|head -1` = "$PHP_VERSION" ] && echo "" || echo "--with-mcrypt=$LIBMCRYPT_BASE" ) \
                 --enable-sockets \
                 --enable-pcntl \
                 --enable-sysvmsg \
@@ -5892,7 +5892,7 @@ configure_php_command()
                 $( [ \"$OS_NAME\" != \"darwin\" ] && echo --with-fpm-acl ) \
                 --with-gd=$LIBGD_BASE \
                 --with-freetype-dir=$FREETYPE_BASE \
-                --enable-gd-native-ttf \
+                $( [ `echo "$PHP_VERSION 7.1.99"|tr " " "\n"|sort -rV|head -1` = "$PHP_VERSION" ] && echo "" || echo "--enable-gd-native-ttf" ) \
                 --with-jpeg-dir=$JPEG_BASE \
                 --with-png-dir=$LIBPNG_BASE \
                 --with-xpm-dir=$LIBXPM_BASE \
