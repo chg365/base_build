@@ -409,6 +409,7 @@ function wget_base_library()
     wget_lib $NGHTTP2_FILE_NAME       "https://github.com/nghttp2/nghttp2/releases/download/v${NGHTTP2_VERSION}/${NGHTTP2_FILE_NAME}"
     wget_lib $PHP_FILE_NAME           "http://cn2.php.net/distributions/$PHP_FILE_NAME"
     wget_lib $PTHREADS_FILE_NAME      "https://pecl.php.net/get/$PTHREADS_FILE_NAME"
+    wget_lib $ZIP_FILE_NAME           "https://pecl.php.net/get/$ZIP_FILE_NAME"
     wget_lib $SWOOLE_FILE_NAME        "https://pecl.php.net/get/$SWOOLE_FILE_NAME"
     wget_lib $PHP_PROTOBUF_FILE_NAME  "https://pecl.php.net/get/$PHP_PROTOBUF_FILE_NAME"
     wget_lib $PHP_GRPC_FILE_NAME      "https://pecl.php.net/get/$PHP_GRPC_FILE_NAME"
@@ -4895,6 +4896,27 @@ function compile_php_extension_pthreads()
     /bin/rm -rf package.xml
 }
 # }}}
+# {{{ function compile_php_extension_zip()
+function compile_php_extension_zip()
+{
+    compile_libzip
+
+    is_installed_php_extension zip $ZIP_VERSION
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    PHP_EXTENSION_ZIP_CONFIGURE="
+    ./configure --with-php-config=$PHP_BASE/bin/php-config \
+                --enable-zip \
+                --with-libzip=$LIBZIP_BASE
+    "
+
+    compile "php_extension_zip" "$ZIP_FILE_NAME" "zip-$ZIP_VERSION" "zip.so" "PHP_EXTENSION_ZIP_CONFIGURE"
+
+    /bin/rm -rf package.xml
+}
+# }}}
 # {{{ function compile_php_extension_swoole()
 function compile_php_extension_swoole()
 {
@@ -5877,8 +5899,7 @@ configure_php_command()
                 --with-zlib-dir=$ZLIB_BASE \
                 --with-pdo-mysql=mysqlnd \
                 --with-pdo-sqlite=$SQLITE_BASE --without-sqlite3 \
-                --enable-zip \
-                --with-zlib-dir=$ZLIB_BASE \
+                $( [ `echo "$PHP_VERSION 7.2.0"|tr " " "\n"|sort -rV|head -1` = "$PHP_VERSION" ] && echo "" || echo "--enable-zip --with-zlib-dir=$ZLIB_BASE" ) \
                 --enable-soap \
                 --with-libxml-dir=$LIBXML2_BASE \
                 --with-gettext=$GETTEXT_BASE \
@@ -6635,6 +6656,7 @@ function check_soft_updates()
             pecl_grpc
             pecl_protobuf
             pecl_pthreads
+            pecl_zip
             pecl_solr
             pecl_mailparse
             pecl_amqp
@@ -7284,6 +7306,12 @@ function check_hiredis_version()
 function check_pecl_pthreads_version()
 {
     check_php_pecl_version pthreads $PTHREADS_VERSION
+}
+# }}}
+# {{{ function check_pecl_zip_version()
+function check_pecl_zip_version()
+{
+    check_php_pecl_version zip $ZIP_VERSION
 }
 # }}}
 # {{{ function check_pecl_solr_version()

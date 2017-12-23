@@ -27,7 +27,7 @@ fi
 #wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-6.repo
 if [ ! -f $HOME/.chg_base_compile_env ]; then
     if [ "$OS_NAME" = "linux" ]; then
-        sudo yum install -y cmake gcc xz texinfo bzip2 xz-devel gcc-c++ ncurses-devel ncurses byacc file re2c libtool-ltdl-devel popt-devel re2c wget curl libtool coreutils
+        sudo yum install -y bison cmake gcc xz texinfo bzip2 xz-devel gcc-c++ ncurses-devel ncurses byacc file re2c libtool-ltdl-devel popt-devel re2c wget curl libtool coreutils
         sudo yum install -y curl nss cyrus-sasl cyrus-sasl-devel cyrus-sasl-lib libacl libacl-devel libattr libattr-devel gperf pam pam-devel krb5-devel krb5-libs uuid uuid-devel libmount libmount-devel libuuid-devel libuuid
         sudo yum install itstool # fontconfig 2.12.91
 
@@ -228,6 +228,7 @@ if [ "$OS_NAME" != 'darwin' ];then
     compile_logrotate
 fi
 compile_rsyslog
+compile_php_extension_zip
 compile_php_extension_dio
 compile_php_extension_pthreads
 compile_php_extension_qrencode
