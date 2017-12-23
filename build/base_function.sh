@@ -967,10 +967,12 @@ function is_installed()
 # {{{ function is_installed_jpeg()
 function is_installed_jpeg()
 {
-    if [ ! -f "$JPEG_BASE/bin/djpeg" ];then
+    local FILENAME="$JPEG_BASE/bin/djpeg"
+    if [ ! -f "$FILENAME" ];then
         return 1;
     fi
-    local version=`$JPEG_BASE/bin/djpeg -verbose < /dev/null 2>&1|sed -n '1p' |awk '{ print $(NF-1); }'`
+    local version=`$FILENAME -verbose < /dev/null 2>&1|sed -n '1p' |awk '{ print $(NF-1); }'`
+    # local version=`$FILENAME -version 2>&1|awk '{ print $3;}'| head -1`
     if [ "$version" != "$JPEG_VERSION" ];then
         return 1;
     fi
@@ -2863,6 +2865,13 @@ function compile_jpeg()
     "
 
     compile "jpeg" "$JPEG_FILE_NAME" "jpeg-$JPEG_VERSION" "$JPEG_BASE" "JPEG_CONFIGURE"
+    if [ "$OS_NAME" = "linux" ]; then
+        repair_elf_file_rpath $JPEG_BASE/bin/cjpeg
+        repair_elf_file_rpath $JPEG_BASE/bin/djpeg
+        repair_elf_file_rpath $JPEG_BASE/bin/jpegtran
+        repair_elf_file_rpath $JPEG_BASE/bin/rdjpgcom
+        repair_elf_file_rpath $JPEG_BASE/bin/wrjpgcom
+    fi
 }
 # }}}
 # {{{ function compile_pdf2htmlEX()
@@ -4270,7 +4279,8 @@ function compile_libgd()
     compile_libpng
     compile_freetype
     compile_fontconfig
-    compile_jpeg
+    #compile_jpeg
+    compile_libjpeg
     compile_libXpm
 
     is_installed libgd "$LIBGD_BASE"
@@ -4299,7 +4309,8 @@ function compile_libgd()
 function compile_ImageMagick()
 {
     compile_zlib
-    compile_jpeg
+    #compile_jpeg
+    compile_libjpeg
     compile_libpng
     compile_freetype
     compile_fontconfig
@@ -4421,7 +4432,8 @@ function compile_php()
     compile_gmp
     compile_libgd
     compile_freetype
-    compile_jpeg
+    #compile_jpeg
+    compile_libjpeg
     compile_libpng
     compile_libXpm
 
@@ -8735,7 +8747,7 @@ function ping_usable()
 # {{{ function init_setup() #
 function init_setup()
 {
-    mkdir $BASE_DIR/setup
+    mkdir -p $BASE_DIR/setup
     cp $curr_dir/base_define.sh $BASE_DIR/setup/
     chmod u+x $BASE_DIR/setup/base_define.sh
     #sed -i.bak.$$ '/^.\{1,\}_VERSION=/d;/^.\{1,\}_FILE_NAME/d' $BASE_DIR/setup/base_define.sh

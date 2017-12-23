@@ -48,7 +48,7 @@ LIBWBXML_BASE=$CONTRIB_BASE
 PKGCONFIG_BASE=$CONTRIB_BASE
 LIBGD_BASE=$CONTRIB_BASE
 IMAGEMAGICK_BASE=$OPT_BASE/ImageMagick
-JPEG_BASE=$CONTRIB_BASE
+JPEG_BASE=$OPT_BASE/jpeg # 和libjpeg-turbo文件名冲突不能在同一个目录下
 LIBXPM_BASE=$CONTRIB_BASE
 LIBXEXT_BASE=$CONTRIB_BASE
 IMAP_BASE=$OPT_BASE/imap
@@ -161,7 +161,7 @@ PCRE_VERSION="8.41"
 OPENSSL_VERSION="1.1.0g" # 1.1.0g 编译不过去
 HIREDIS_VERSION="0.13.3"
 ZLIB_VERSION="1.2.11" # www.zlib.net
-NGHTTP2_VERSION="1.28.0"
+NGHTTP2_VERSION="1.29.0"
 CURL_VERSION="7.57.0"
 ICU_VERSION="58.2" # 59.1 gcc要4.4.8以上 http://site.icu-project.org/
 if [ "$OS_NAME" != 'darwin' ];then
@@ -171,7 +171,7 @@ if [ "$OS_NAME" != 'darwin' ];then
     if [ "$gcc_new_version" = "$gcc_minimum_version" ]; then
         ICU_VERSION="58.2"
     else
-        ICU_VERSION="58.2" #升级到 59.1后 PHP7.1.8的intl扩展编译不过去
+        ICU_VERSION="58.2" #升级到 59.1后 PHP7.1.8的intl扩展编译不过去 60.2 php 7.2.0编译不过去
     fi
 fi
 LIBZIP_VERSION="1.3.2" # http://www.nih.at/libzip/index.html
@@ -207,11 +207,20 @@ PIXMAN_VERSION="0.34.0"
 EXPAT_VERSION="2.2.5"
 FREETYPE_VERSION="2.8.1"
 GLIB_VERSION="2.52.3" # 2.52.3没编译过去,报错 libblkid.so: undefined reference to `uuid_unparse@UUID_1.0'
-UTIL_LINUX_VERSION="2.31"
+UTIL_LINUX_VERSION="2.31.1"
 LIBFFI_VERSION="3.2.1"
-HARFBUZZ_VERSION="1.7.3"
+HARFBUZZ_VERSION="1.7.4"
 FONTCONFIG_VERSION="2.12.91"
-POPPLER_VERSION="0.57.0" #0.58.0 0.59.0 编译 pdf2htmlEX时报错 0.14.6;  0.60.1需要CMake 3.1.0
+POPPLER_VERSION="0.57.0" #0.58.0 0.59.0 编译 pdf2htmlEX时报错 0.14.6;
+which cmake 1>/dev/null 2>/dev/null
+if [ "$?" = "0" ];then
+    cmake_version=`cmake --version|awk '{ print $NF; }'|head -1`;
+    cmake_new_version=`echo $cmake_version 3.0.999|tr " " "\n"|sort -rV|head -1`;
+    #  0.60.1需要CMake 3.1.0
+    if [ "$cmake_new_version" != "3.0.999" ]; then
+        POPPLER_VERSION="0.62.0"
+    fi
+fi
 PANGO_VERSION="1.40.14"
 FONTFORGE_VERSION="20170731"
 PDF2HTMLEX_VERSION="0.14.6" # https://github.com/coolwanglu/pdf2htmlEX
@@ -238,7 +247,7 @@ PHP_ZMQ_VERSION="master" #1.1.3
 
 SQLITE_VERSION="3210000"
 POSTGRESQL_VERSION="10.1"
-PGBOUNCER_VERSION="1.7.2"
+PGBOUNCER_VERSION="1.8.1"
 
 APR_VERSION="1.6.3"
 APR_UTIL_VERSION="1.6.1"
@@ -266,7 +275,7 @@ if [ `echo "${PHP_VERSION}" "7.1.99"|tr " " "\n"|sort -rV|head -1` = "7.1.99" ];
 else
     PHP_LIBSODIUM_VERSION="2.0.4"
 fi
-MEMCACHED_VERSION="1.5.3"
+MEMCACHED_VERSION="1.5.4"
 PHP_MEMCACHED_VERSION="3.0.4"
 REDIS_VERSION="4.0.6"
 GEARMAND_VERSION="1.1.18"
@@ -283,14 +292,14 @@ PROPRO_VERSION="2.0.1"
 PECL_HTTP_VERSION="3.1.1RC1"
 AMQP_VERSION="1.9.3"
 MAILPARSE_VERSION="3.0.2"
-PHP_REDIS_VERSION="3.1.4"
+PHP_REDIS_VERSION="3.1.5"
 PHP_GEARMAN_VERSION="2.0.3"
 PHP_MONGODB_VERSION="1.3.4"
 SOLR_VERSION="2.4.0"
 IMAGICK_VERSION="3.4.3" # http://pecl.php.net/package/imagick
 PTHREADS_VERSION="3.1.6" # http://pecl.php.net/package/pthreads
 SWOOLE_VERSION="2.0.10" # http://pecl.php.net/package/swoole
-PHP_PROTOBUF_VERSION="3.5.0.1"
+PHP_PROTOBUF_VERSION="3.5.1"
 PHP_GRPC_VERSION="1.8.0"
 #QRENCODE_VERSION="0.0.3"
 QRENCODE_VERSION="0.1.0"
@@ -299,7 +308,7 @@ ZEND_VERSION="2.4.9" # http://framework.zend.com/downloads/latest
 SMARTY_VERSION="3.1.31"
 HTMLPURIFIER_VERSION="4.9.3"
 LARAVEL_VERSION="5.5.22"
-LARAVEL_FRAMEWORK_VERSION="5.5.26"
+LARAVEL_FRAMEWORK_VERSION="5.5.27"
 
 CKEDITOR_VERSION="4.8.0"
 JQUERY_VERSION="1.12.4.min"
