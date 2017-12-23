@@ -29,7 +29,7 @@ if [ ! -f $HOME/.chg_base_compile_env ]; then
     if [ "$OS_NAME" = "linux" ]; then
         sudo yum install -y bison cmake gcc xz texinfo bzip2 xz-devel gcc-c++ ncurses-devel ncurses byacc file re2c libtool-ltdl-devel popt-devel re2c wget curl libtool coreutils
         sudo yum install -y curl nss cyrus-sasl cyrus-sasl-devel cyrus-sasl-lib libacl libacl-devel libattr libattr-devel gperf pam pam-devel krb5-devel krb5-libs uuid uuid-devel libmount libmount-devel libuuid-devel libuuid
-        sudo yum install itstool # fontconfig 2.12.91
+        sudo yum install -y itstool # fontconfig 2.12.91
 
         #wget http://dl.fedoraproject.org/pub/epel/7/x86_64/r/re2c-0.14.3-2.el7.x86_64.rpm
         sudo yum install -y autoconf m4 automake pkg-config gettext-devel
