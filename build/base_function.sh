@@ -4298,7 +4298,7 @@ function compile_libgd()
                 --with-freetype=$FREETYPE_BASE \
                 --with-fontconfig=$FONTCONFIG_BASE \
                 --with-xpm=$LIBXPM_BASE
-                --with-jpeg=$JPEG_BASE
+                --with-jpeg=$LIBJPEG_BASE
     "
                 # --with-vpx=
                 # --with-tiff=
@@ -5926,7 +5926,7 @@ configure_php_command()
                 --with-gd=$LIBGD_BASE \
                 --with-freetype-dir=$FREETYPE_BASE \
                 $( [ `echo "$PHP_VERSION 7.1.99"|tr " " "\n"|sort -rV|head -1` = "$PHP_VERSION" ] && echo "" || echo "--enable-gd-native-ttf" ) \
-                --with-jpeg-dir=$JPEG_BASE \
+                --with-jpeg-dir=$LIBJPEG_BASE \
                 --with-png-dir=$LIBPNG_BASE \
                 --with-xpm-dir=$LIBXPM_BASE \
                 --with-zlib-dir=$ZLIB_BASE \
@@ -6227,8 +6227,8 @@ configure_ImageMagick_command()
 {
     # ld: symbol(s) not found for architecture x86_64
     # 用下面的CPPFLAGS LDFLAGS 或 --without-png
-    CPPFLAGS="$(get_cppflags ${ZLIB_BASE}/include ${LIBPNG_BASE}/include ${FREETYPE_BASE}/include ${FONTCONFIG_BASE}/include ${JPEG_BASE}/include $([ "$OS_NAME" = 'darwin' ] && echo " $LIBX11_BASE/include") )" \
-    LDFLAGS="$(get_ldflags ${ZLIB_BASE}/lib ${LIBPNG_BASE}/lib ${FREETYPE_BASE}/lib ${FONTCONFIG_BASE}/lib ${JPEG_BASE}/lib $([ "$OS_NAME" = 'darwin' ] && echo " $LIBX11_BASE/lib") )" \
+    CPPFLAGS="$(get_cppflags ${ZLIB_BASE}/include ${LIBPNG_BASE}/include ${FREETYPE_BASE}/include ${FONTCONFIG_BASE}/include ${LIBJPEG_BASE}/include $([ "$OS_NAME" = 'darwin' ] && echo " $LIBX11_BASE/include") )" \
+    LDFLAGS="$(get_ldflags ${ZLIB_BASE}/lib ${LIBPNG_BASE}/lib ${FREETYPE_BASE}/lib ${FONTCONFIG_BASE}/lib ${LIBJPEG_BASE}/lib $([ "$OS_NAME" = 'darwin' ] && echo " $LIBX11_BASE/lib") )" \
     ./configure --prefix=$IMAGEMAGICK_BASE \
                 $( [ \"$OS_NAME\" != \"darwin\" ] && echo '--enable-opencl' )
                 #--without-png \
