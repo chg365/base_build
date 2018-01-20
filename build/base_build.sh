@@ -295,6 +295,7 @@ init_setup
 # Install javascript lib
 ################################################################################
 compile_jquery
+compile_d3
 compile_chartjs
 compile_ckeditor
 compile_famous

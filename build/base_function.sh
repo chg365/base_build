@@ -531,6 +531,7 @@ function wget_base_library()
     wget_lib $CKEDITOR_FILE_NAME      "http://download.cksource.com/CKEditor/CKEditor/CKEditor%20$CKEDITOR_VERSION/$CKEDITOR_FILE_NAME"
     wget_lib $JQUERY_FILE_NAME        "http://code.jquery.com/$JQUERY_FILE_NAME"
     wget_lib $JQUERY3_FILE_NAME       "http://code.jquery.com/$JQUERY3_FILE_NAME"
+    wget_lib $D3_FILE_NAME            "https://github.com/d3/d3/releases/download/v${D3_VERSION}/d3.${D3_FILE_NAME#*${D3_VERSION}.}"
     wget_lib $CHARTJS_FILE_NAME       "https://github.com/chartjs/Chart.js/archive/v${CHARTJS_FILE_NAME#*-}"
     wget_lib $RABBITMQ_C_FILE_NAME    "https://github.com/alanxz/rabbitmq-c/archive/v${RABBITMQ_C_FILE_NAME##*-}"
 
@@ -5492,7 +5493,7 @@ function cp_GeoLite2_data()
     if [ ! -f "$GEOLITE2_CITY_MMDB_FILE_NAME" ] || [ ! -f "$GEOLITE2_COUNTRY_MMDB_FILE_NAME" ];then
         echo "file [${GEOLITE2_CITY_MMDB_FILE_NAME}] or [${GEOLITE2_COUNTRY_MMDB_FILE_NAME}]  not exists." >&2
         return 1;
-    fi 
+    fi
 
     if [ ! -f  "$GEOIP2_DATA_DIR/GeoLite2-City.mmdb" ];then
         gunzip -c $GEOLITE2_CITY_MMDB_FILE_NAME > $GEOIP2_DATA_DIR/GeoLite2-City.mmdb
@@ -5670,6 +5671,7 @@ function compile_composer()
     echo_build_start composer
     decompress $COMPOSER_FILE_NAME
     mkdir -p $COMPOSER_BASE
+    mkdir -p $BIN_DIR
     cp -r composer-$COMPOSER_VERSION/src/Composer $COMPOSER_BASE/
     cp composer-$COMPOSER_VERSION/bin/* $BIN_DIR/
 
@@ -5721,6 +5723,27 @@ function compile_jquery()
 
     cp $JQUERY_FILE_NAME $JQUERY_BASE/
     cp $JQUERY3_FILE_NAME $JQUERY_BASE/
+}
+# }}}
+# {{{ function compile_d3()
+function compile_d3()
+{
+#    is_installed d3 $D3_BASE
+#    if [ "$?" = "0" ];then
+#        return;
+#    fi
+
+    echo_build_start d3
+
+    mkdir -p $D3_BASE
+
+    decompress ${D3_FILE_NAME} d3-${D3_VERSION}
+    if [ "$?" != "0" ];then
+        # return 1;
+        exit 1;
+    fi
+
+    cp d3-${D3_VERSION}/d3.min.js $D3_BASE/
 }
 # }}}
 # {{{ function compile_famous()
@@ -5815,7 +5838,7 @@ configure_fontforge_command()
         PATH="${autoconf1%/*}:$PATH"
     fi
 
-    export PATH="$PATH" 
+    export PATH="$PATH"
 
     # 有readline的时候，报错:
     #$READLINE_BASE/lib/libreadline.so: undefined reference to `tgetnum'
@@ -6544,7 +6567,7 @@ function check_soft_updates()
     #yum update -y curl nss
     #which curl
     #which sed
-    #which sort 
+    #which sort
     #which head
 
     is_echo_latest=0
@@ -6682,6 +6705,7 @@ function check_soft_updates()
             smarty
             jquery
             jquery3
+            d3
             chartjs
             htmlpurifier
             rabbitmq
@@ -7009,6 +7033,12 @@ function check_jquery_version()
 function check_jquery3_version()
 {
     check_ftp_version jquery3 ${JQUERY3_VERSION%%.min} https://code.jquery.com/jquery/ 's/^.\{1,\}jquery-\([0-9.]\{1,\}\)\.js.\{1,\}$/\1/p'
+}
+# }}}
+# {{{ function check_d3_version()
+function check_d3_version()
+{
+    check_github_soft_version d3 ${D3_VERSION} https://github.com/d3/d3/releases
 }
 # }}}
 # {{{ function check_chartjs_version()
@@ -8539,7 +8569,7 @@ function repair_dynamic_shared_library()
             else
                 local num=`find $BASE_DIR -name ${filename1} |wc -l`;
                 if [ "$num" = "0" ];then
-                    echo "cant find file. filename: $j    file: $i" >&2 
+                    echo "cant find file. filename: $j    file: $i" >&2
                     continue;
                 elif [ "$num" != "1" ];then
                     echo "find more file with the same name. filename: $j  file: $i" >&2
@@ -8866,4 +8896,4 @@ function init_setup()
 #yum install perl python ruby perl-devel python-devel ruby-devel lua lua-devel perl-ExtUtils-Embed
 
 #./configure --prefix=/opt/vim800 --enable-luainterp=yes --enable-perlinterp=yes --enable-pythoninterp=yes --enable-rubyinterp=yes --enable-multibyte
-#./configure --enable-gui=no --without-x 
+#./configure --enable-gui=no --without-x
