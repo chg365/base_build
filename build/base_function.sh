@@ -186,30 +186,71 @@ function wget_lib()
 
     if [ -z "$FILE_NAME" ];then
         is_finished_wget "1/Unknown file"
+        return $?;
     fi
 
     if [ -f "$FILE_NAME" ];then
-        return;
+        return 0;
     fi
 
     if [ -z "$FILE_URL" ];then
         is_finished_wget "1/$FILE_NAME"
+        return $?;
     fi
 
-    wget --content-disposition --no-check-certificate $FILE_URL
+    wget --content-disposition --no-check-certificate $FILE_URL -O $FILE_NAME
     local wget_flag="$?"
     if [ "$wget_flag" = "8" ];then
-        wget --no-check-certificate $FILE_URL
+        wget --no-check-certificate $FILE_URL -O $FILE_NAME
         local wget_flag="$?"
     fi
     is_finished_wget "$wget_flag/$FILE_NAME"
-
+    return $?;
 }
 # }}}
 # function wget_lib_boost() {{{
 function wget_lib_boost()
 {
     wget_lib $BOOST_FILE_NAME "https://sourceforge.net/projects/boost/files/boost/${BOOST_VERSION//_/.}/$BOOST_FILE_NAME/download"
+}
+# }}}
+# function wget_lib_xunsearch() {{{
+function wget_lib_xunsearch()
+{
+    XUNSEARCH_FULL_VERSION="1.4.11"
+    XUNSEARCH_FULL_FILE_NAME="xunsearch-full-${XUNSEARCH_FULL_VERSION}.tar.bz2"
+    wget_lib $XUNSEARCH_FULL_FILE_NAME "http://www.xunsearch.com/download/xunsearch-full/$XUNSEARCH_FULL_FILE_NAME"
+    local flag="$?"
+    if [ "$flag" != "0" ];then
+        return $flag;
+    fi
+    if [ -f "$XUNSEARCH_FILE_NAME" ]; then
+        return 0;
+    fi
+    decompress $XUNSEARCH_FULL_FILE_NAME
+    local flag="$?"
+    if [ "$flag" != "0" ];then
+        return $flag;
+    fi
+
+    for i in `echo $SCWS_DICT_FILE_NAME $SCWS_FILE_NAME $XAPIAN_CORE_SCWS_FILE_NAME $XUNSEARCH_FILE_NAME $XUNSEARCH_SDK_FILE_NAME`;
+    do
+        if [ -f "./${i}" ];then
+            continue;
+        fi
+        if [ ! -f "./xunsearch-full-${XUNSEARCH_FULL_VERSION}/packages/${i}" ];then
+            continue;
+        fi
+        cp xunsearch-full-${XUNSEARCH_FULL_VERSION}/packages/${i} ./
+    done
+}
+# }}}
+# function wget_lib_browscap() {{{
+function wget_lib_browscap()
+{
+    #wget_lib $BROWSCAP_INI_FILE_NAME  "https://browscap.org/stream?q=PHP_BrowsCapINI"
+    # wget_lib $BROWSCAP_INI_FILE_NAME  "https://browscap.org/stream?q=Full_PHP_BrowsCapINI"
+    wget_lib $BROWSCAP_INI_FILE_NAME  "https://browscap.org/stream?q=Lite_PHP_BrowsCapINI"
 }
 # }}}
 # function rm_bak_file() {{{
@@ -253,7 +294,7 @@ function decompress()
     elif [ "${FILE_NAME%%.tar.lz}" != "$FILE_NAME" ];then
         tar --lzip -xf $FILE_NAME $tmp_str
     elif [ "${FILE_NAME%%.zip}" != "$FILE_NAME" ];then
-        if [ "$tmp_str" != "" ];then
+        if [ "$exdir" != "" ];then
             tmp_str="-d $exdir"
         fi
         unzip -q $FILE_NAME $tmp_str
@@ -399,6 +440,7 @@ function wget_base_library()
     # http://mysql.oss.eznetsols.org/Downloads/MySQL-${MYSQL_VERSION%.*}/$MYSQL_FILE_NAME
     wget_lib $MYSQL_FILE_NAME         "http://cdn.mysql.com/Downloads/MySQL-${MYSQL_VERSION%.*}/$MYSQL_FILE_NAME"
     wget_lib_boost
+    wget_lib_xunsearch
     wget_lib $PCRE_FILE_NAME          "http://sourceforge.net/projects/pcre/files/pcre/$PCRE_VERSION/$PCRE_FILE_NAME/download"
     wget_lib $NGINX_FILE_NAME         "http://nginx.org/download/$NGINX_FILE_NAME"
     wget_lib $NODEJS_FILE_NAME        "https://nodejs.org/dist/v${NODEJS_VERSION}/${NODEJS_FILE_NAME}"
@@ -426,6 +468,10 @@ function wget_base_library()
     wget_lib $LIBGCRYPT_FILE_NAME     "ftp://ftp.gnupg.org/gcrypt/libgcrypt/${LIBGCRYPT_FILE_NAME}"
     wget_lib $LIBGPG_ERROR_FILE_NAME  "ftp://ftp.gnupg.org/gcrypt/libgpg-error//${LIBGPG_ERROR_FILE_NAME}"
     wget_lib $LIBESTR_FILE_NAME       "http://libestr.adiscon.com/files/download/${LIBESTR_FILE_NAME}"
+
+    wget_lib $XAPIAN_CORE_FILE_NAME     "https://oligarchy.co.uk/xapian/${XAPIAN_CORE_VERSION}/${XAPIAN_CORE_FILE_NAME}"
+    wget_lib $XAPIAN_OMEGA_FILE_NAME    "https://oligarchy.co.uk/xapian/${XAPIAN_OMEGA_VERSION}/${XAPIAN_OMEGA_FILE_NAME}"
+    wget_lib $XAPIAN_BINDINGS_FILE_NAME "https://oligarchy.co.uk/xapian/${XAPIAN_BINDINGS_VERSION}/${XAPIAN_BINDINGS_FILE_NAME}"
 
     # wget_lib $LIBPNG_FILE_NAME     "https://sourceforge.net/projects/libpng/files/libpng$(echo ${LIBPNG_VERSION%\.*}|sed 's/\.//g')/$LIBPNG_VERSION/$LIBPNG_FILE_NAME/download"
     local version=${LIBPNG_VERSION%.*};
@@ -519,6 +565,7 @@ function wget_base_library()
     fi
     wget_lib $QRENCODE_FILE_NAME      "https://github.com/chg365/qrencode/archive/${QRENCODE_FILE_NAME#*-}"
     wget_lib $COMPOSER_FILE_NAME      "https://github.com/composer/composer/archive/${COMPOSER_FILE_NAME#*-}"
+    wget_lib_browscap
     wget_lib $PATCHELF_FILE_NAME      "https://github.com/NixOS/patchelf/archive/${PATCHELF_FILE_NAME##*-}"
     wget_lib $TESSERACT_FILE_NAME     "https://github.com/tesseract-ocr/tesseract/archive/${TESSERACT_FILE_NAME##*-}"
 
@@ -1467,6 +1514,36 @@ function is_installed_curl()
     return;
 }
 # }}}
+# {{{ function is_installed_xapian_core()
+function is_installed_xapian_core()
+{
+    local FILENAME="$XAPIAN_CORE_BASE/lib/pkgconfig/xapian-core.pc"
+    if [ ! -f "$FILENAME" ];then
+        return 1;
+    fi
+    local version=`pkg-config --modversion $FILENAME`
+    if [ "${version}" != "$XAPIAN_CORE_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
+# {{{ function is_installed_xapian_omega()
+function is_installed_xapian_omega()
+{
+
+    local FILENAME="$XAPIAN_OMEGA_BASE/bin/omindex"
+
+    if [ ! -f "$FILENAME" ];then
+        return 1;
+    fi
+    local version=`$FILENAME --version|awk '{ print $NF;}'|head -1`
+    if [ "${version}" != "$XAPIAN_OMEGA_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
 # {{{ function is_installed_nghttp2()
 function is_installed_nghttp2()
 {
@@ -2364,6 +2441,63 @@ function is_installed_pdf2htmlEX()
 # }}}
 # }}}
 # {{{ compile functions
+# {{{ function compile_xapian_core()
+function compile_xapian_core()
+{
+    is_installed xapian_core "$XAPIAN_CORE_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    # --sysconfdir=
+    XAPIAN_CORE_CONFIGURE="
+        ./configure --prefix=$XAPIAN_CORE_BASE \
+                    --enable-64bit-docid \
+                    --enable-64bit-termcount
+    "
+
+    compile "xapian_core" "$XAPIAN_CORE_FILE_NAME" "xapian-core-$XAPIAN_CORE_VERSION/" "$XAPIAN_CORE_BASE" "XAPIAN_CORE_CONFIGURE"
+}
+# }}}
+# {{{ function compile_xapian_omega()
+function compile_xapian_omega()
+{
+    compile_pkgconfig
+    compile_libiconv
+    compile_pcre
+    compile_xapian_core
+
+    # yum install file-devel
+    is_installed xapian_omega "$XAPIAN_OMEGA_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    XAPIAN_OMEGA_CONFIGURE="
+        configure_xapian_omega_command
+    "
+
+    compile "xapian_omega" "$XAPIAN_OMEGA_FILE_NAME" "xapian-omega-$XAPIAN_OMEGA_VERSION/" "$XAPIAN_OMEGA_BASE" "XAPIAN_OMEGA_CONFIGURE"
+}
+# }}}
+# {{{ function compile_xapian_bindings_php()
+function compile_xapian_bindings_php()
+{
+    compile_xapian_core
+    compile_php
+
+    is_installed_php_extension xapian $XAPIAN_BINDINGS_VERSION
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    XAPIAN_BINDINGS_PHP_CONFIGURE="
+        configure_xapian_bindings_php_command
+    "
+
+    compile "xapian_bindings_php" "$XAPIAN_BINDINGS_FILE_NAME" "xapian-bindings-$XAPIAN_BINDINGS_VERSION/" "$XAPIAN_BINDINGS_BASE" "XAPIAN_BINDINGS_PHP_CONFIGURE"
+}
+# }}}
 # {{{ function compile_re2c()
 function compile_re2c()
 {
@@ -4451,6 +4585,17 @@ function compile_php()
 
     compile "php" "$PHP_FILE_NAME" "php-$PHP_VERSION" "$PHP_BASE" "PHP_CONFIGURE" "after_php_make_install"
 
+
+    # browscap 支持处理
+    # 打开browscap后，只要执行php就会卡，不管用没用get_browser()函数
+    mkdir $PHP_CONFIG_DIR/extra && \
+    cp $BROWSCAP_INI_FILE_NAME $PHP_CONFIG_DIR/extra/browscap.ini
+    if [ "$?" != "0" ];then
+        echo "Warning: browscp.ini copy faild." >&2
+        return;
+    fi
+    local pattern='^[; ]\{0,\}\(browscap \{0,\}= \).\{1,\}$';
+    change_php_ini "$pattern" "\1$(sed_quote $PHP_CONFIG_DIR/extra/browscap.ini)"
 }
 # }}}
 # {{{ function after_php_make_install()
@@ -5744,6 +5889,7 @@ function compile_d3()
     fi
 
     cp d3-${D3_VERSION}/d3.min.js $D3_BASE/
+    rm -rf d3-${D3_VERSION}
 }
 # }}}
 # {{{ function compile_famous()
@@ -5800,6 +5946,29 @@ function compile_famous_angular()
 }
 # }}}
 # {{{ configure command functions
+# {{{ configure_xapian_omega_command()
+configure_xapian_omega_command()
+{
+    XAPIAN_CONFIG="$XAPIAN_CORE_BASE/bin/xapian-config" \
+    PCRE_CONFIG="$PCRE_BASE/bin/pcre-config" \
+    PKG_CONFIG="$PKGCONFIG_BASE/bin/pkg-config" \
+    ./configure --prefix=$XAPIAN_OMEGA_BASE \
+                --sysconfdir=$XAPIAN_OMEGA_CONFIG_DIR \
+                --with-iconv
+}
+# }}}
+# {{{ configure_xapian_bindings_php_command()
+configure_xapian_bindings_php_command()
+{
+
+    PHP7_EXTENSION_DIR="$PHP_BASE/lib/php/extensions/no-debug-zts-*/" \
+    PHP7="$PHP_BASE/bin/php" \
+    PHP_CONFIG7="$PHP_BASE/bin/php-config" \
+    XAPIAN_CONFIG="$XAPIAN_CORE_BASE/bin/xapian-config" \
+    ./configure --prefix=$XAPIAN_BINDINGS_BASE \
+                --with-php7
+}
+# }}}
 # {{{ configure_geoipupdate_command()
 configure_geoipupdate_command()
 {
@@ -6580,6 +6749,10 @@ function check_soft_updates()
 #check_version swfupload
 #    exit;
     local array=(
+            xapian_core
+            xapian_omega
+            xapian_bindings
+            browscap
             nghttp2
             calibre
             gitbook
@@ -6899,10 +7072,47 @@ function check_freetype_version()
     echo -e "freetype current version: \033[0;33m${FREETYPE_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
+# {{{ function check_browscap_version()
+function check_browscap_version()
+{
+    local new_version=`curl -Lk https://browscap.org/version-number 2>/dev/null`
+    if [ -z "$new_version" ];then
+        echo -e "探测browscap.ini新版本\033[0;31m失败\033[0m" >&2
+        return 1;
+    fi
+
+    is_new_version $BROWSCAP_INI_VERSION ${new_version//_/.}
+    if [ "$?" = "0" ];then
+        [ "$is_echo_latest" = "" -o "$is_echo_latest" != "0" ] && \
+        echo -e "browscap.ini version is \033[0;32mthe latest.\033[0m"
+        return 0;
+    fi
+
+    echo -e "browscap.ini current version: \033[0;33m${FREETYPE_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+}
+# }}}
 # {{{ function check_harfbuzz_version()
 function check_harfbuzz_version()
 {
     check_ftp_version harfbuzz ${HARFBUZZ_VERSION} https://www.freedesktop.org/software/harfbuzz/release/ 's/^.\{1,\}>harfbuzz-\([0-9.]\{1,\}\)\.tar\.bz2<.\{0,\}$/\1/p'
+}
+# }}}
+# {{{ function check_xapian_core_version()
+function check_xapian_core_version()
+{
+    check_ftp_version xapian-core ${XAPIAN_CORE_VERSION} https://xapian.org/download 's/^.\{1,\}xapian-core-\([0-9.]\{1,\}\)\.tar\..\{0,\}$/\1/p'
+}
+# }}}
+# {{{ function check_xapian_omega_version()
+function check_xapian_omega_version()
+{
+    check_ftp_version xapian-omega ${XAPIAN_OMEGA_VERSION} https://xapian.org/download 's/^.\{1,\}xapian-omega-\([0-9.]\{1,\}\)\.tar\..\{0,\}$/\1/p'
+}
+# }}}
+# {{{ function check_xapian_bindings_version()
+function check_xapian_bindings_version()
+{
+    check_ftp_version xapian-bindings ${XAPIAN_BINDINGS_VERSION} https://xapian.org/download 's/^.\{1,\}xapian-bindings-\([0-9.]\{1,\}\)\.tar\..\{0,\}$/\1/p'
 }
 # }}}
 # {{{ function check_libzip_version()
@@ -6953,7 +7163,7 @@ function check_php_version()
 # {{{ function check_gmp_version()
 function check_gmp_version()
 {
-    local new_version=`curl ftp://ftp.gmplib.org/pub/gmp/ 2>/dev/null|sed -n 's/^.\{1,\}gmp-\([0-9.]\{1,\}\)\.tar\.xz.\{1,\}$/\1/p'|sort -rV|head -1`
+    local new_version=`curl -Lk https://gmplib.org/ 2>/dev/null|sed -n 's/^.\{1,\}gmp-\([0-9.]\{1,\}\)\.tar\.xz.\{1,\}$/\1/p'|sort -rV|head -1`
     if [ -z "$new_version" ];then
         echo -e "探测gmp新版本\033[0;31m失败\033[0m" >&2
         return 1;
@@ -8897,3 +9107,14 @@ function init_setup()
 
 #./configure --prefix=/opt/vim800 --enable-luainterp=yes --enable-perlinterp=yes --enable-pythoninterp=yes --enable-rubyinterp=yes --enable-multibyte
 #./configure --enable-gui=no --without-x
+
+#wget --no-check-certificate --content-disposition https://github.com/swig/swig/archive/rel-3.0.12.tar.gz
+#tar zxf swig-rel-3.0.12.tar.gz
+#cd swig-rel-3.0.12
+#./autogen.sh
+#./configure --prefix=/usr/local/chg/base/opt/swig --with-php=/usr/local/chg/base/opt/php/bin
+#make
+#make install
+#cd ..
+#rm -rf swig-rel-3.0.12
+

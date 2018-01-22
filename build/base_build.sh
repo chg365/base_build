@@ -27,7 +27,7 @@ fi
 #wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-6.repo
 if [ ! -f $HOME/.chg_base_compile_env ]; then
     if [ "$OS_NAME" = "linux" ]; then
-        sudo yum install -y bison cmake gcc xz texinfo bzip2 xz-devel gcc-c++ ncurses-devel ncurses byacc file re2c libtool-ltdl-devel popt-devel re2c wget curl libtool coreutils
+        sudo yum install -y bison cmake gcc xz texinfo bzip2 xz-devel gcc-c++ ncurses-devel ncurses byacc file file-devel re2c libtool-ltdl-devel popt-devel re2c wget curl libtool coreutils
         sudo yum install -y curl nss cyrus-sasl cyrus-sasl-devel cyrus-sasl-lib libacl libacl-devel libattr libattr-devel gperf pam pam-devel krb5-devel krb5-libs uuid uuid-devel libmount libmount-devel libuuid-devel libuuid
         sudo yum install -y itstool # fontconfig 2.12.91
 
@@ -196,6 +196,11 @@ fi
 # 下载开源软件新版本
 wget_base_library
 
+compile_xapian_core
+compile_xapian_omega
+# make 时报错php7/xapian_wrap.cc:1096:27: error: 'xapian_globals' was not declared in this scope
+# 1.4.5 php 7.2.1
+#compile_xapian_bindings_php
 compile_patchelf
 compile_nodejs
 compile_openssl
