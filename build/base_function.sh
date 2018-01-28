@@ -7515,7 +7515,8 @@ function check_electron_version()
 # {{{ function check_phantomjs_version()
 function check_phantomjs_version()
 {
-    check_github_soft_version phantomjs $PHANTOMJS_VERSION "https://github.com/ariya/phantomjs/releases"
+    #check_github_soft_version phantomjs $PHANTOMJS_VERSION "https://github.com/ariya/phantomjs/releases"
+    check_ftp_version phantomjs $PHANTOMJS_VERSION "https://bitbucket.org/ariya/phantomjs/downloads/" 's/^.\{1,\}[> ]phantomjs-\([0-9.]\{1,\}\)-windows\{1,\}\.zip[< ]*.\{0,\}$/\1/p'
 }
 # }}}
 # {{{ function check_laravel_version()
