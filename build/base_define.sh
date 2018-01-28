@@ -351,7 +351,7 @@ GEOIP2_PHP_VERSION="2.8.0"
 GEOIPUPDATE_VERSION="2.5.0"
 ELECTRON_VERSION="1.8.1"
 if [ "$OS_NAME" = 'darwin' ];then
-    PHANTOMJS_VERSION="2.1.3"
+    PHANTOMJS_VERSION="2.1.1"
 else
     PHANTOMJS_VERSION="1.9.7" # npm install gitbook-pdf -g 时用到这个版本，不能使用最新的版本
 fi
