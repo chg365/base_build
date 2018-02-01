@@ -39,10 +39,18 @@ if [ ! -f $HOME/.chg_base_compile_env ]; then
         fi
     elif [ "$OS_NAME" = "darwin" ];then
         # curl: (56) SSLRead() return error -9841
-        brew install --with-openssl curl
-        brew link curl --force
-        brew install libtool
-        brew link libtool --overwrite
+        brew install --with-openssl curl && \
+        brew link curl --force && \
+        brew install --with-openssl wget && \
+        brew link wget --force && \
+        brew install re2c && \
+        brew link re2c --force && \
+        brew install libtool && \
+        brew link libtool --overwrite && \
+        brew install cmake && \
+        brew link cmake --overwrite
+        brew install autoconf && \
+        brew link autoconf --overwrite
     fi
 
     touch $HOME/.chg_base_compile_env
@@ -87,7 +95,7 @@ fi
 
 autoconf_version=`autoconf --version|head -1|awk '{ print $NF; }'`
 if [ `echo "$autoconf_version 2.63"|tr " " "\n"|sort -rV|head -1` = "2.63" ] ; then
-    echo "Autoconf version 2.64 or higher is required" >&2
+    echo "autoconf version 2.64 or higher is required" >&2
     exit 1;
 fi
 export LANG=C
