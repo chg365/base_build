@@ -184,6 +184,14 @@ if [ "$OS_NAME" != 'darwin' ];then
     fi
 fi
 LIBZIP_VERSION="1.3.2" # 1.4.0 需要cmake 3.0.2
+which cmake 1>/dev/null 2>/dev/null
+if [ "$?" = "0" ];then
+    cmake_version=`cmake --version 2>/dev/null|head -1|awk '{ print $NF;}'`;
+    cmake_new_version=`echo $cmake_version 3.0.1|tr " " "\n"|sort -rV|head -1`;
+    if [ "$cmake_new_version" != "3.0.1" ]; then
+        LIBZIP_VERSION="1.4.0"
+    fi
+fi
 GETTEXT_VERSION="0.19.8.1" # http://ftp.gnu.org/gnu/gettext/
 LIBICONV_VERSION="1.15" # http://ftp.gnu.org/gnu/libiconv/
 LIBXML2_VERSION="2.9.7"
@@ -233,7 +241,7 @@ FONTCONFIG_VERSION="2.12.91"
 POPPLER_VERSION="0.57.0" #0.58.0 0.59.0 编译 pdf2htmlEX时报错 0.14.6;
 which cmake 1>/dev/null 2>/dev/null
 if [ "$?" = "0" ];then
-    cmake_version=`cmake --version|awk '{ print $NF; }'|head -1`;
+    cmake_version=`cmake --version 2>/dev/null|head -1|awk '{ print $NF;}'`;
     cmake_new_version=`echo $cmake_version 3.0.999|tr " " "\n"|sort -rV|head -1`;
     #  0.60.1需要CMake 3.1.0
     if [ "$cmake_new_version" != "3.0.999" ]; then
@@ -286,7 +294,7 @@ LIBLOGGING_VERSION="1.0.6"
 LIBGCRYPT_VERSION="1.8.2"
 LIBGPG_ERROR_VERSION="1.27"
 LIBESTR_VERSION="0.1.10"
-PHP_VERSION="7.2.1"
+PHP_VERSION="7.2.2"
 COMPOSER_VERSION="1.6.3"
 BROWSCAP_INI_VERSION="6027"
 

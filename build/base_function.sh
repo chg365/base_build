@@ -208,6 +208,21 @@ function wget_lib()
     return $?;
 }
 # }}}
+# function wget_lib_sqlite() {{{
+function wget_lib_sqlite()
+{
+    local year=`curl -Lk http://www.sqlite.org/chronology.html 2>/dev/null |
+        sed -n "/^ \{0,\}<tr/{N;s/^ \{0,\}<tr.\{1,\}>\([0-9]\{4\}\)-[0-9]\{1,2\}-[0-9]\{1,2\}<.\{1,\}data-sortkey=['\"]\([0-9]\{1,\}\)['\"].\{1,\}<\/tr> \{0,\}$/\1 \2/p;}" |
+        grep $SQLITE_VERSION |
+        awk '{ print $1; }'`
+
+    if [ "$year" = "" ];then
+        local year=`date +%Y`
+    fi
+
+    wget_lib $SQLITE_FILE_NAME "http://www.sqlite.org/${year}/$SQLITE_FILE_NAME"
+}
+# }}}
 # function wget_lib_boost() {{{
 function wget_lib_boost()
 {
@@ -424,7 +439,7 @@ function wget_base_library()
     #wget_lib $ICU_FILE_NAME           "https://fossies.org/linux/misc/$ICU_FILE_NAME"
     # http://cdnetworks-kr-2.dl.sourceforge.net/project/libpng/zlib/$ZLIB_VERSION/$ZLIB_FILE_NAME
     wget_lib $ZLIB_FILE_NAME          "http://zlib.net/$ZLIB_FILE_NAME"
-    wget_lib $LIBZIP_FILE_NAME        "http://www.nih.at/libzip/$LIBZIP_FILE_NAME"
+    wget_lib $LIBZIP_FILE_NAME        "https://libzip.org/download/$LIBZIP_FILE_NAME"
     wget_lib $READLINE_FILE_NAME      "http://ftp.gnu.org/gnu/readline/$READLINE_FILE_NAME"
     wget_lib $GETTEXT_FILE_NAME       "http://ftp.gnu.org/gnu/gettext/$GETTEXT_FILE_NAME"
     wget_lib $LIBICONV_FILE_NAME      "http://ftp.gnu.org/gnu/libiconv/$LIBICONV_FILE_NAME"
@@ -434,11 +449,11 @@ function wget_base_library()
     wget_lib $LIBMCRYPT_FILE_NAME     "http://sourceforge.net/projects/mcrypt/files/Libmcrypt/$LIBMCRYPT_VERSION/$LIBMCRYPT_FILE_NAME/download"
     wget_lib $LIBWBXML_FILE_NAME      "https://sourceforge.net/projects/libwbxml/files/libwbxml/${LIBWBXML_VERSION}/${LIBWBXML_FILE_NAME}/download"
     wget_lib $LIBUUID_FILE_NAME       "https://sourceforge.net/projects/libuuid/files/$LIBUUID_FILE_NAME/download"
-    wget_lib $SQLITE_FILE_NAME        "http://www.sqlite.org/2017/$SQLITE_FILE_NAME"
     wget_lib $CURL_FILE_NAME          "http://curl.haxx.se/download/$CURL_FILE_NAME"
     # http://downloads.mysql.com/archives/mysql-${MYSQL_VERSION%.*}/$MYSQL_FILE_NAME
     # http://mysql.oss.eznetsols.org/Downloads/MySQL-${MYSQL_VERSION%.*}/$MYSQL_FILE_NAME
     wget_lib $MYSQL_FILE_NAME         "http://cdn.mysql.com/Downloads/MySQL-${MYSQL_VERSION%.*}/$MYSQL_FILE_NAME"
+    wget_lib_sqlite
     wget_lib_boost
     wget_lib_xunsearch
     wget_lib $PCRE_FILE_NAME          "http://sourceforge.net/projects/pcre/files/pcre/$PCRE_VERSION/$PCRE_FILE_NAME/download"
@@ -2529,7 +2544,8 @@ function compile_pkgconfig()
     fi
 
     PKGCONFIG_CONFIGURE="
-    ./configure --prefix=$PKGCONFIG_BASE
+    ./configure --prefix=$PKGCONFIG_BASE \
+                --with-internal-glib
     "
     #--with-internal-glib
 
@@ -2708,7 +2724,9 @@ function compile_libzip()
     fi
 
     LIBZIP_CONFIGURE="
-    ./configure --prefix=$LIBZIP_BASE --with-zlib=$ZLIB_BASE
+    $( is_new_version $LIBZIP_VERSION 1.3.99 && \
+        echo cmake . -DCMAKE_INSTALL_PREFIX=$LIBZIP_BASE || \
+        echo ./configure --prefix=$LIBZIP_BASE --with-zlib=$ZLIB_BASE)
     "
     compile "libzip" "$LIBZIP_FILE_NAME" "libzip-$LIBZIP_VERSION" "$LIBZIP_BASE" "LIBZIP_CONFIGURE"
 }
@@ -3395,7 +3413,10 @@ function compile_sqlite()
     fi
 
     SQLITE_CONFIGURE="
-    ./configure --prefix=$SQLITE_BASE --enable-json1 --enable-session --enable-fts5
+        ./configure --prefix=$SQLITE_BASE \
+                    --enable-json1 \
+                    --enable-session \
+                    --enable-fts5
     "
 
     compile "sqlite" "$SQLITE_FILE_NAME" "sqlite-autoconf-$SQLITE_VERSION" "$SQLITE_BASE" "SQLITE_CONFIGURE"
@@ -5368,9 +5389,9 @@ function configure_php_ext_imap_command()
 
     ./configure --with-php-config=$PHP_BASE/bin/php-config \
                 --with-imap$(is_installed_imap && echo "=$IMAP_BASE" ) \
+                --with-kerberos=$KERBEROS_BASE \
                 --with-imap-ssl=$OPENSSL_BASE
 
-    #--with-kerberos=$KERBEROS_BASE \
     # CPPFLAGS="$(get_cppflags $OPENSSL_BASE/include)" LDFLAGS="$(get_ldflags $OPENSSL_BASE/lib)" \
                 # --with-libdir=lib64 \
 }
@@ -5949,6 +5970,7 @@ function compile_famous_angular()
 # {{{ configure_xapian_omega_command()
 configure_xapian_omega_command()
 {
+    #mac     brew install libmagic
     XAPIAN_CONFIG="$XAPIAN_CORE_BASE/bin/xapian-config" \
     PCRE_CONFIG="$PCRE_BASE/bin/pcre-config" \
     PKG_CONFIG="$PKGCONFIG_BASE/bin/pkg-config" \
@@ -6130,8 +6152,6 @@ configure_php_command()
                 # --with-libzip=$LIBZIP_BASE \
 
                 # --with-fpm-systemd \  # Your system does not support systemd.
-
-                # --with-imap=$IMAP_BASE --with-imap-ssl=$OPENSSL_BASE --with-kerberos=$KERBEROS_BASE
 
                 # --without-iconv
                 # --with-tidy=$TIDY_BASE

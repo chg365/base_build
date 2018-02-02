@@ -48,7 +48,14 @@ if [ ! -f $HOME/.chg_base_compile_env ]; then
         brew install libtool && \
         brew link libtool --overwrite && \
         brew install cmake && \
-        brew link cmake --overwrite
+        brew link cmake --overwrite && \
+        brew install itstool && \
+        brew link itstool --overwrite && \
+        brew install automake && \
+        brew link automake --overwrite && \
+        brew install ossp-uuid && \
+        brew link ossp-uuid --overwrite && \
+        brew install libmagic && \
         brew install autoconf && \
         brew link autoconf --overwrite
     fi
@@ -177,8 +184,10 @@ cd $HOME/$project_abbreviation/pkgs
 #    echo "The install dir '$BASE_DIR' exists, please remove it, exit now"
 #    exit 1;
 #fi
-sudo mkdir -p $BASE_DIR
-sudo chown -R `whoami` $BASE_DIR
+if [ ! -d $BASE_DIR ]; then
+    sudo mkdir -p $BASE_DIR
+    sudo chown -R `whoami` $BASE_DIR
+fi
 
 if uname -a|grep -q x86_64 ; then
 	export KERNEL_BITS=64
@@ -209,7 +218,10 @@ compile_xapian_omega
 # make 时报错php7/xapian_wrap.cc:1096:27: error: 'xapian_globals' was not declared in this scope
 # 1.4.5 php 7.2.1
 #compile_xapian_bindings_php
-compile_patchelf
+if [ "$OS_NAME" != 'darwin' ];then
+    # mac下 这个软件不能用
+    compile_patchelf
+fi
 compile_nodejs
 compile_openssl
 compile_ImageMagick
