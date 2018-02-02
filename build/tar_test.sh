@@ -5,6 +5,11 @@ dir="${HOME}/chg_base/pkgs/"
 type="z"
 for FILE_NAME in `find $dir -mindepth 1 -maxdepth 1 -type f `;
 do
+    if [ ! -s "$FILE_NAME" ];then
+        echo "文件[${FILE_NAME}]为空, 删除" >&2;
+        rm -f $FILE_NAME
+        continue;
+    fi
     if [ "${FILE_NAME%%.tar.xz}" != "$FILE_NAME" ];then
         type="J"
     elif [ "${FILE_NAME%%.txz}" != "$FILE_NAME" ];then

@@ -204,6 +204,12 @@ function wget_lib()
         wget --no-check-certificate $FILE_URL -O $FILE_NAME
         local wget_flag="$?"
     fi
+
+    if [ ! -s "$FILE_NAME" ];then
+        echo "文件[${FILE_NAME}]为空, 删除" >&2;
+        rm -f $FILE_NAME
+    fi
+
     is_finished_wget "$wget_flag/$FILE_NAME"
     return $?;
 }
