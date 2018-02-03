@@ -268,7 +268,7 @@ compile_php_extension_event
 compile_php_extension_libsodium
 compile_php_extension_yaf
 compile_php_extension_phalcon
-#compile_php_extension_xdebug # 7.2.0以前的版本
+compile_php_extension_xdebug
 compile_php_extension_raphf
 compile_php_extension_propro
 # 编译上这个后，pthreads 报 段错误  3.1.0
@@ -280,7 +280,7 @@ compile_php_extension_redis
 compile_php_extension_mongodb
 compile_php_extension_pdo_pgsql
 compile_php_extension_swoole
-if [ "$gcc_new_version" != "$gcc_minimum_version" ]; then
+if [ "$gcc_new_version" = "" -o "$gcc_new_version" != "$gcc_minimum_version" ]; then
     compile_php_extension_grpc
     compile_php_extension_protobuf
 fi
