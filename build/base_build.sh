@@ -49,6 +49,8 @@ if [ ! -f $HOME/.chg_base_compile_env ]; then
         brew link libtool --overwrite && \
         brew install cmake && \
         brew link cmake --overwrite && \
+        brew install pkg-config && \
+        brew link pkg-config --overwrite && \
         brew install itstool && \
         brew link itstool --overwrite && \
         brew install automake && \

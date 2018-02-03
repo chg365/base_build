@@ -450,6 +450,7 @@ function wget_base_library()
     wget_lib $GETTEXT_FILE_NAME       "http://ftp.gnu.org/gnu/gettext/$GETTEXT_FILE_NAME"
     wget_lib $LIBICONV_FILE_NAME      "http://ftp.gnu.org/gnu/libiconv/$LIBICONV_FILE_NAME"
     wget_lib $LIBXML2_FILE_NAME       "ftp://xmlsoft.org/libxml2/$LIBXML2_FILE_NAME"
+    wget_lib $LIBWEBP_FILE_NAME       "https://github.com/webmproject/libwebp/archive/v${LIBWEBP_FILE_NAME##*-}"
     wget_lib $JSON_FILE_NAME          "https://s3.amazonaws.com/json-c_releases/releases/$JSON_FILE_NAME"
     # http://sourceforge.net/projects/mcrypt/files/MCrypt/2.6.8/mcrypt-2.6.8.tar.gz/download
     wget_lib $LIBMCRYPT_FILE_NAME     "http://sourceforge.net/projects/mcrypt/files/Libmcrypt/$LIBMCRYPT_VERSION/$LIBMCRYPT_FILE_NAME/download"
@@ -1402,6 +1403,20 @@ function is_installed_libxml2()
     fi
     local version=`pkg-config --modversion $FILENAME`
     if [ "$version" != "$LIBXML2_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
+# {{{ function is_installed_libwebp()
+function is_installed_libwebp()
+{
+    local FILENAME="$LIBWEBP_BASE/bin/cwebp"
+    if [ ! -f "$FILENAME" ];then
+        return 1;
+    fi
+    local version=`$FILENAME -version`
+    if [ "$version" != "$LIBWEBP_VERSION" ];then
         return 1;
     fi
     return;
@@ -2483,7 +2498,7 @@ function compile_xapian_core()
 # {{{ function compile_xapian_omega()
 function compile_xapian_omega()
 {
-    compile_pkgconfig
+    #compile_pkgconfig
     compile_libiconv
     compile_pcre
     compile_xapian_core
@@ -2794,6 +2809,49 @@ function compile_libxml2()
 #或者 sed -n 's/LZMA_OK/LZMA_STREAM_END/p' xmlIO.c
 
     compile "libxml2" "$LIBXML2_FILE_NAME" "libxml2-$LIBXML2_VERSION" "$LIBXML2_BASE" "LIBXML2_CONFIGURE"
+}
+# }}}
+# {{{ function compile_libwebp()
+function compile_libwebp()
+{
+    compile_zlib
+    compile_libjpeg
+    compile_libpng
+
+    is_installed libwebp "$LIBWEBP_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    LIBWEBP_CONFIGURE="
+        configure_libwebp_command
+    "
+
+    compile "libwebp" "$LIBWEBP_FILE_NAME" "libwebp-$LIBWEBP_VERSION" "$LIBWEBP_BASE" "LIBWEBP_CONFIGURE"
+
+    #if [ "$OS_NAME" = "linux" ]; then
+    #    repair_elf_file_rpath $LIBWEBP_BASE/bin/*webp*
+    #fi
+}
+# }}}
+# {{{ configure_libwebp_command()
+configure_libwebp_command()
+{
+
+    ./autogen.sh && \
+    CPPFLAGS="$(get_cppflags $ZLIB_BASE/include $LIBPNG_BASE/include $LIBJPEG_BASE/include)" \
+    LDFLAGS="$(get_ldflags $ZLIB_BASE/lib $LIBPNG_BASE/lib $LIBJPEG_BASE/lib)" \
+    ./configure --prefix=$LIBWEBP_BASE
+
+    # cmake 编译后还没有libwebp.pc文件 ,没有.so文件
+    #CPPFLAGS="$(get_cppflags $ZLIB_BASE/include $LIBPNG_BASE/include $LIBJPEG_BASE/include)" \
+    #LDFLAGS="$(get_ldflags $ZLIB_BASE/lib $LIBPNG_BASE/lib $LIBJPEG_BASE/lib)" \
+    #cmake . -DCMAKE_INSTALL_PREFIX=$LIBWEBP_BASE \
+    #        -DWEBP_BUILD_CWEBP=ON \
+    #        -DWEBP_BUILD_DWEBP=ON \
+    #        -DWEBP_BUILD_GIF2WEBP=ON \
+    #        -DWEBP_BUILD_IMG2WEBP=ON \
+    #        -DWEBP_BUILD_WEBPINFO=ON
 }
 # }}}
 # {{{ function compile_libxslt()
@@ -3160,7 +3218,7 @@ function compile_openjpeg()
     OPENJPEG_CONFIGURE="
      cmake ./ -DCMAKE_INSTALL_PREFIX=$OPENJPEG_BASE \
               -DCMAKE_BUILD_TYPE=Release \
-              -DBUILD_THIRDPARTY:BOOL=ON
+              -DBUILD_THIRDPARTY=ON
     "
 
     compile "openjpeg" "$OPENJPEG_FILE_NAME" "openjpeg-$OPENJPEG_VERSION" "$OPENJPEG_BASE" "OPENJPEG_CONFIGURE"
@@ -3177,7 +3235,7 @@ function compile_openjpeg()
 function compile_fontforge()
 {
     # yum install -y libtool-ltdl libtool-ltdl-devel
-    compile_pkgconfig
+    #compile_pkgconfig
     compile_freetype
     compile_libiconv
     compile_libpng
@@ -4442,8 +4500,8 @@ function compile_libgd()
     compile_libpng
     compile_freetype
     compile_fontconfig
-    #compile_jpeg
     compile_libjpeg
+    compile_libwebp
     compile_libXpm
 
     is_installed libgd "$LIBGD_BASE"
@@ -4454,12 +4512,14 @@ function compile_libgd()
     # CPPFLAGS="$(get_cppflags ${ZLIB_BASE}/include ${LIBPNG_BASE}/include ${LIBICONV_BASE}/include ${FREETYPE_BASE}/include ${FONTCONFIG_BASE}/include ${JPEG_BASE}/include $([ "$OS_NAME" = 'darwin' ] && echo " $LIBX11_BASE/include") )" \
     # LDFLAGS="$(get_ldflags ${ZLIB_BASE}/lib ${LIBPNG_BASE}/lib ${LIBICONV_BASE}/lib ${FREETYPE_BASE}/lib ${FONTCONFIG_BASE}/lib ${JPEG_BASE}/lib $([ "$OS_NAME" = 'darwin' ] && echo " $LIBX11_BASE/lib") )" \
     LIBGD_CONFIGURE="
-    ./configure --prefix=$LIBGD_BASE --with-libiconv-prefix=$LIBICONV_BASE \
+    ./configure --prefix=$LIBGD_BASE \
+                --with-libiconv-prefix=$LIBICONV_BASE \
                 --with-zlib=$ZLIB_BASE \
                 --with-png=$LIBPNG_BASE \
                 --with-freetype=$FREETYPE_BASE \
                 --with-fontconfig=$FONTCONFIG_BASE \
-                --with-xpm=$LIBXPM_BASE
+                --with-xpm=$LIBXPM_BASE \
+                --with-webp=$LIBWEBP_BASE \
                 --with-jpeg=$LIBJPEG_BASE
     "
                 # --with-vpx=
@@ -4599,6 +4659,7 @@ function compile_php()
     compile_libjpeg
     compile_libpng
     compile_libXpm
+    compile_libwebp
 
     is_installed php "$PHP_BASE"
     if [ "$?" = "0" ];then
@@ -5976,10 +6037,10 @@ function compile_famous_angular()
 # {{{ configure_xapian_omega_command()
 configure_xapian_omega_command()
 {
+    #PKG_CONFIG="$PKGCONFIG_BASE/bin/pkg-config" \
     #mac     brew install libmagic
     XAPIAN_CONFIG="$XAPIAN_CORE_BASE/bin/xapian-config" \
     PCRE_CONFIG="$PCRE_BASE/bin/pcre-config" \
-    PKG_CONFIG="$PKGCONFIG_BASE/bin/pkg-config" \
     ./configure --prefix=$XAPIAN_OMEGA_BASE \
                 --sysconfdir=$XAPIAN_OMEGA_CONFIG_DIR \
                 --with-iconv
@@ -6108,6 +6169,8 @@ configure_php_command()
         fi
     fi
 
+    #echo $PATH;
+
     # EXTRA_LIBS="-lresolv" \
     ./configure --prefix=$PHP_BASE \
                 --sysconfdir=$PHP_FPM_CONFIG_DIR \
@@ -6145,6 +6208,7 @@ configure_php_command()
                 $( [ \"$OS_NAME\" != \"darwin\" ] && echo --with-fpm-acl ) \
                 --with-gd=$LIBGD_BASE \
                 --with-freetype-dir=$FREETYPE_BASE \
+                $( [ `echo "$PHP_VERSION 7.2.1"|tr " " "\n"|sort -rV|head -1` = "$PHP_VERSION" ] && echo "--with-webp-dir=$LIBWEBP_BASE" || echo "") \
                 $( [ `echo "$PHP_VERSION 7.1.99"|tr " " "\n"|sort -rV|head -1` = "$PHP_VERSION" ] && echo "" || echo "--enable-gd-native-ttf" ) \
                 --with-jpeg-dir=$LIBJPEG_BASE \
                 --with-png-dir=$LIBPNG_BASE \
@@ -6775,6 +6839,7 @@ function check_soft_updates()
 #check_version swfupload
 #    exit;
     local array=(
+            libwebp
             xapian_core
             xapian_omega
             xapian_bindings
@@ -7992,6 +8057,12 @@ function check_pecl_sphinx_version()
 function check_libxml2_version()
 {
     check_ftp_xmlsoft_org_version libxml2 ${LIBXML2_VERSION}
+}
+# }}}
+# {{{ function check_libwebp_version()
+function check_libwebp_version()
+{
+    check_github_soft_version libwebp $LIBWEBP_VERSION "https://github.com/webmproject/libwebp/releases"
 }
 # }}}
 # {{{ function check_libxslt_version()
