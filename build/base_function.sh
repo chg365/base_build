@@ -6538,13 +6538,21 @@ configure_php_swoole_command()
                 --enable-coroutine \
                 --enable-async-redis \
                 --enable-thread \
+                --enable-http2 \
+                $( [ `echo "$SWOOLE_VERSION 2.1.0"|tr " " "\n"|sort -rV|head -1` = "$SWOOLE_VERSION" ] \
+                && echo " \
+                --enable-swoole-static \
+                --enable-mysqlnd \
+                --enable-timewheel \
+                " || echo "") \
                 --enable-ringbuffer" || echo " ") \
 
-                #--enable-http2 \
                 #-enable-jemalloc \
 
                 # CentOS 7.1  php7.1.4 swoole2.0.7  php -m 报错 Segmentation fault
                 #$( [ `echo "$kernel_release 2.6.33" | tr " " "\n"|sort -rV|head -1 ` = "$kernel_release" ] && echo "--enable-hugepage" || echo "" )
+               # swoole 2.1.0
+               #--enable-picohttpparser
 }
 # }}}
 # {{{ configure_php_amqp_command()

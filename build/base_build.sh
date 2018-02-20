@@ -25,6 +25,7 @@ fi
 # screen tmux
 # autoconf，automake，autopoint，pkg-config
 #wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-6.repo
+# {{{ yum install OR brew install
 if [ ! -f $HOME/.chg_base_compile_env ]; then
     if [ "$OS_NAME" = "linux" ]; then
         sudo yum install -y bison cmake gcc xz texinfo bzip2 xz-devel gcc-c++ ncurses-devel ncurses byacc file file-devel re2c libtool-ltdl-devel popt-devel re2c wget curl libtool coreutils
@@ -64,6 +65,7 @@ if [ ! -f $HOME/.chg_base_compile_env ]; then
 
     touch $HOME/.chg_base_compile_env
 fi
+# }}}
 
 #tar Jxf m4-1.4.17.tar.xz
 #cd m4-1.4.17
@@ -447,3 +449,5 @@ npm install --save-dev gulp-uglify gulp-jshint gulp-rename gulp-concat gulp-clea
 npm config delete registry
 gulp
 
+#php oauth
+#./configure --with-php-config=$PHP_BASE/bin/php-config --with-libdir=$CURL_BASE --enable-oauth
