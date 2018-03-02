@@ -451,6 +451,7 @@ function wget_base_library()
     wget_lib $LIBICONV_FILE_NAME      "http://ftp.gnu.org/gnu/libiconv/$LIBICONV_FILE_NAME"
     wget_lib $LIBXML2_FILE_NAME       "ftp://xmlsoft.org/libxml2/$LIBXML2_FILE_NAME"
     wget_lib $LIBWEBP_FILE_NAME       "https://github.com/webmproject/libwebp/archive/v${LIBWEBP_FILE_NAME##*-}"
+    wget_lib $FRIBIDI_FILE_NAME       "https://github.com/fribidi/fribidi/archive/v${FRIBIDI_FILE_NAME##*-}"
     wget_lib $JSON_FILE_NAME          "https://s3.amazonaws.com/json-c_releases/releases/$JSON_FILE_NAME"
     # http://sourceforge.net/projects/mcrypt/files/MCrypt/2.6.8/mcrypt-2.6.8.tar.gz/download
     wget_lib $LIBMCRYPT_FILE_NAME     "http://sourceforge.net/projects/mcrypt/files/Libmcrypt/$LIBMCRYPT_VERSION/$LIBMCRYPT_FILE_NAME/download"
@@ -1417,6 +1418,20 @@ function is_installed_libwebp()
     fi
     local version=`$FILENAME -version`
     if [ "$version" != "$LIBWEBP_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
+# {{{ function is_installed_fribidi()
+function is_installed_fribidi()
+{
+    local FILENAME="$FRIBIDI_BASE/lib/pkgconfig/fribidi.pc"
+    if [ ! -f "$FILENAME" ];then
+        return 1;
+    fi
+    local version=`pkg-config --modversion $FILENAME`
+    if [ "$version" != "$FRIBIDI_VERSION" ];then
         return 1;
     fi
     return;
@@ -2854,6 +2869,28 @@ configure_libwebp_command()
     #        -DWEBP_BUILD_WEBPINFO=ON
 }
 # }}}
+# {{{ function compile_fribidi()
+function compile_fribidi()
+{
+    is_installed fribidi "$FRIBIDI_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    FRIBIDI_CONFIGURE="
+        configure_fribidi_command
+    "
+
+    compile "fribidi" "$FRIBIDI_FILE_NAME" "fribidi-$FRIBIDI_VERSION" "$FRIBIDI_BASE" "FRIBIDI_CONFIGURE"
+}
+# }}}
+# {{{ configure_fribidi_command()
+configure_fribidi_command()
+{
+    ./bootstrap && \
+    ./configure --prefix=$FRIBIDI_BASE
+}
+# }}}
 # {{{ function compile_libxslt()
 function compile_libxslt()
 {
@@ -3234,8 +3271,9 @@ function compile_openjpeg()
 # {{{ function compile_fontforge()
 function compile_fontforge()
 {
-    # yum install -y libtool-ltdl libtool-ltdl-devel
+    # yum install -y libtool-ltdl libtool-ltdl-devel patch
     #compile_pkgconfig
+    # libspiro libuninameslist
     compile_freetype
     compile_libiconv
     compile_libpng
@@ -3261,6 +3299,7 @@ function compile_pango()
 {
     compile_cairo
     [ "$OS_NAME" != "darwin" ] && compile_glib
+    compile_fribidi
     compile_freetype
     compile_fontconfig
 
@@ -6123,7 +6162,6 @@ configure_fontforge_command()
     ./configure --prefix=$FONTFORGE_BASE \
                 --disable-python-scripting \
                 --disable-python-extension \
-                --enable-extra-encodings \
                 --without-libreadline \
                 --without-x
                 # --without-libiconv \
@@ -6847,6 +6885,7 @@ function check_soft_updates()
 #check_version swfupload
 #    exit;
     local array=(
+            fribidi
             libwebp
             xapian_core
             xapian_omega
@@ -8071,6 +8110,12 @@ function check_libxml2_version()
 function check_libwebp_version()
 {
     check_github_soft_version libwebp $LIBWEBP_VERSION "https://github.com/webmproject/libwebp/releases"
+}
+# }}}
+# {{{ function check_fribidi_version()
+function check_fribidi_version()
+{
+    check_github_soft_version fribidi $FRIBIDI_VERSION "https://github.com/fribidi/fribidi/releases"
 }
 # }}}
 # {{{ function check_libxslt_version()
