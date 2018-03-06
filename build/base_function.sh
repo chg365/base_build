@@ -549,7 +549,8 @@ function wget_base_library()
     fi
     wget_lib $KERBEROS_FILE_NAME      "http://web.mit.edu/kerberos/dist/krb5/${version}/$KERBEROS_FILE_NAME"
     wget_lib $LIBMEMCACHED_FILE_NAME  "https://launchpad.net/libmemcached/${LIBMEMCACHED_VERSION%.*}/$LIBMEMCACHED_VERSION/+download/$LIBMEMCACHED_FILE_NAME"
-    wget_lib $MEMCACHED_FILE_NAME     "http://memcached.org/files/${MEMCACHED_FILE_NAME}"
+    wget_lib $MEMCACHED_FILE_NAME     "https://github.com/memcached/memcached/archive/${MEMCACHED_FILE_NAME##*-}"
+    #wget_lib $MEMCACHED_FILE_NAME     "http://memcached.org/files/${MEMCACHED_FILE_NAME}"
     wget_lib $REDIS_FILE_NAME         "http://download.redis.io/releases/${REDIS_FILE_NAME}"
     # wget_lib $LIBEVENT_FILE_NAME      "https://sourceforge.net/projects/levent/files//libevent-${LIBEVENT_VERSION%.*}/$LIBEVENT_FILE_NAME"
     # wget_lib $LIBEVENT_FILE_NAME      "https://sourceforge.net/projects/levent/files/release-${LIBEVENT_VERSION}-stable/$LIBEVENT_FILE_NAME/download"
@@ -3326,13 +3327,28 @@ function compile_memcached()
     fi
 
     MEMCACHED_CONFIGURE="
+        configure_memcached_command
+    "
+
+    compile "memcached" "$MEMCACHED_FILE_NAME" "memcached-$MEMCACHED_VERSION" "$MEMCACHED_BASE" "MEMCACHED_CONFIGURE"
+}
+# }}}
+# {{{ function configure_memcached_command()
+function configure_memcached_command()
+{
+    # 没有configure
+    if [ ! -f "./configure" ]; then
+        # 执行报错，就只能下载有configure的包了
+        ./autogen.sh
+        if [ "$?" != "0" ];then
+            return 1;
+        fi
+    fi
+
     ./configure --prefix=$MEMCACHED_BASE \
                 --with-libevent=$LIBEVENT_BASE \
                 $( echo "$HOST_TYPE"|grep -q x86_64 && echo "--enable-64bit" )
-    "
                 # --enable-dtrace
-
-    compile "memcached" "$MEMCACHED_FILE_NAME" "memcached-$MEMCACHED_VERSION" "$MEMCACHED_BASE" "MEMCACHED_CONFIGURE"
 }
 # }}}
 # {{{ function compile_redis()
@@ -8303,7 +8319,8 @@ function check_libsodium_version()
 # {{{ function check_memcached_version()
 function check_memcached_version()
 {
-    check_ftp_version memcached ${MEMCACHED_VERSION} http://memcached.org/files/
+    check_github_soft_version memcached $MEMCACHED_VERSION "https://github.com/memcached/memcached/releases"
+    #check_ftp_version memcached ${MEMCACHED_VERSION} http://memcached.org/files/
 }
 # }}}
 # {{{ function check_apache_version()
