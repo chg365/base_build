@@ -867,6 +867,30 @@ function init_php_fpm_ini()
     # listen
     local pattern='^\(listen = [0-9.]\{1,\}:\)[0-9]\{1,\}$';
     change_php_fpm_ini "$pattern" "\19040" "$PHP_FPM_CONFIG_DIR/php-fpm.d/www.conf"
+
+    # pm.max_children 30
+    local pattern='^\(pm.max_children = \)[0-9.]\{1,\}$';
+    change_php_fpm_ini "$pattern" "\130" "$PHP_FPM_CONFIG_DIR/php-fpm.d/www.conf"
+
+    # pm.start_servers 10
+    local pattern='^\(pm.start_servers = \)[0-9.]\{1,\}$';
+    change_php_fpm_ini "$pattern" "\110" "$PHP_FPM_CONFIG_DIR/php-fpm.d/www.conf"
+
+    # pm.min_spare_servers 5
+    local pattern='^\(pm.min_spare_servers = \)[0-9.]\{1,\}$';
+    change_php_fpm_ini "$pattern" "\15" "$PHP_FPM_CONFIG_DIR/php-fpm.d/www.conf"
+
+    # pm.max_spare_servers 15
+    local pattern='^\(pm.max_spare_servers = \)[0-9.]\{1,\}$';
+    change_php_fpm_ini "$pattern" "\115" "$PHP_FPM_CONFIG_DIR/php-fpm.d/www.conf"
+
+    # pm.max_requests 1024
+    local pattern='^;\{0,\}\(pm.max_requests = \)[0-9.]\{1,\}$';
+    change_php_fpm_ini "$pattern" "\11024" "$PHP_FPM_CONFIG_DIR/php-fpm.d/www.conf"
+
+    # catch_workers_output = yes
+    local pattern='^;\(catch_workers_output = yes\)$';
+    change_php_fpm_ini "$pattern" "\1" "$PHP_FPM_CONFIG_DIR/php-fpm.d/www.conf"
 }
 # }}}
 # function init_mysql_cnf() {{{
