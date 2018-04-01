@@ -160,7 +160,12 @@ function make_run()
         return 1;
     fi
 
-    make && make install
+    if [ "${@#*/}" = "util-linux" ];then
+        make && sudo make install
+        sudo chown -R `whoami` $UTIL_LINUX_BASE
+    else
+        make && make install
+    fi
 
     if [ $? -ne 0 ];then
         echo "Install ${@#*/} failed." >&2;
@@ -549,8 +554,8 @@ function wget_base_library()
     fi
     wget_lib $KERBEROS_FILE_NAME      "http://web.mit.edu/kerberos/dist/krb5/${version}/$KERBEROS_FILE_NAME"
     wget_lib $LIBMEMCACHED_FILE_NAME  "https://launchpad.net/libmemcached/${LIBMEMCACHED_VERSION%.*}/$LIBMEMCACHED_VERSION/+download/$LIBMEMCACHED_FILE_NAME"
-    wget_lib $MEMCACHED_FILE_NAME     "https://github.com/memcached/memcached/archive/${MEMCACHED_FILE_NAME##*-}"
-    #wget_lib $MEMCACHED_FILE_NAME     "http://memcached.org/files/${MEMCACHED_FILE_NAME}"
+    #wget_lib $MEMCACHED_FILE_NAME     "https://github.com/memcached/memcached/archive/${MEMCACHED_FILE_NAME##*-}"
+    wget_lib $MEMCACHED_FILE_NAME     "http://memcached.org/files/${MEMCACHED_FILE_NAME}"
     wget_lib $REDIS_FILE_NAME         "http://download.redis.io/releases/${REDIS_FILE_NAME}"
     # wget_lib $LIBEVENT_FILE_NAME      "https://sourceforge.net/projects/levent/files//libevent-${LIBEVENT_VERSION%.*}/$LIBEVENT_FILE_NAME"
     # wget_lib $LIBEVENT_FILE_NAME      "https://sourceforge.net/projects/levent/files/release-${LIBEVENT_VERSION}-stable/$LIBEVENT_FILE_NAME/download"
@@ -2426,7 +2431,7 @@ function is_installed_util_linux()
         return 1;
     fi
     local version=`pkg-config --modversion $FILENAME`
-    if [ "$version" != "$UTIL_LINUX_VERSION" ];then
+    if [ "$version" != "$UTIL_LINUX_VERSION" -a "${version%.0}" != "$UTIL_LINUX_VERSION" ];then
         return 1;
     fi
     return;
@@ -2888,8 +2893,7 @@ function compile_fribidi()
 # {{{ configure_fribidi_command()
 configure_fribidi_command()
 {
-    ./bootstrap && \
-    ./configure --prefix=$FRIBIDI_BASE
+    ./autogen.sh --prefix=$FRIBIDI_BASE --disable-docs
 }
 # }}}
 # {{{ function compile_libxslt()
@@ -3670,12 +3674,7 @@ function compile_glib()
     #ftp://oss.sgi.com/projects/fam/download/stable/fam-2.7.0.tar.gz
 
     if [ "$OS_NAME" != "darwin" ]; then
-        # 需要libmount,没有时，才编译
-        pkg-config --modversion mount >/dev/null 2>&1
-        if [ "$?" != "0" ]; then
-            #compile_util_linux
-            sudo yum install libmount libmount-devel
-        fi
+        compile_util_linux
     fi
 
     is_installed glib "$GLIB_BASE"
