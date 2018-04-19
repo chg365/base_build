@@ -8607,7 +8607,10 @@ function check_sourceforge_soft_version()
     if [ -z "$pattern" ]; then
         pattern="s/^.\{1,\}Download \{1,\}${soft}-\([0-9.]\{1,\}\).tar\..\{1,\}$/\1/p"
     fi
-    local new_version=`curl -LK -H 'Upgrade-Insecure-Requests: 1' https://sourceforge.net/projects/${soft}/files/$( [ "${soft1}" = "0" ] || echo "${soft1}/" ) 2>/dev/null|sed -n "$pattern"|sort -rV|head -1`;
+    #-H 'Upgrade-Insecure-Requests: 1'
+    #-H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36'
+    # --compressed
+    local new_version=`curl -Lk https://sourceforge.net/projects/${soft}/files/$( [ "${soft1}" = "0" ] || echo "${soft1}/" ) 2>/dev/null|sed -n "$pattern"|sort -rV|head -1`;
     if [ -z "$new_version" ];then
         echo -e "探测${soft}的新版本\033[0;31m失败\033[0m" >&2
         return 1;
