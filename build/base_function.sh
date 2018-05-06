@@ -1297,10 +1297,10 @@ function is_installed_libwbxml()
 # {{{ function is_installed_gettext()
 function is_installed_gettext()
 {
-    if [ ! -f "$LIBICONV_BASE/bin/gettext" ];then
+    if [ ! -f "$GETTEXT_BASE/bin/gettext" ];then
         return 1;
     fi
-    local version=`$LIBICONV_BASE/bin/gettext --version|sed -n '1s/^.\{1,\} \{1,\}\([0-9.]\{1,\}\)$/\1/p'`
+    local version=`$GETTEXT_BASE/bin/gettext --version|sed -n '1s/^.\{1,\} \{1,\}\([0-9.]\{1,\}\)$/\1/p'`
     if [ "$version" != "$GETTEXT_VERSION" ];then
         return 1;
     fi
@@ -3468,7 +3468,7 @@ function configure_gearmand_command()
     LDFLAGS="$(get_ldflags $LIBEVENT_BASE/lib $CURL_BASE/lib $BOOST_BASE/lib)" \
     ./configure --prefix=$GEARMAND_BASE \
                 --enable-ssl \
-                --with-mysql=no \
+                --without-mysql \
                 --with-boost=$( is_installed_boost && echo ${BOOST_BASE} || echo yes ) \
                 --with-openssl=$OPENSSL_BASE \
 
@@ -3647,6 +3647,7 @@ function compile_freetype()
 
     FREETYPE_CONFIGURE="
     ./configure --prefix=$FREETYPE_BASE \
+                $( is_new_version $FREETYPE_VERSION 2.9.1 && echo '--enable-freetype-config') \
                 --with-zlib=yes \
                 --with-png=yes
     "
@@ -5572,6 +5573,9 @@ function compile_mysql()
 
     echo_build_start mysql
 
+
+    exit;
+
     decompress $MYSQL_FILE_NAME
     if [ "$?" != "0" ];then
         exit;
@@ -5612,14 +5616,19 @@ function compile_mysql()
     mkdir $mysql_install
     cd $mysql_install
 
+    #mysql 8.0.11 需要pcre2,太费时间和空间，以后不编译了。
+    #cmake .. -LH  # overview with help text
+    #cmake .. -LAH
     #sudo yum install glibc-static*
     #sudo yum install ncurses-devel ncurses
     cmake ../mysql-$MYSQL_VERSION -DCMAKE_INSTALL_PREFIX=$MYSQL_BASE \
                                   -DSYSCONFDIR=$MYSQL_CONFIG_DIR \
                                   -DDEFAULT_CHARSET=utf8 -DDEFAULT_COLLATION=utf8_general_ci \
-                                  -DWITH_SSL=bundled \
+                                  $( [ "$OS_NAME" = "linux" ] && echo "-DENABLE_GPROF=ON" ) \
+                                  -DWITH_SSL=$( is_new_version $MYSQL_VERSION "8.0.0" && echo "$OPENSSL_BASE" || echo "bundled") \
                                   -DWITH_BOOST=../boost_${BOOST_VERSION}/ \
-                                  -DWITH_ZLIB=bundled \
+                                  -DWITH_ZLIB=$ZLIB_BASE \
+                                  -DWITH_CURL=$CURL_BASE \
                                   $( has_systemd && echo '-DWITH_SYSTEMD=ON' ) \
                                   -DINSTALL_MYSQLTESTDIR=
 
@@ -5628,10 +5637,55 @@ function compile_mysql()
                                   # -DWITH_PARTITION_STORAGE_ENGINE=1
                                   # -DWITH_INNODB_MEMCACHED=1 \ mac系统下编译不过去，报错
                                   # -DWITH_EXTRA_CHARSET:STRING=utf8,gbk \
-                                  # -DWITH_MYISAM_STORAGE_ENGINE=1 \
-                                  # -DWITH_MEMORY_STORAGE_ENGINE=1 \
                                   # -DWITH_READLINE=1 \
                                   # -DENABLED_LOCAL_INFILE=1 \                      #允许从本地导入数据
+
+    #// Set to true if this is a community build
+    #COMMUNITY_BUILD:BOOL=ON
+    #// Enable profiling
+    #ENABLED_PROFILING:BOOL=ON
+    #// Enable gprof (optimized, Linux builds only)
+    #ENABLE_GPROF:BOOL=OFF
+    
+    #// Enable SASL on InnoDB Memcached
+    #ENABLE_MEMCACHED_SASL:BOOL=OFF
+
+    #// Enable SASL on InnoDB Memcached
+    #ENABLE_MEMCACHED_SASL_PWDB:BOOL=OFF
+
+    #// Randomize the order of all symbols in the binary
+    #LINK_RANDOMIZE:BOOL=OFF
+
+    #// Seed to use for link randomization
+    #LINK_RANDOMIZE_SEED:STRING=mysql
+
+    #// default MySQL keyring directory
+    #MYSQL_KEYRINGDIR:PATH=/usr/local/mysql/keyring
+
+    #// Take extra pains to make build result independent of build location and time
+    #REPRODUCIBLE_BUILD:BOOL=OFF
+
+    #// Enable address sanitizer
+    #WITH_ASAN:BOOL=OFF
+
+    # Report error if the LDAP authentication plugin cannot be built.
+    #WITH_AUTHENTICATION_LDAP:BOOL=OFF
+
+    #WITH_INNODB_MEMCACHED:BOOL=OFF
+
+    # Enable memory sanitizer
+    #WITH_MSAN:BOOL=OFF
+
+    # Enable thread sanitizer
+    #WITH_TSAN:BOOL=OFF
+
+    # Enable undefined behavior sanitizer
+    #WITH_UBSAN:BOOL=OFF
+
+    #WITH_UNIT_TESTS:BOOL=ON
+
+    # Valgrind instrumentation
+    #WITH_VALGRIND:BOOL=OFF
 
     make_run "$?/mysql"
     if [ "$?" != "0" ];then
