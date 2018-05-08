@@ -13,7 +13,10 @@ project_abbreviation="chg_base"
 #declare -l HOST_TYPE
 # getconf LONG_BIT # 32 64
 OS_NAME=`uname -s|tr '[A-Z]' '[a-z]'`;   # Linux
-HOST_TYPE=`uname -m|tr '[A-Z]' '[a-z]'`; # x86_64
+# uname -o # GNU/Linux
+HOST_TYPE=`uname -m|tr '[A-Z]' '[a-z]'`; # x86_64 # uname -p # uname -i
+KERNEL_RELEASE=`uname -r` # 3.10.0-229.el7.x86_64
+KERNEL_RELEASE=${KERNEL_RELEASE%.*} # 3.10.0-229.el7
 
 BASE_DIR=/usr/local/${project_abbreviation//_//}
 COMPILE_BASE=$(dirname $BASE_DIR)/compile
@@ -398,7 +401,7 @@ PKGCONFIG_FILE_NAME="pkg-config-${PKGCONFIG_VERSION}.tar.gz"
 SQLITE_FILE_NAME="sqlite-autoconf-${SQLITE_VERSION}.tar.gz"
 CURL_FILE_NAME="curl-${CURL_VERSION}.tar.bz2"
 NGHTTP2_FILE_NAME="nghttp2-${NGHTTP2_VERSION}.tar.xz"
-MYSQL_FILE_NAME="mysql-${MYSQL_VERSION}.tar.gz"
+MYSQL_FILE_NAME="mysql-${MYSQL_VERSION}-$([ "$OS_NAME" = "linux" ] && echo "${KERNEL_RELEASE##*.}" || echo "macos10.13")-x86_64.tar.gz" #不支持32位了
 BOOST_FILE_NAME="boost_${BOOST_VERSION}.tar.bz2"
 PCRE_FILE_NAME="pcre-${PCRE_VERSION}.tar.bz2"
 NGINX_FILE_NAME="nginx-${NGINX_VERSION}.tar.gz"

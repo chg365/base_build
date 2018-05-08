@@ -5573,14 +5573,43 @@ function compile_mysql()
 
     echo_build_start mysql
 
-
-    exit;
-
     decompress $MYSQL_FILE_NAME
     if [ "$?" != "0" ];then
-        exit;
+        exit 1;
     fi
 
+    #mysql 8.0.11 需要pcre2,而且也太费时间和空间(5G以上吧)，以后不编译了。
+
+    #不编译源码
+    if [ "$MYSQL_FILE_NAME" != "mysql-${MYSQL_VERSION}.tar.gz" ]; then
+
+        mkdir -p $MYSQL_BASE
+
+        cp -r ${MYSQL_FILE_NAME%%.tar.gz}/* $MYSQL_BASE/
+
+        if [ "$?" != "0" ];then
+            echo "install mysql faild. command: cp -r ${MYSQL_FILE_NAME%%.tar.gz}/* $MYSQL_BASE/" >&2
+            exit 1;
+        fi
+
+        /bin/rm -rf ${MYSQL_FILE_NAME%%.tar.gz}
+
+        if [ "$?" != "0" ];then
+            echo "install mysql faild. command: /bin/rm -rf ${MYSQL_FILE_NAME%%.tar.gz}" >&2
+            exit 1;
+        fi
+
+        mkdir -p $MYSQL_CONFIG_DIR && cp $curr_dir/conf/my.cnf $mysql_cnf
+        if [ "$?" != "0" ];then
+            exit 1;
+        fi
+
+        init_mysql_cnf
+
+        return;
+    fi
+
+    #编译源码
     local boost_cmake_file="mysql-$MYSQL_VERSION/cmake/boost.cmake"
     if [ ! -f "$boost_cmake_file" ];then
         echo "Warning: Can't find file: $boost_cmake_file" >&2
@@ -5616,7 +5645,6 @@ function compile_mysql()
     mkdir $mysql_install
     cd $mysql_install
 
-    #mysql 8.0.11 需要pcre2,太费时间和空间，以后不编译了。
     #cmake .. -LH  # overview with help text
     #cmake .. -LAH
     #sudo yum install glibc-static*
