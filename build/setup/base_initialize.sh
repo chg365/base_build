@@ -228,9 +228,9 @@ function mysql_data_init()
         return 1;
     fi
 
-    $MYSQL_BASE/bin/mysql -u root -p${random_password} --connect-expired-password -e quit >/dev/null 2>&1
+    $MYSQL_BASE/bin/mysql --defaults-file=$mysql_cnf -u root -p${random_password} --connect-expired-password -e quit >/dev/null 2>&1
     if [ "$?" != "0" ];then
-        $MYSQL_BASE/bin/mysql -u root -p${NEW_PASSWORD} -e quit >/dev/null 2>&1
+        $MYSQL_BASE/bin/mysql --defaults-file=$mysql_cnf -u root -p${NEW_PASSWORD} -e quit >/dev/null 2>&1
         if [ "$?" != "0" ];then
             echo "mysql 测试随机密码和新密码都失败" >&2
             return 1;
@@ -287,8 +287,8 @@ function mysql_systemd_init()
     rm -rf ${service_file}.bak.*
 
     #
-    systemctl enable `basename $service_file`
-    systemctl daemon-reload
+    systemctl enable `basename $service_file` > /dev/null && \
+    systemctl daemon-reload > /dev/null
 }
 # }}}
 # {{{ function ping_mysql()
@@ -643,7 +643,7 @@ function nginx_systemd_init()
     for i in `sed -n 's/^ \{0,\}listen \{1,\}\([0-9]\{1,\}\).\{0,\};$/\1/p' $NGINX_CONFIG_DIR/conf/nginx.conf`;
     do
         if [ "$firewall_status" = "0" ];then
-            firewall-cmd --permanent --zone=public --add-port=${i}/tcp
+            firewall-cmd --permanent --zone=public --add-port=${i}/tcp > /dev/null
         fi
     done
 
@@ -651,7 +651,7 @@ function nginx_systemd_init()
         #firewall-cmd --permanent --add-service=http
         #firewall-cmd --permanent --add-service=https
 
-        firewall-cmd --reload
+        firewall-cmd --reload > /dev/null
     fi
 }
 # }}}

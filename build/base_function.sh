@@ -5651,7 +5651,8 @@ function compile_mysql()
     #sudo yum install ncurses-devel ncurses
     cmake ../mysql-$MYSQL_VERSION -DCMAKE_INSTALL_PREFIX=$MYSQL_BASE \
                                   -DSYSCONFDIR=$MYSQL_CONFIG_DIR \
-                                  -DDEFAULT_CHARSET=utf8 -DDEFAULT_COLLATION=utf8_general_ci \
+                                  $( is_new_version $MYSQL_VERSION "7.999.0" && echo '' || echo '-DDEFAULT_CHARSET=utf8') \
+                                  $( is_new_version $MYSQL_VERSION "7.999.0" && echo '' || echo '-DDEFAULT_COLLATION=utf8_general_ci') \
                                   $( [ "$OS_NAME" = "linux" ] && echo "-DENABLE_GPROF=ON" ) \
                                   -DWITH_SSL=$( is_new_version $MYSQL_VERSION "8.0.0" && echo "$OPENSSL_BASE" || echo "bundled") \
                                   -DWITH_BOOST=../boost_${BOOST_VERSION}/ \
