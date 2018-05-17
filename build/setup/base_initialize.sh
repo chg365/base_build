@@ -21,8 +21,24 @@ fi
 
 . $base_define_file
 
-chown -R root:root $BASE_DIR
-
+# {{{ function has_chown_finished 已经修改过目录权限
+function has_chown_finished()
+{
+    if [ "$POSTGRESQL_USER" != "" ]; then
+        local num=`ls -l $POSTGRESQL_DATA_DIR/../ |grep $POSTGRESQL_USER|wc -l`;
+        if [ "$num" != "" -a "$num" -gt "0" ]; then
+            return 0;
+        fi
+    fi
+    if [ "$MYSQL_USER" != "" ]; then
+        local num=`ls -l $MYSQL_DATA_DIR/../ |grep $MYSQL_USER|wc -l`;
+        if [ "$num" != "" -a "$num" -gt "0" ]; then
+            return 0;
+        fi
+    fi
+    return 1;
+}
+# }}}
 # {{{ function sed_quote2()
 function sed_quote2()
 {
@@ -870,6 +886,22 @@ function sql_init()
     fi
 }
 # }}}
+
+
+##################################################################
+#                         BASE_DIR                               #
+##################################################################
+
+if ! has_chown_finished ; then
+    chown -R root:root $BASE_DIR
+fi
+
+##################################################################
+#                         logrotate conf file                    #
+##################################################################
+
+sed -i "s%LOG_DIR%${LOG_DIR}%"  $BASE_DIR/etc/eo_logrotate.conf
+sed -i "s%RUN_DIR%${$BASE_DIR}/run%" $BASE_DIR/etc/eo_logrotate.conf
 
 ##################################################################
 #                         DATA DIR                               #
