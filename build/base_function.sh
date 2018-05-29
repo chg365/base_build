@@ -5774,7 +5774,8 @@ function compile_nasm()
 # {{{ function compile_libjpeg()
 function compile_libjpeg()
 {
-    compile_nasm
+    # yum install nasm
+    #compile_nasm
 
     is_installed libjpeg "$LIBJPEG_BASE"
     if [ "$?" = "0" ];then
@@ -7348,7 +7349,7 @@ function check_browscap_version()
         return 0;
     fi
 
-    echo -e "browscap.ini current version: \033[0;33m${FREETYPE_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+    echo -e "browscap.ini current version: \033[0;33m${BROWSCAP_INI_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
 # {{{ function check_harfbuzz_version()
