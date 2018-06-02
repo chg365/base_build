@@ -28,7 +28,7 @@ fi
 # {{{ yum install OR brew install
 if [ ! -f $HOME/.chg_base_compile_env ]; then
     if [ "$OS_NAME" = "linux" ]; then
-        sudo yum install -y bison cmake gcc xz texinfo bzip2 xz-devel gcc-c++ ncurses-devel ncurses byacc file file-devel re2c libtool-ltdl-devel popt-devel re2c wget curl libtool coreutils
+        sudo yum install -y bison cmake gcc xz texinfo bzip2 xz-devel gcc-c++ ncurses-devel ncurses byacc file file-devel re2c libtool-ltdl-devel popt-devel re2c wget curl libtool coreutils nasm
         sudo yum install -y curl nss cyrus-sasl cyrus-sasl-devel cyrus-sasl-lib libacl libacl-devel libattr libattr-devel gperf pam pam-devel krb5-devel krb5-libs uuid uuid-devel libmount libmount-devel libuuid-devel libuuid
         sudo yum install -y itstool patch # fontconfig 2.12.91
 
@@ -40,6 +40,8 @@ if [ ! -f $HOME/.chg_base_compile_env ]; then
         fi
     elif [ "$OS_NAME" = "darwin" ];then
         # curl: (56) SSLRead() return error -9841
+        brew install nasm && \
+        brew link curl --force && \
         brew install --with-openssl curl && \
         brew link curl --force && \
         brew install --with-openssl wget && \
@@ -452,3 +454,20 @@ gulp
 #php oauth
 #./configure --with-php-config=$PHP_BASE/bin/php-config --with-libdir=$CURL_BASE --enable-oauth
 https://github.com/greenplum-db/gpdb
+
+star使用
+http://blog.51cto.com/moerjinrong/2092371
+http://man.linuxde.net/sar
+https://linuxstory.org/generate-cpu-memory-io-report-sar-command/
+
+
+openldap
+wget ftp://ftp.openldap.org/pub/OpenLDAP/openldap-release/openldap-2.4.46.tgz
+tar zxf openldap-2.4.46.tgz
+cd openldap-2.4.46
+./configure --prefix=/usr/local/chg/base/opt/openldap --enable-dynamic --enable-proctitle --with-tls --with-threads --with-cyrus-sasl --sysconfdir=/usr/local/chg/base/etc
+make depend
+make
+make install
+
+http://cubiq.org/iscroll-5
