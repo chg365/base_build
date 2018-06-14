@@ -219,6 +219,8 @@ fi
 # 下载开源软件新版本
 wget_base_library
 
+compile_xunsearch
+exit;
 compile_xapian_core
 compile_xapian_omega
 # make 时报错php7/xapian_wrap.cc:1096:27: error: 'xapian_globals' was not declared in this scope
@@ -292,6 +294,7 @@ compile_php_extension_memcached
 compile_php_extension_tidy
 compile_php_extension_sphinx
 compile_php_extension_imagick
+compile_php_extension_scws
 # geoip2
 compile_libmaxminddb
 compile_php_extension_maxminddb

@@ -269,6 +269,9 @@ function wget_lib_xunsearch()
         fi
         cp xunsearch-full-${XUNSEARCH_FULL_VERSION}/packages/${i} ./
     done
+    cp xunsearch-full-${XUNSEARCH_FULL_VERSION}/packages/$XUNSEARCH_SDK_FILE_NAME ./
+
+    rm -rf xunsearch-full-${XUNSEARCH_FULL_VERSION}
 }
 # }}}
 # function wget_lib_browscap() {{{
@@ -563,7 +566,7 @@ function wget_base_library()
     wget_lib $GEARMAND_FILE_NAME       "https://github.com/gearman/gearmand/releases/download/${GEARMAND_VERSION}/${GEARMAND_FILE_NAME}"
     #wget_lib $GEARMAND_FILE_NAME      "https://github.com/gearman/gearmand/archive/${GEARMAND_FILE_NAME#*-}"
     wget_lib $PHP_GEARMAN_FILE_NAME   "https://github.com/wcgallego/pecl-gearman/archive/gearman-${PHP_GEARMAN_VERSION}.tar.gz"
-    wget_lib $LIBQRENCODE_FILE_NAME   "http://fukuchi.org/works/qrencode/$LIBQRENCODE_FILE_NAME"
+    wget_lib $QRENCODE_FILE_NAME   "http://fukuchi.org/works/qrencode/$QRENCODE_FILE_NAME"
     wget_lib $POSTGRESQL_FILE_NAME    "https://ftp.postgresql.org/pub/source/v$POSTGRESQL_VERSION/$POSTGRESQL_FILE_NAME"
     wget_lib $PGBOUNCER_FILE_NAME     "https://pgbouncer.github.io/downloads/files/${PGBOUNCER_VERSION}/$PGBOUNCER_FILE_NAME"
     wget_lib $APR_FILE_NAME           "http://mirror.bit.edu.cn/apache/apr/$APR_FILE_NAME"
@@ -592,7 +595,7 @@ function wget_base_library()
     if [ `echo "${PHP_VERSION}" "7.1.99"|tr " " "\n"|sort -rV|head -1` = "7.1.99" ]; then
         wget_lib $PHP_LIBSODIUM_FILE_NAME "https://pecl.php.net/get/$PHP_LIBSODIUM_FILE_NAME"
     fi
-    wget_lib $QRENCODE_FILE_NAME      "https://github.com/chg365/qrencode/archive/${QRENCODE_FILE_NAME#*-}"
+    wget_lib $PHP_QRENCODE_FILE_NAME  "https://github.com/chg365/qrencode/archive/${PHP_QRENCODE_FILE_NAME#*-}"
     wget_lib $COMPOSER_FILE_NAME      "https://github.com/composer/composer/archive/${COMPOSER_FILE_NAME#*-}"
     wget_lib_browscap
     wget_lib $PATCHELF_FILE_NAME      "https://github.com/NixOS/patchelf/archive/${PATCHELF_FILE_NAME##*-}"
@@ -1654,6 +1657,20 @@ function is_installed_xapian_core_scws()
     return;
 }
 # }}}
+# {{{ function is_installed_xunsearch()
+function is_installed_xunsearch()
+{
+    local FILENAME="$XUNSEARCH_BASE/bin/pkgconfig/xapian-core.pc"
+    if [ ! -f "$FILENAME" ];then
+        return 1;
+    fi
+    local version=`$FILENAME -v`
+    if [ "${version}" != "$XUNSEARCH_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
 # {{{ function is_installed_nghttp2()
 function is_installed_nghttp2()
 {
@@ -2266,11 +2283,11 @@ function is_installed_mysql()
 # {{{ function is_installed_qrencode()
 function is_installed_qrencode()
 {
-    if [ ! -f "$LIBQRENCODE_BASE/bin/qrencode" ];then
+    if [ ! -f "$QRENCODE_BASE/bin/qrencode" ];then
         return 1;
     fi
-    local version=`$LIBQRENCODE_BASE/bin/qrencode --version 2>&1|sed -n '1p'| awk  '{ print $NF;}'`
-    if [ "$version" != "$LIBQRENCODE_VERSION" ];then
+    local version=`$QRENCODE_BASE/bin/qrencode --version 2>&1|sed -n '1p'| awk  '{ print $NF;}'`
+    if [ "$version" != "$QRENCODE_VERSION" ];then
         return 1;
     fi
     return;
@@ -2625,7 +2642,7 @@ function compile_scws()
     compile "scws" "$SCWS_FILE_NAME" "scws-$SCWS_VERSION/" "$SCWS_BASE" "SCWS_CONFIGURE"
 
     #拷贝字典文件
-    decompress $SCWS_FILE_NAME $BASE_DIR/etc/scws/
+    decompress $SCWS_DICT_FILE_NAME $BASE_DIR/etc/scws/
 
     if [ "$?" != "0" ];then
         echo "Waring: copy dict.utf8.xdb faild." >&2
@@ -5392,17 +5409,17 @@ function compile_php_extension_qrencode()
 {
     compile_qrencode
 
-    is_installed_php_extension qrencode $QRENCODE_VERSION
+    is_installed_php_extension qrencode $PHP_QRENCODE_VERSION
     if [ "$?" = "0" ];then
         return;
     fi
 
     PHP_EXTENSION_QRENCODE_CONFIGURE="
-    ./configure --with-php-config=$PHP_BASE/bin/php-config --with-qrencode=$LIBQRENCODE_BASE
+    ./configure --with-php-config=$PHP_BASE/bin/php-config --with-qrencode=$QRENCODE_BASE
     "
 
     # $PHP_BASE/bin/phpize --clean
-    compile "php_extension_qrencode" "$QRENCODE_FILE_NAME" "qrencode-$QRENCODE_VERSION" "qrencode.so" "PHP_EXTENSION_QRENCODE_CONFIGURE"
+    compile "php_extension_qrencode" "$PHP_QRENCODE_FILE_NAME" "qrencode-$PHP_QRENCODE_VERSION" "qrencode.so" "PHP_EXTENSION_QRENCODE_CONFIGURE"
 
     /bin/rm -rf package.xml
 }
@@ -5829,17 +5846,17 @@ function compile_qrencode()
 {
     compile_libiconv
 
-    is_installed qrencode "$LIBQRENCODE_BASE"
+    is_installed qrencode "$QRENCODE_BASE"
     if [ "$?" = "0" ];then
         return;
     fi
 
     QRENCODE_CONFIGURE="
-    ./configure --prefix=$LIBQRENCODE_BASE \
+    ./configure --prefix=$QRENCODE_BASE \
                 --with-libiconv-prefix=$LIBICONV_BASE
     "
 
-    compile "qrencode" "$LIBQRENCODE_FILE_NAME" "qrencode-$LIBQRENCODE_VERSION" "$LIBQRENCODE_BASE" "QRENCODE_CONFIGURE"
+    compile "qrencode" "$QRENCODE_FILE_NAME" "qrencode-$QRENCODE_VERSION" "$QRENCODE_BASE" "QRENCODE_CONFIGURE"
 }
 # }}}
 # {{{ function compile_nasm()
@@ -6911,7 +6928,7 @@ function compile_rabbitmq()
     fi
 
     RABBITMQ_CONFIGURE="
-    ./configure --prefix=$LIBQRENCODE_BASE \
+    ./configure --prefix=$RABBITMQ_BASE \
                 --with-libiconv-prefix=$LIBICONV_BASE
     "
 
@@ -7154,6 +7171,9 @@ function check_soft_updates()
 #check_version swfupload
 #    exit;
     local array=(
+            xunsearch_sdk_php
+            xunsearch
+            scws
             fribidi
             libwebp
             xapian_core
@@ -8072,7 +8092,7 @@ function check_pecl_redis_version()
 # {{{ function check_pecl_qrencode_version()
 function check_pecl_qrencode_version()
 {
-    check_github_soft_version qrencode $QRENCODE_VERSION "https://github.com/chg365/qrencode/releases"
+    check_github_soft_version qrencode $PHP_QRENCODE_VERSION "https://github.com/chg365/qrencode/releases"
 }
 # }}}
 # {{{ function check_pecl_yaf_version()
@@ -8333,14 +8353,14 @@ function check_qrencode_version()
         return 1;
     fi
 
-    is_new_version $LIBQRENCODE_VERSION $new_version
+    is_new_version $QRENCODE_VERSION $new_version
     if [ "$?" = "0" ];then
         [ "$is_echo_latest" = "" -o "$is_echo_latest" != "0" ] && \
         echo -e "qrencode version is \033[0;32mthe latest.\033[0m"
         return 0;
     fi
 
-    echo -e "qrencode current version: \033[0;33m${LIBQRENCODE_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+    echo -e "qrencode current version: \033[0;33m${QRENCODE_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
 # {{{ function check_jpeg_version()
@@ -8609,6 +8629,24 @@ function check_postgresql_version()
 function check_pgbouncer_version()
 {
     check_ftp_version pgbouncer ${PGBOUNCER_VERSION} https://pgbouncer.github.io/
+}
+# }}}
+# {{{ function check_scws_version()
+function check_scws_version()
+{
+    check_github_soft_version scws $SCWS_VERSION "https://github.com/hightman/scws/releases"
+}
+# }}}
+# {{{ function check_xunsearch_version()
+function check_xunsearch_version()
+{
+    check_github_soft_version xunsearch $XUNSEARCH_VERSION "https://github.com/hightman/xunsearch/releases"
+}
+# }}}
+# {{{ function check_xunsearch_sdk_php_version()
+function check_xunsearch_sdk_php_version()
+{
+    check_github_soft_version xs-sdk-php $XUNSEARCH_SDK_VERSION "https://github.com/hightman/xs-sdk-php/releases"
 }
 # }}}
 # {{{ function check_ftp_gnu_org_version()
