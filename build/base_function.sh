@@ -1660,11 +1660,11 @@ function is_installed_xapian_core_scws()
 # {{{ function is_installed_xunsearch()
 function is_installed_xunsearch()
 {
-    local FILENAME="$XUNSEARCH_BASE/bin/pkgconfig/xapian-core.pc"
+    local FILENAME="$XUNSEARCH_BASE/bin/xs-searchd"
     if [ ! -f "$FILENAME" ];then
         return 1;
     fi
-    local version=`$FILENAME -v`
+    local version=`$FILENAME -v |awk -F'[/ ]' '{print  $3;}'|head -1`
     if [ "${version}" != "$XUNSEARCH_VERSION" ];then
         return 1;
     fi
@@ -2649,7 +2649,7 @@ function compile_scws()
     fi
 }
 # }}}
-# {{{ function compile_xapian_core()
+# {{{ function compile_xapian_core_scws()
 function compile_xapian_core_scws()
 {
     compile_scws
@@ -2672,6 +2672,7 @@ function compile_xapian_core_scws()
 function compile_xunsearch()
 {
     compile_libevent
+    compile_xapian_core_scws
 
     is_installed xunsearch $XUNSEARCH_BASE
     if [ "$?" = "0" ];then
@@ -6327,7 +6328,7 @@ configure_xunsearch_command()
                 --with-scws=$SCWS_BASE \
                 --sysconfdir=$BASE_DIR/etc/xunsearch \
                 --datadir=$BASE_DIR/data/xunsearch \
-                --sysconfdir=$BASE_DIR/etc/xapian-core-scws
+                --sysconfdir=$BASE_DIR/etc/xapian-core-scws \
                 --with-xapian=$XAPIAN_CORE_SCWS_BASE \
                 --with-libevent=$LIBEVENT_BASE \
                 --enable-memory-cache

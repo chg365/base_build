@@ -220,7 +220,6 @@ fi
 wget_base_library
 
 compile_xunsearch
-exit;
 compile_xapian_core
 compile_xapian_omega
 # make 时报错php7/xapian_wrap.cc:1096:27: error: 'xapian_globals' was not declared in this scope
