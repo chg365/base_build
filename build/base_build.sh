@@ -471,3 +471,5 @@ make
 make install
 
 http://cubiq.org/iscroll-5
+https://github.com/siqi0011/swoole_src_student/blob/master/Memory-Lock.md
+https://www.cabalphp.com

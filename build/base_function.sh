@@ -1625,6 +1625,35 @@ function is_installed_xapian_omega()
     return;
 }
 # }}}
+# {{{ function is_installed_scws()
+function is_installed_scws()
+{
+    local FILENAME="$SCWS_BASE/bin/scws"
+
+    if [ ! -f "$FILENAME" ];then
+        return 1;
+    fi
+    local version=`$FILENAME -v|awk -F '[ /:]' '{print $3;}'|head -1`
+    if [ "${version}" != "$SCWS_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
+# {{{ function is_installed_xapian_core_scws()
+function is_installed_xapian_core_scws()
+{
+    local FILENAME="$XAPIAN_CORE_SCWS_BASE/lib/pkgconfig/xapian-core.pc"
+    if [ ! -f "$FILENAME" ];then
+        return 1;
+    fi
+    local version=`pkg-config --modversion $FILENAME`
+    if [ "${version}" != "$XAPIAN_CORE_SCWS_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
 # {{{ function is_installed_nghttp2()
 function is_installed_nghttp2()
 {
@@ -2579,6 +2608,66 @@ function compile_xapian_bindings_php()
     compile "xapian_bindings_php" "$XAPIAN_BINDINGS_FILE_NAME" "xapian-bindings-$XAPIAN_BINDINGS_VERSION/" "$XAPIAN_BINDINGS_BASE" "XAPIAN_BINDINGS_PHP_CONFIGURE"
 }
 # }}}
+# {{{ function compile_scws()
+function compile_scws()
+{
+
+    is_installed scws $SCWS_BASE
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    SCWS_CONFIGURE="
+        ./configure --prefix=$SCWS_BASE \
+                    --sysconfdir=$BASE_DIR/etc/scws
+    "
+
+    compile "scws" "$SCWS_FILE_NAME" "scws-$SCWS_VERSION/" "$SCWS_BASE" "SCWS_CONFIGURE"
+
+    #拷贝字典文件
+    decompress $SCWS_FILE_NAME $BASE_DIR/etc/scws/
+
+    if [ "$?" != "0" ];then
+        echo "Waring: copy dict.utf8.xdb faild." >&2
+    fi
+}
+# }}}
+# {{{ function compile_xapian_core()
+function compile_xapian_core_scws()
+{
+    compile_scws
+
+    is_installed xapian_core_scws "$XAPIAN_CORE_SCWS_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    # --sysconfdir=
+    XAPIAN_CORE_SCWS_CONFIGURE="
+        ./configure --prefix=$XAPIAN_CORE_SCWS_BASE \
+                    --with-scws=$SCWS_BASE
+    "
+
+    compile "xapian_core_scws" "$XAPIAN_CORE_SCWS_FILE_NAME" "xapian-core-scws-$XAPIAN_CORE_SCWS_VERSION/" "$XAPIAN_CORE_SCWS_BASE" "XAPIAN_CORE_SCWS_CONFIGURE"
+}
+# }}}
+# {{{ function compile_xunsearch()
+function compile_xunsearch()
+{
+    compile_libevent
+
+    is_installed xunsearch $XUNSEARCH_BASE
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    XUNSEARCH_CONFIGURE="
+        configure_xunsearch_command
+    "
+
+    compile "xunsearch" "$XUNSEARCH_FILE_NAME" "xunsearch-$XUNSEARCH_VERSION/" "$XUNSEARCH_BASE" "XUNSEARCH_CONFIGURE"
+}
+# }}}
 # {{{ function compile_re2c()
 function compile_re2c()
 {
@@ -2879,26 +2968,6 @@ function compile_libwebp()
     #fi
 }
 # }}}
-# {{{ configure_libwebp_command()
-configure_libwebp_command()
-{
-
-    ./autogen.sh && \
-    CPPFLAGS="$(get_cppflags $ZLIB_BASE/include $LIBPNG_BASE/include $LIBJPEG_BASE/include)" \
-    LDFLAGS="$(get_ldflags $ZLIB_BASE/lib $LIBPNG_BASE/lib $LIBJPEG_BASE/lib)" \
-    ./configure --prefix=$LIBWEBP_BASE
-
-    # cmake 编译后还没有libwebp.pc文件 ,没有.so文件
-    #CPPFLAGS="$(get_cppflags $ZLIB_BASE/include $LIBPNG_BASE/include $LIBJPEG_BASE/include)" \
-    #LDFLAGS="$(get_ldflags $ZLIB_BASE/lib $LIBPNG_BASE/lib $LIBJPEG_BASE/lib)" \
-    #cmake . -DCMAKE_INSTALL_PREFIX=$LIBWEBP_BASE \
-    #        -DWEBP_BUILD_CWEBP=ON \
-    #        -DWEBP_BUILD_DWEBP=ON \
-    #        -DWEBP_BUILD_GIF2WEBP=ON \
-    #        -DWEBP_BUILD_IMG2WEBP=ON \
-    #        -DWEBP_BUILD_WEBPINFO=ON
-}
-# }}}
 # {{{ function compile_fribidi()
 function compile_fribidi()
 {
@@ -2912,12 +2981,6 @@ function compile_fribidi()
     "
 
     compile "fribidi" "$FRIBIDI_FILE_NAME" "fribidi-$FRIBIDI_VERSION" "$FRIBIDI_BASE" "FRIBIDI_CONFIGURE"
-}
-# }}}
-# {{{ configure_fribidi_command()
-configure_fribidi_command()
-{
-    ./autogen.sh --prefix=$FRIBIDI_BASE --disable-docs
 }
 # }}}
 # {{{ function compile_libxslt()
@@ -5209,6 +5272,29 @@ function compile_php_extension_pthreads()
     /bin/rm -rf package.xml
 }
 # }}}
+# {{{ function compile_php_extension_scws()
+function compile_php_extension_scws()
+{
+    compile_scws
+
+    is_installed_php_extension scws $SCWS_VERSION
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    PHP_EXTENSION_SCWS_CONFIGURE="
+        ./configure --with-php-config=$PHP_BASE/bin/php-config \
+                    --with-scws=$SCWS_BASE
+    "
+
+    compile "php_extension_scws" "$SCWS_FILE_NAME" "scws-$SCWS_VERSION/phpext" "scws.so" "PHP_EXTENSION_SCWS_CONFIGURE"
+
+    #配置
+    #[scws]
+    # scws.default.charset = gbk
+    # scws.default.fpath = $BASE_DIR/etc/scws
+}
+# }}}
 # {{{ function compile_php_extension_zip()
 function compile_php_extension_zip()
 {
@@ -6196,6 +6282,66 @@ function compile_famous_angular()
 }
 # }}}
 # {{{ configure command functions
+# {{{ configure_xunsearch_command()
+configure_xunsearch_command()
+{
+    #1.4.11编译不过去。报libevent 版本不对
+    sed -i 's/_EVENT_NUMERIC_VERSION/EVENT__NUMERIC_VERSION/' configure
+
+    mkdir -p $BASE_DIR/inc/xunsearch
+    if [ "$?" != "0" ];then
+        echo "mkdir faild. command: mkdir -p $BASE_DIR/inc/xunsearch" >&2
+        return 1;
+    fi
+
+    local cmd="cp sdk/php/util/XSDataSource.class.php \
+                  sdk/php/util/XSUtil.class.php \
+                  sdk/php/lib/XS.php \
+                  $BASE_DIR/inc/xunsearch/"
+
+    $cmd
+
+    if [ "$?" != "0" ];then
+        echo " copy file faild. command: $cmd" >&2
+        return 1;
+    fi
+
+    ./configure --prefix=$XUNSEARCH_BASE \
+                --with-scws=$SCWS_BASE \
+                --sysconfdir=$BASE_DIR/etc/xunsearch \
+                --datadir=$BASE_DIR/data/xunsearch \
+                --sysconfdir=$BASE_DIR/etc/xapian-core-scws
+                --with-xapian=$XAPIAN_CORE_SCWS_BASE \
+                --with-libevent=$LIBEVENT_BASE \
+                --enable-memory-cache
+}
+# }}}
+# {{{ configure_libwebp_command()
+configure_libwebp_command()
+{
+
+    ./autogen.sh && \
+    CPPFLAGS="$(get_cppflags $ZLIB_BASE/include $LIBPNG_BASE/include $LIBJPEG_BASE/include)" \
+    LDFLAGS="$(get_ldflags $ZLIB_BASE/lib $LIBPNG_BASE/lib $LIBJPEG_BASE/lib)" \
+    ./configure --prefix=$LIBWEBP_BASE
+
+    # cmake 编译后还没有libwebp.pc文件 ,没有.so文件
+    #CPPFLAGS="$(get_cppflags $ZLIB_BASE/include $LIBPNG_BASE/include $LIBJPEG_BASE/include)" \
+    #LDFLAGS="$(get_ldflags $ZLIB_BASE/lib $LIBPNG_BASE/lib $LIBJPEG_BASE/lib)" \
+    #cmake . -DCMAKE_INSTALL_PREFIX=$LIBWEBP_BASE \
+    #        -DWEBP_BUILD_CWEBP=ON \
+    #        -DWEBP_BUILD_DWEBP=ON \
+    #        -DWEBP_BUILD_GIF2WEBP=ON \
+    #        -DWEBP_BUILD_IMG2WEBP=ON \
+    #        -DWEBP_BUILD_WEBPINFO=ON
+}
+# }}}
+# {{{ configure_fribidi_command()
+configure_fribidi_command()
+{
+    ./autogen.sh --prefix=$FRIBIDI_BASE --disable-docs
+}
+# }}}
 # {{{ configure_xapian_omega_command()
 configure_xapian_omega_command()
 {
@@ -9363,10 +9509,6 @@ function init_setup()
 
 #https://imququ.com/post/letsencrypt-certificate.html
 #https://github.com/diafygi/acme-tiny
-
-#http://www.xunsearch.com/scws/
-# https://xapian.org/download
-# solr Sphinx Xapian,c++开发, 国内的 xunsearch 基于Xapian
 
 #https://github.com/exinnet/tclip
 
