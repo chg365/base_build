@@ -23,6 +23,10 @@ if [ ! -f "$1.bak" ]; then
     cp $1 $1.bak;
 fi
 PID=$$
+
+sed -i.bak.$PID '/^[.+*]\{1,\}$/d' $1
+sed -i.bak.$PID '/^( echo .\{1,\} ) >objfiles.txt$/d' $1
+
 # 多行内容处理
 sed -i.bak.$PID '/\\$/,/[^\\]$/d' $1
 #sed -i.bak.$PID '/^rm .\{1,\}\\$/,/[^\\]$/d' $1

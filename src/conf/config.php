@@ -20,7 +20,6 @@ define('BASE_DIR', '/usr/local/chg/base');
         define('SQLITE_DATA_DIR', DATA_DIR . DS . 'sqlite3');
     define('INC_DIR', BASE_DIR . DS . 'inc');
     define('LIB_DIR', BASE_DIR . DS . 'lib');
-        define('JAVA_LIB_DIR', LIB_DIR . DS . 'java');
         define('PHP_LIB_DIR', LIB_DIR . DS . 'php');
     define('LOG_DIR', BASE_DIR . DS . 'log');
     define('OPT_DIR', BASE_DIR . DS . 'opt');
@@ -28,6 +27,8 @@ define('BASE_DIR', '/usr/local/chg/base');
         define('MYSQL_RUN_DIR', RUN_DIR . DS . 'mysql');
     define('SBIN_DIR', BASE_DIR . DS . 'sbin');
 // }}}
+
+define('ITSELF_NAMESPACE', 'chg\base');
 
 define('CRON_EXECUTOR', 'nobody'); //--
 
@@ -55,17 +56,29 @@ define('SWOOLE_WORKER_GROUP', 'nobody'); //这里要与php-fpm、nginx的执行�
 define('SWOOLE_REMOTE_HOST', '127.0.0.1');   // 客户端访问的地址
 define('SWOOLE_REMOTE_PORT', '9501');      // 客户端访问的端口
 
-define('CLEAN_CACHE_DATA_TIME', '60'); // 清理多少天以前的邮件
+define('CLEAN_CACHE_DATA_TIME', '60'); // 清理多少天以前的数据
 
 require_once(INC_DIR . DS . 'function.php');
 
+/*
 // debug
-use \chg\base\type\debug\eo_debug_level;
+use \chg\base\type\debug\debug_level;
 // DEBUG_NOTICE DEBUG_WARNING DEBUG_ERROR DEBUG_DEBUG DEBUG_ALL
-$debug_level = eo_debug_level::DEBUG_ERROR | eo_debug_level::DEBUG_WARNING;
+$debug_level = debug_level::DEBUG_ERROR | debug_level::DEBUG_WARNING;
 define('DEBUG_LEVEL', $debug_level);
 
-use \chg\base\type\debug\eo_debug_types;
-$debug_type = eo_debug_types::DEBUG_LOG;
+use \chg\base\type\debug\debug_types;
+$debug_type = debug_types::DEBUG_LOG;
 define('DEBUG_TYPE', $debug_type);
 unset($debug_level, $debug_type);
+*/
+
+spl_autoload_register('autoload_global');
+$log_file = LOG_DIR . DS . 'shutdown.log';
+if (!is_file($log_file))
+{
+    touch($log_file);
+    exec('chmod a+w ' . $log_file);
+}
+
+register_shutdown_function('shutdown_global');

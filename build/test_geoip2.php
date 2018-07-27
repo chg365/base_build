@@ -56,8 +56,9 @@ spl_autoload_register('chg_autoload');
 */
 var_dump(spl_autoload_functions());
 
-define('GEOIP2_MMDB_DIR', '/usr/local/chg/base/etc/geoip2');
+define('GEOIP2_MMDB_DIR', '/usr/local/chg/base/data/geoip2');
 $ip_arr = array(
+        '1.83.124.81', // 陕西省西安市 电信
         '215.3.234.5',
         '127.0.0.1',
         '172.16.100.254',

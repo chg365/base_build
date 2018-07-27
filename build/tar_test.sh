@@ -36,6 +36,12 @@ do
             echo "${FILE_NAME} 文件可能已经损坏." >&2
         fi
         continue;
+    elif [ "${FILE_NAME%%.rpm}" != "$FILE_NAME" ];then
+        rpm -K --nosignature $FILE_NAME > /dev/null 2>&1
+        if [ "$?" != "0" ];then
+            echo "${FILE_NAME} 文件可能已经损坏." >&2
+        fi
+        continue
     elif [ "${FILE_NAME%%.dmg}" != "$FILE_NAME" ];then
         #hdiutil attach $FILE_NAME  > /dev/null
         hdiutil imageinfo $FILE_NAME  > /dev/null

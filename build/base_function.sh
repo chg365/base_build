@@ -536,7 +536,8 @@ function wget_base_library()
     wget_lib $EXPAT_FILE_NAME         "https://sourceforge.net/projects/expat/files/expat/$EXPAT_VERSION/$EXPAT_FILE_NAME/download"
     wget_lib $FONTCONFIG_FILE_NAME    "https://www.freedesktop.org/software/fontconfig/release/$FONTCONFIG_FILE_NAME"
     wget_lib $POPPLER_FILE_NAME       "https://poppler.freedesktop.org/$POPPLER_FILE_NAME"
-    wget_lib $FONTFORGE_FILE_NAME     "https://github.com/fontforge/fontforge/archive/${FONTFORGE_FILE_NAME#*-}"
+    wget_lib $FONTFORGE_FILE_NAME     "https://github.com/fontforge/fontforge/releases/download/${FONTFORGE_VERSION}/${FONTFORGE_FILE_NAME#*-}"
+    #wget_lib $FONTFORGE_FILE_NAME     "https://github.com/fontforge/fontforge/archive/${FONTFORGE_FILE_NAME#*-}"
     wget_lib $PDF2HTMLEX_FILE_NAME    "https://github.com/coolwanglu/pdf2htmlEX/archive/v${PDF2HTMLEX_FILE_NAME#*-}"
     wget_lib $DEHYDRATED_FILE_NAME    "https://github.com/lukas2511/dehydrated/archive/v${DEHYDRATED_FILE_NAME#*-}"
     wget_lib $PANGO_FILE_NAME         "http://ftp.gnome.org/pub/GNOME/sources/pango/${PANGO_VERSION%.*}/$PANGO_FILE_NAME"
@@ -765,6 +766,9 @@ function change_php_ini()
 # function init_php_ini() {{{
 function init_php_ini()
 {
+    # log_errors
+    local pattern='^log_errors \{0,\}= \{0,\}\([oO][nN]\) \{0,\}$';
+    change_php_ini "$pattern" "log_errors = Off"
     # expose_php = Off
     # pattern='^expose_php \{0,\}= \{0,\}\(on\|On\|ON\) \{0,\}$'; # mac sed不支持 |
     local pattern='^expose_php \{0,\}= \{0,\}\([oO][nN]\) \{0,\}$';
@@ -939,7 +943,7 @@ function init_nginx_conf()
     fi
 
     # nginx user
-    sed -i.bak.$$ "s/^ \{0,\}\(user \{1,\}\)[^ ]\{1,\} \{1,\}[^ ]\{1,\} \{0,\};$/user  $NGINX_USER  ${NGINX_GROUP};/" $NGINX_CONFIG_DIR/conf/  nginx.conf
+    sed -i.bak.$$ "s/^ \{0,\}\(user \{1,\}\)[^ ]\{1,\} \{1,\}[^ ]\{1,\} \{0,\};$/user  $NGINX_USER  ${NGINX_GROUP};/" $NGINX_CONFIG_DIR/conf/nginx.conf
     rm_bak_file ${NGINX_CONF_FILE}.bak.*
 
     # fastcgi_param  SERVER_SOFTWARE
@@ -2636,13 +2640,13 @@ function compile_scws()
 
     SCWS_CONFIGURE="
         ./configure --prefix=$SCWS_BASE \
-                    --sysconfdir=$BASE_DIR/etc/scws
+                    --sysconfdir=$SCWS_CONFIG_DIR
     "
 
     compile "scws" "$SCWS_FILE_NAME" "scws-$SCWS_VERSION/" "$SCWS_BASE" "SCWS_CONFIGURE"
 
     #拷贝字典文件
-    decompress $SCWS_DICT_FILE_NAME $BASE_DIR/etc/scws/
+    decompress $SCWS_DICT_FILE_NAME $SCWS_CONFIG_DIR/
 
     if [ "$?" != "0" ];then
         echo "Waring: copy dict.utf8.xdb faild." >&2
@@ -2659,10 +2663,8 @@ function compile_xapian_core_scws()
         return;
     fi
 
-    # --sysconfdir=
     XAPIAN_CORE_SCWS_CONFIGURE="
-        ./configure --prefix=$XAPIAN_CORE_SCWS_BASE \
-                    --with-scws=$SCWS_BASE
+        configure_xapian_core_scws_command
     "
 
     compile "xapian_core_scws" "$XAPIAN_CORE_SCWS_FILE_NAME" "xapian-core-scws-$XAPIAN_CORE_SCWS_VERSION/" "$XAPIAN_CORE_SCWS_BASE" "XAPIAN_CORE_SCWS_CONFIGURE"
@@ -2672,6 +2674,7 @@ function compile_xapian_core_scws()
 function compile_xunsearch()
 {
     compile_libevent
+    compile_scws
     compile_xapian_core_scws
 
     is_installed xunsearch $XUNSEARCH_BASE
@@ -2683,7 +2686,7 @@ function compile_xunsearch()
         configure_xunsearch_command
     "
 
-    compile "xunsearch" "$XUNSEARCH_FILE_NAME" "xunsearch-$XUNSEARCH_VERSION/" "$XUNSEARCH_BASE" "XUNSEARCH_CONFIGURE"
+    compile "xunsearch" "$XUNSEARCH_FILE_NAME" "xunsearch-$XUNSEARCH_VERSION/" "$XUNSEARCH_BASE" "XUNSEARCH_CONFIGURE" "after_xunsearch_make_install"
 }
 # }}}
 # {{{ function compile_re2c()
@@ -2810,6 +2813,8 @@ function compile_boost()
 
     #yum install python-devel bzip2-devel
     #yum install gperf libevent-devel
+
+    echo_build_start boost
 
     decompress $BOOST_FILE_NAME
     if [ "$?" != "0" ];then
@@ -3600,7 +3605,8 @@ function compile_expat()
     fi
 
     EXPAT_CONFIGURE="
-    ./configure --prefix=$EXPAT_BASE
+    ./configure --prefix=$EXPAT_BASE \
+                --without-docbook
     "
 
     compile "expat" "$EXPAT_FILE_NAME" "expat-$EXPAT_VERSION" "$EXPAT_BASE" "EXPAT_CONFIGURE"
@@ -3835,6 +3841,8 @@ function compile_util_linux()
 # {{{ function compile_xproto()
 function compile_xproto()
 {
+    # compile_macros
+
     is_installed xproto "$XPROTO_BASE"
     if [ "$?" = "0" ];then
         return;
@@ -5542,7 +5550,7 @@ function compile_php_extension_libsodium()
     if [ `echo "${PHP_VERSION}" "7.1.99"|tr " " "\n"|sort -rV|head -1` != "7.1.99" ]; then
         file_name="${PHP_FILE_NAME}"
         dir_name="php-${PHP_VERSION}/ext/sodium"
-        ext_name="sodium"
+        #ext_name="sodium.so"
     fi
     compile "php_extension_libsodium" "$file_name" "$dir_name" "$ext_name" "PHP_EXTENSION_LIBSODIUM_CONFIGURE"
 
@@ -5887,7 +5895,7 @@ function compile_libjpeg()
     fi
 
     LIBJPEG_CONFIGURE="
-    ./configure --prefix=$LIBJPEG_BASE
+        configure_libjpeg_command
     "
 
     compile "libjpeg" "$LIBJPEG_FILE_NAME" "libjpeg-turbo-$LIBJPEG_VERSION" "$LIBJPEG_BASE" "LIBJPEG_CONFIGURE"
@@ -6300,38 +6308,70 @@ function compile_famous_angular()
 }
 # }}}
 # {{{ configure command functions
+# {{{ function configure_libjpeg_command()
+function configure_libjpeg_command()
+{
+    # 解决 ./configure: line 13431: PKG_PROG_PKG_CONFIG: command not found
+    autoreconf -f -i  && \
+    ./configure --prefix=$LIBJPEG_BASE
+}
+# }}}
+# {{{ configure_xapian_core_scws_command()
+configure_xapian_core_scws_command()
+{
+    # 不改，使用不上字典
+    sed -i.bak "s#SCWS_ETCDIR=\"\{0,1\}\$SCWS_DIR/etc\"\{0,1\}#SCWS_ETCDIR=$(sed_quote2 $SCWS_CONFIG_DIR)#" configure
+
+    ./configure --prefix=$XAPIAN_CORE_SCWS_BASE \
+                --with-scws=$SCWS_BASE
+}
+# }}}
 # {{{ configure_xunsearch_command()
 configure_xunsearch_command()
 {
+    # 不改，使用不上字典
+    sed -i.bak "s#SCWS_ETCDIR=\"\{0,1\}\$SCWS_DIR/etc\"\{0,1\}#SCWS_ETCDIR=$(sed_quote2 $SCWS_CONFIG_DIR)#" configure
     #1.4.11编译不过去。报libevent 版本不对
     sed -i 's/_EVENT_NUMERIC_VERSION/EVENT__NUMERIC_VERSION/' configure
 
-    mkdir -p $BASE_DIR/inc/xunsearch
-    if [ "$?" != "0" ];then
-        echo "mkdir faild. command: mkdir -p $BASE_DIR/inc/xunsearch" >&2
-        return 1;
-    fi
+    #apc 换成apcu
+    for i in `find sdk/php/ -name "*.php"`; do sed -i 's/apc_/apcu_/' $i; done
 
-    local cmd="cp sdk/php/util/XSDataSource.class.php \
-                  sdk/php/util/XSUtil.class.php \
-                  sdk/php/lib/XS.php \
-                  $BASE_DIR/inc/xunsearch/"
+    ./configure --prefix=$XUNSEARCH_BASE \
+                --with-scws=$SCWS_BASE \
+                --sysconfdir=$BASE_DIR/etc/scws \
+                --with-xapian=$XAPIAN_CORE_SCWS_BASE \
+                --with-libevent=$LIBEVENT_BASE \
+                --enable-memory-cache
 
-    $cmd
+    #--datadir=$BASE_DIR/data/xunsearch \
+}
+# }}}
+# {{{ function after_xunsearch_make_install()
+function after_xunsearch_make_install()
+{
+    ln -s $XUNSEARCH_BASE/sdk/php/lib $BASE_DIR/inc/xunsearch
 
     if [ "$?" != "0" ];then
         echo " copy file faild. command: $cmd" >&2
         return 1;
     fi
 
-    ./configure --prefix=$XUNSEARCH_BASE \
-                --with-scws=$SCWS_BASE \
-                --sysconfdir=$BASE_DIR/etc/xunsearch \
-                --datadir=$BASE_DIR/data/xunsearch \
-                --sysconfdir=$BASE_DIR/etc/xapian-core-scws \
-                --with-xapian=$XAPIAN_CORE_SCWS_BASE \
-                --with-libevent=$LIBEVENT_BASE \
-                --enable-memory-cache
+    #mkdir -p $BASE_DIR/inc/xunsearch
+    #if [ "$?" != "0" ];then
+    #    echo "mkdir faild. command: mkdir -p $BASE_DIR/inc/xunsearch" >&2
+    #    return 1;
+    #fi
+
+    #cp sdk/php/util/XSDataSource.class.php \
+    #              sdk/php/util/XSUtil.class.php \
+    #              sdk/php/lib/XS.php \
+    #              $BASE_DIR/inc/xunsearch/"
+
+    #if [ "$?" != "0" ];then
+    #    echo " copy file faild. command: $cmd" >&2
+    #    return 1;
+    #fi
 }
 # }}}
 # {{{ configure_libwebp_command()
@@ -6469,7 +6509,7 @@ configure_curl_command()
 # {{{ configure_harfbuzz_command()
 configure_harfbuzz_command()
 {
-    CPPFLAGS="$(get_cppflags ${$ICU_BASE}/include ${FREETYPE_BASE}/include)" \
+    CPPFLAGS="$(get_cppflags ${ICU_BASE}/include ${FREETYPE_BASE}/include)" \
     LDFLAGS="$(get_ldflags ${ICU_BASE}/lib ${FREETYPE_BASE}/lib)" \
     ./configure --prefix=$HARFBUZZ_BASE
 }
@@ -6539,9 +6579,12 @@ configure_php_command()
                 --with-png-dir=$LIBPNG_BASE \
                 --with-xpm-dir=$LIBXPM_BASE \
                 --with-zlib-dir=$ZLIB_BASE \
+                --with-readline=$READLINE_BASE \
                 $( [ `echo "$PHP_VERSION 7.1.0"|tr " " "\n"|sort -rV|head -1` = "$PHP_VERSION" ] && echo "--disable-zend-signals" ||echo " ") \
                 --enable-opcache
 
+                # --enable-phpdbg \
+                # --enable-phpdbg-webhelper \
                 # --with-openssl=$OPENSSL_BASE --with-system-ciphers --with-kerberos=$KERBEROS_BASE
 
                 # --with-libzip=$LIBZIP_BASE \
@@ -6848,6 +6891,7 @@ configure_php_swoole_command()
     kernel_release=${kernel_release%%-*}
 
     local is_2=$( [ `echo "$SWOOLE_VERSION 2.0.0"|tr " " "\n"|sort -rV|head -1` = "$SWOOLE_VERSION" ] && echo "1" || echo "0")
+    local is_4=$( [ `echo "$SWOOLE_VERSION 4.0.1"|tr " " "\n"|sort -rV|head -1` = "$SWOOLE_VERSION" ] && echo "1" || echo "0")
 
     # 编译时如果没有pcre，使用时会有意想不到的结果 $memory_table->count() > 0，但是foreach 结果为空
     CPPFLAGS="$( get_cppflags $OPENSSL_BASE/include $PCRE_BASE/include)" LDFLAGS="$(get_ldflags $OPENSSL_BASE/lib $PCRE_BASE/lib )" \
@@ -6860,7 +6904,8 @@ configure_php_swoole_command()
                 --with-swoole \
                 --enable-swoole \
                 $( [ "$is_2" = "1" ] && echo "
-                --enable-coroutine \
+                $( [ "$is_4" != "1" ] && echo "
+                --enable-coroutine" || echo "") \
                 --enable-async-redis \
                 --enable-thread \
                 --enable-http2 \
@@ -6878,6 +6923,8 @@ configure_php_swoole_command()
                 #$( [ `echo "$kernel_release 2.6.33" | tr " " "\n"|sort -rV|head -1 ` = "$kernel_release" ] && echo "--enable-hugepage" || echo "" )
                # swoole 2.1.0
                #--enable-picohttpparser
+               # 4.0.0
+               # --enable-coroutine-postgresql --with-libpq-dir= --with-phpx-dir=
 }
 # }}}
 # {{{ configure_php_amqp_command()
@@ -8811,7 +8858,7 @@ function check_php_pecl_version()
     local new_version=`echo "$versions"|head -1`;
 
     if [ -z "$new_version" -o -z "$current_version" ];then
-        echo -e "chekc php pecl ${ext} version \033[0;31mfaild\033[0m." >&2
+        echo -e "check php pecl ${ext} version \033[0;31mfaild\033[0m." >&2
         return 1;
     fi
 
