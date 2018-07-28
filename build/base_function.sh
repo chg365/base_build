@@ -536,7 +536,7 @@ function wget_base_library()
     wget_lib $EXPAT_FILE_NAME         "https://sourceforge.net/projects/expat/files/expat/$EXPAT_VERSION/$EXPAT_FILE_NAME/download"
     wget_lib $FONTCONFIG_FILE_NAME    "https://www.freedesktop.org/software/fontconfig/release/$FONTCONFIG_FILE_NAME"
     wget_lib $POPPLER_FILE_NAME       "https://poppler.freedesktop.org/$POPPLER_FILE_NAME"
-    wget_lib $FONTFORGE_FILE_NAME     "https://github.com/fontforge/fontforge/releases/download/${FONTFORGE_VERSION}/${FONTFORGE_FILE_NAME#*-}"
+    wget_lib $FONTFORGE_FILE_NAME     "https://github.com/fontforge/fontforge/releases/download/${FONTFORGE_VERSION}/${FONTFORGE_FILE_NAME}"
     #wget_lib $FONTFORGE_FILE_NAME     "https://github.com/fontforge/fontforge/archive/${FONTFORGE_FILE_NAME#*-}"
     wget_lib $PDF2HTMLEX_FILE_NAME    "https://github.com/coolwanglu/pdf2htmlEX/archive/v${PDF2HTMLEX_FILE_NAME#*-}"
     wget_lib $DEHYDRATED_FILE_NAME    "https://github.com/lukas2511/dehydrated/archive/v${DEHYDRATED_FILE_NAME#*-}"
@@ -6350,7 +6350,8 @@ configure_xunsearch_command()
 # {{{ function after_xunsearch_make_install()
 function after_xunsearch_make_install()
 {
-    ln -s $XUNSEARCH_BASE/sdk/php/lib $BASE_DIR/inc/xunsearch
+    mkdir -p $BASE_DIR/inc && \
+        ln -s $XUNSEARCH_BASE/sdk/php/lib $BASE_DIR/inc/xunsearch
 
     if [ "$?" != "0" ];then
         echo " copy file faild. command: $cmd" >&2
@@ -6483,12 +6484,15 @@ configure_fontforge_command()
         fi
     fi
 
+    #autoreconf -f -i  && \
+
     #./bootstrap && \
-    LIBPNG_CFLAGS="$(get_cppflags $LIBPNG_BASE/include )" \
-    LIBPNG_LIBS="$(get_ldflags $LIBPNG_BASE/lib )" \
+    CFLAGS="$(get_cppflags $LIBPNG_BASE/include $LIBICONV_BASE/include )" \
+    LDFLAGS="$(get_ldflags $LIBPNG_BASE/lib $LIBICONV_BASE/lib )" \
     ./configure --prefix=$FONTFORGE_BASE \
                 --disable-python-scripting \
                 --disable-python-extension \
+                --with-libiconv-prefix=$LIBICONV_BASE \
                 --without-libreadline \
                 --without-x
                 # --without-libiconv \
