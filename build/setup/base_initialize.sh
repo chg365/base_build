@@ -579,6 +579,7 @@ function php_fpm_systemd_init()
     # Before=nginx.service
 
     sed -i.bak.$$ "s/^PIDFile=.\{0,\}$/PIDFile=$(sed_quote2 $pid_file )/" $service_file
+    sed -i.bak.$$ "s/^PrivateTmp=true$/PrivateTmp=false/" $service_file
     #sed -i.bak.$$ "s/^Type=/Type=forking/" $service_file
     rm -rf ${service_file}.bak.*
 
