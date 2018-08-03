@@ -301,7 +301,7 @@ compile_geoipupdate
 compile_php_extension_imap
 install_dehydrated
 cp_GeoLite2_data
-install_web_service_common_php
+#install_web_service_common_php #无用
 install_geoip2_php
 #compile_gitbook_cli
 compile_calibre
@@ -543,3 +543,10 @@ tracefile-analyser.php  xt.vim
 -rw-r--r--. 1 orca orca 37775 1月  30 04:08 xdebug.ini
 
 https://www.itcodemonkey.com/article/1913.html
+
+
+https://reactnative.cn/docs/getting-started.html
+https://github.com/facebook/react-native/releases
+https://doc.react-china.org/
+wget -c --content-disposition --no-check-certificate https://github.com/facebook/react-native/archive/v0.56.0.tar.gz
+
