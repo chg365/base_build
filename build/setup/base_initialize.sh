@@ -24,13 +24,13 @@ fi
 # {{{ function has_chown_finished 已经修改过目录权限
 function has_chown_finished()
 {
-    if [ "$POSTGRESQL_USER" != "" ]; then
+    if [ "$POSTGRESQL_USER" != "" -a -d "$POSTGRESQL_DATA_DIR" ] ; then
         local num=`ls -l $POSTGRESQL_DATA_DIR/../ |grep $POSTGRESQL_USER|wc -l`;
         if [ "$num" != "" -a "$num" -gt "0" ]; then
             return 0;
         fi
     fi
-    if [ "$MYSQL_USER" != "" ]; then
+    if [ "$MYSQL_USER" != "" -a -d "$MYSQL_DATA_DIR" ]; then
         local num=`ls -l $MYSQL_DATA_DIR/../ |grep $MYSQL_USER|wc -l`;
         if [ "$num" != "" -a "$num" -gt "0" ]; then
             return 0;
@@ -901,8 +901,8 @@ fi
 #                         logrotate conf file                    #
 ##################################################################
 
-sed -i "s%LOG_DIR%${LOG_DIR}%"  $BASE_DIR/etc/eo_logrotate.conf
-sed -i "s%RUN_DIR%${$BASE_DIR}/run%" $BASE_DIR/etc/eo_logrotate.conf
+sed -i "s%LOG_DIR%${LOG_DIR}%"  $BASE_DIR/etc/base_logrotate.conf
+sed -i "s%RUN_DIR%${BASE_DIR}/run%" $BASE_DIR/etc/base_logrotate.conf
 
 ##################################################################
 #                         DATA DIR                               #
