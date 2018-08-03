@@ -80,5 +80,16 @@ if (!is_file($log_file))
     touch($log_file);
     exec('chmod a+w ' . $log_file);
 }
+unset($log_file);
+
+if (PHP_SAPI === 'cli')
+{
+    $error_log = ini_get('error_log');
+    if (strpos($error_log, LOG_DIR) === 0 && !is_file($error_log)) {
+        touch($error_log);
+        exec('chmod a+x' . $error_log);
+    }
+    unset($error_log);
+}
 
 register_shutdown_function('shutdown_global');

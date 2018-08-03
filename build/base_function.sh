@@ -769,6 +769,15 @@ function init_php_ini()
     # log_errors
     local pattern='^log_errors \{0,\}= \{0,\}\([oO][nN]\) \{0,\}$';
     change_php_ini "$pattern" "log_errors = Off"
+    # error_reporting
+    local pattern='^error_reporting \{0,\}= \{0,\}\(.\{1,\}\)$';
+    change_php_ini "$pattern" "error_reporting = E_ALL"
+    # error_log
+    local pattern='^;error_log \{0,\}= \{0,\}syslog \{0,\}$';
+    change_php_ini "$pattern" "error_log = \\\"$(sed_quote2 "$LOG_DIR/php/error.log" )\\\""
+    # ignore_repeated_errors
+    local pattern='^ignore_repeated_errors \{0,\}= \{0,\}\([oO][fF]\{2\}\)$';
+    change_php_ini "$pattern" "ignore_repeated_errors = On"
     # expose_php = Off
     # pattern='^expose_php \{0,\}= \{0,\}\(on\|On\|ON\) \{0,\}$'; # mac sed不支持 |
     local pattern='^expose_php \{0,\}= \{0,\}\([oO][nN]\) \{0,\}$';
