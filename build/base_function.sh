@@ -644,6 +644,8 @@ function wget_base_library()
     wget_lib $NGINX_STICKY_MODULE_FILE_NAME "https://bitbucket.org/nginx-goodies/nginx-sticky-module-ng/get/${NGINX_STICKY_MODULE_FILE_NAME##*-}"
     wget_lib $NGINX_HTTP_GEOIP2_MODULE_FILE_NAME "https://github.com/leev/ngx_http_geoip2_module/archive/${NGINX_HTTP_GEOIP2_MODULE_FILE_NAME##*-}"
 
+    wget_lib $PYTHON_FILE_NAME "https://www.python.org/ftp/python/${PYTHON_VERSION}/${PYTHON_FILE_NAME}"
+
 #    if [ "$OS_NAME" = 'darwin' ];then
 
         wget_lib $KBPROTO_FILE_NAME          "https://www.x.org/archive/individual/proto/$KBPROTO_FILE_NAME"
@@ -2232,6 +2234,19 @@ function is_installed_php()
     fi
     local version=`$PHP_BASE/bin/php -v | sed -n '1p' | awk '{print $2;}'`
     if [ "$version" != "$PHP_VERSION" ];then
+        return 1;
+    fi
+}
+# }}}
+# {{{ function is_installed_python()
+function is_installed_python()
+{
+    local FILE_NAME="$PYTHON_BASE/bin/python${PYTHON_VERSION%%.*}"
+    if [ ! -f "$FILE_NAME" ];then
+        return 1;
+    fi
+    local version=`$FILE_NAME -V | sed -n '1p' | awk '{print $2;}'`
+    if [ "$version" != "$PYTHON_VERSION" ];then
         return 1;
     fi
 }
@@ -4804,10 +4819,36 @@ function compile_rabbitmq_c()
 
     RABBITMQ_C_CONFIGURE="
     cmake -DCMAKE_INSTALL_PREFIX=$RABBITMQ_C_BASE \
-          -DCMAKE_INSTALL_LIBDIR=lib
+          -DCMAKE_INSTALL_LIBDIR=$RABBITMQ_C_BASE/lib
     "
 
     compile "rabbitmq-c" "$RABBITMQ_C_FILE_NAME" "rabbitmq-c-${RABBITMQ_C_VERSION}" "$RABBITMQ_C_BASE" "RABBITMQ_C_CONFIGURE"
+}
+# }}}
+# {{{ function compile_python()
+function compile_python()
+{
+    compile_openssl
+    compile_sqlite
+    compile_zlib
+    compile_readline
+
+    is_installed python "$PYTHON_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    PYTHON_CONFIGURE="
+        configure_python_command
+    "
+
+    compile "python" "$PYTHON_FILE_NAME" "Python-$PYTHON_VERSION" "$PYTHON_BASE" "PYTHON_CONFIGURE" "after_python_make_install"
+}
+# }}}
+# {{{ function after_python_make_install()
+function after_python_make_install()
+{
+    /usr/local/chg/base/opt/python/bin/pip3 install --upgrade pip
 }
 # }}}
 # {{{ function compile_php()
@@ -6336,9 +6377,14 @@ function compile_famous_angular()
 # {{{ function configure_libjpeg_command()
 function configure_libjpeg_command()
 {
-    # 解决 ./configure: line 13431: PKG_PROG_PKG_CONFIG: command not found
-    autoreconf -f -i  && \
-    ./configure --prefix=$LIBJPEG_BASE
+    if  is_new_version $LIBJPEG_VERSION 2.0.0 ; then
+        cmake ./ -DCMAKE_INSTALL_PREFIX=$LIBJPEG_BASE \
+                 -DCMAKE_INSTALL_LIBDIR=$LIBJPEG_BASE/lib
+    else
+        # 解决 ./configure: line 13431: PKG_PROG_PKG_CONFIG: command not found
+        autoreconf -f -i  && \
+        ./configure --prefix=$LIBJPEG_BASE
+    fi
 }
 # }}}
 # {{{ configure_xapian_core_scws_command()
@@ -6544,6 +6590,21 @@ configure_harfbuzz_command()
     ./configure --prefix=$HARFBUZZ_BASE
 }
 # }}}
+# {{{ configure_python_command()
+configure_python_command()
+{
+    CFLAGS="$(get_cppflags $ZLIB_BASE/include $OPENSSL_BASE/include $READLINE_BASE/include)" \
+    CPPFLAGS="$(get_cppflags $ZLIB_BASE/include $OPENSSL_BASE/include $READLINE_BASE/include)" \
+    LDFLAGS="$(get_ldflags $ZLIB_BASE/lib $OPENSSL_BASE/lib $READLINE_BASE/lib)" \
+    ./configure --prefix=$PYTHON_BASE \
+                --enable-optimizations \
+                --enable-ipv6 \
+                --enable-loadable-sqlite-extensions \
+                --with-openssl=$OPENSSL_BASE \
+
+                #--sysconfdir=$BASE_DIR/etc/python
+}
+# }}}
 # {{{ configure_php_command()
 configure_php_command()
 {
@@ -6663,8 +6724,7 @@ configure_libffi_command()
         PATH="${autoconf1%/*}:$PATH"
     fi
     PATH="$PATH" \
-    ./configure --prefix=$LIBFFI_BASE \
-                # --libdir=$LIBFFI_BASE/lib
+    ./configure --prefix=$LIBFFI_BASE
 
     local flag=$?
     PATH="$old_path"
@@ -7244,6 +7304,7 @@ function check_soft_updates()
 #check_version swfupload
 #    exit;
     local array=(
+            python
             xunsearch_sdk_php
             xunsearch
             scws
@@ -7619,6 +7680,45 @@ function check_xapian_bindings_version()
 function check_libzip_version()
 {
     check_ftp_version libzip ${LIBZIP_VERSION} https://nih.at/libzip/ 's/^.\{0,\}libzip-\([0-9a-zA-Z._]\{2,\}\).tar.gz.\{0,\}$/\1/p'
+}
+# }}}
+# {{{ function check_python_version()
+function check_python_version()
+{
+    local tmp=""
+    if [ "$#" = "0" ]; then
+        check_python_version 1
+    fi
+
+    #只查找当前小版本
+    if [ "$1" = "1" ]; then
+        local tmp=${PYTHON_VERSION%.*}
+    fi
+
+    local versions=`curl -Lk https://www.python.org/downloads/ 2>/dev/null | sed -n "s/^.\{1,\}>Python \{1,\}\(${tmp}[0-9.]\{2,\}\)<.\{1,\}$/\1/p"|sort -rV`
+    local new_version=`echo "$versions"|head -1`;
+    if [ -z "$new_version" ];then
+        echo -e "探测python新版本\033[0;31m失败\033[0m" >&2
+        return 1;
+    fi
+
+    echo "$new_version" |grep -iq 'RC'
+    if [ "$?" = "0" ]; then
+        local tmp_version1=`echo "$versions"|grep -iv 'RC' |head -1`;
+        local tmp_version2=`echo "$new_version"|sed -n 's/^\([0-9._-]\{1,\}\)\([Rr][Cc]\).\{1,\}$/\1/p'`;
+        if [ "$tmp_version1" = "$tmp_version2" ];then
+            new_version=$tmp_version2;
+        fi
+    fi
+
+    is_new_version $PYTHON_VERSION $new_version
+    if [ "$?" = "0" ];then
+        [ "$is_echo_latest" = "" -o "$is_echo_latest" != "0" ] && \
+        echo -e "python version is \033[0;32mthe latest.\033[0m"
+        return 0;
+    fi
+
+    echo -e "python current version: \033[0;33m${PYTHON_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
 # {{{ function check_php_version()

@@ -29,7 +29,8 @@ fi
 if [ ! -f $HOME/.chg_base_compile_env ]; then
     if [ "$OS_NAME" = "linux" ]; then
         sudo yum install -y bison cmake gcc xz texinfo bzip2 xz-devel gcc-c++ ncurses-devel ncurses byacc file file-devel re2c libtool-ltdl-devel popt-devel re2c wget curl libtool coreutils nasm
-        sudo yum install -y curl nss cyrus-sasl cyrus-sasl-devel cyrus-sasl-lib libacl libacl-devel libattr libattr-devel gperf pam pam-devel krb5-devel krb5-libs uuid uuid-devel libmount libmount-devel libuuid-devel libuuid
+        sudo yum install -y curl nss cyrus-sasl cyrus-sasl-devel cyrus-sasl-lib libacl libacl-devel libattr libattr-devel gperf pam pam-devel krb5-devel krb5-libs uuid uuid-devel libmount libmount-devel libuuid-devel libuuid  zlib-devel readline-devel bzip2-devel gdbm-devel tk-devel tk libffi-devel
+
         sudo yum install -y itstool patch # fontconfig 2.12.91
 
         #wget http://dl.fedoraproject.org/pub/epel/7/x86_64/r/re2c-0.14.3-2.el7.x86_64.rpm
@@ -219,6 +220,7 @@ fi
 # 下载开源软件新版本
 wget_base_library
 
+compile_python
 compile_xunsearch
 compile_xapian_core
 compile_xapian_omega
@@ -249,7 +251,7 @@ compile_mysql
 compile_nginx
 compile_sqlite
 compile_phantomjs
-if [ "$OS_NAME" != 'darwin' ];then
+if [ "$OS_NAME" != "darwin" ]; then
     gcc_minimum_version="4.7.99"
     gcc_version=`gcc --version 2>/dev/null|head -1|awk '{ print $3;}'`;
     gcc_new_version=`echo $gcc_version $gcc_minimum_version|tr " " "\n"|sort -rV|head -1`;
@@ -552,4 +554,19 @@ wget -c --content-disposition --no-check-certificate https://github.com/facebook
 
 
 ab只能测试http，jmeter各种性能测试都可以
+/usr/local/chg/base/opt/python/bin/pip3 install --upgrade pip
+/usr/local/chg/base/opt/python/bin/pip3 install --upgrade tensorflow
 
+vim hello_tf.go
+go run hello_tf.go
+go get github.com/tensorflow/tensorflow/tensorflow/go
+
+
+wget https://github.com/bazelbuild/bazel/releases/download/0.16.1/bazel-0.16.1-installer-linux-x86_64.sh
+chmod a+x bazel-0.16.1-installer-linux-x86_64.sh
+sudo ./bazel-0.16.1-installer-linux-x86_64.sh
+
+wget --content-disposition  https://github.com/tensorflow/tensorflow/archive/v1.10.0.tar.gz
+tar zxf tensorflow-1.10.0.tar.gz
+cd tensorflow-1.10.0
+PYTHON_BIN_PATH="/usr/local/chg/base/opt/python/bin/python3" ./configure
