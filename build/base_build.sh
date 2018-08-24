@@ -550,3 +550,6 @@ https://github.com/facebook/react-native/releases
 https://doc.react-china.org/
 wget -c --content-disposition --no-check-certificate https://github.com/facebook/react-native/archive/v0.56.0.tar.gz
 
+
+ab只能测试http，jmeter各种性能测试都可以
+

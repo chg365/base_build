@@ -821,14 +821,6 @@ function init_php_ini()
     local pattern='^soap\.wsdl_cache_dir \{0,\}= \{0,\}\"\/tmp\"$';
     change_php_ini "$pattern" "soap.wsdl_cache_dir= \\\"$( echo $WSDL_CACHE_DIR|sed 's/\//\\\//g' )\\\""
 
-    #[APCU]
-    #apc.rfc1867 = 1
-    #apc.rfc1867_freq = 2
-    #apc.cache_by_default=Off
-    #; apc.filter=""
-    #; apc.rfc1867_name = "APC_UPLOAD_PROGRESS"
-    #; apc.rfc1867_prefix = "upload_"
-    #; apc.rfc1867_freq = 0
 }
 # }}}
 # function change_php_fpm_ini() {{{
@@ -4966,13 +4958,37 @@ function compile_php_extension_apcu()
     fi
 
     PHP_EXTENSION_APCU_CONFIGURE="
-    ./configure --with-php-config=$PHP_BASE/bin/php-config --enable-apcu \
-                --enable-apcu-clear-signal  --enable-apcu-spinlocks
+    ./configure --with-php-config=$PHP_BASE/bin/php-config \
+                --enable-apcu \
+                --enable-apcu-clear-signal \
+                --enable-apcu-spinlocks
     "
                 # --enable-coverage
-    compile "php_extension_apcu" "$APCU_FILE_NAME" "apcu-$APCU_VERSION" "apcu.so" "PHP_EXTENSION_APCU_CONFIGURE"
+    compile "php_extension_apcu" "$APCU_FILE_NAME" "apcu-$APCU_VERSION" "apcu.so" "PHP_EXTENSION_APCU_CONFIGURE" "after_php_extension_apcu_make_install"
 
     /bin/rm -rf package.xml
+}
+# }}}
+# {{{ function after_php_extension_apcu_make_install()
+function after_php_extension_apcu_make_install()
+{
+    mkdir -p $BASE_DIR/inc/apcu
+    if [ "$?" != "0" ];then
+        echo "mkdir faild. command: mkdir -p $BASE_DIR/inc/apcu" >&2
+        return 1;
+    fi
+    cp apc.php $BASE_DIR/inc/apcu/
+    if [ "$?" != "0" ];then
+        echo " copy file faild. command: cp apc.php $BASE_DIR/inc/apcu/" >&2
+        return 1;
+    fi
+
+    if grep -q 'apc\.rfc1867' $php_ini ; then
+        return 0;
+    fi
+
+    echo '[apcu]' >> $php_ini
+    echo 'apc.rfc1867 = 1' >> $php_ini
 }
 # }}}
 # {{{ function compile_php_extension_apcu_bc()
@@ -6516,6 +6532,7 @@ configure_curl_command()
     ./configure --prefix=$CURL_BASE \
                 --with-zlib=$ZLIB_BASE \
                 --with-nghttp2=$NGHTTP2_BASE \
+                --enable-ipv6 \
                 --with-ssl=$OPENSSL_BASE
 }
 # }}}
@@ -6903,41 +6920,36 @@ configure_php_swoole_command()
     local kernel_release=$(uname -r);
     kernel_release=${kernel_release%%-*}
 
-    local is_2=$( [ `echo "$SWOOLE_VERSION 2.0.0"|tr " " "\n"|sort -rV|head -1` = "$SWOOLE_VERSION" ] && echo "1" || echo "0")
-    local is_4=$( [ `echo "$SWOOLE_VERSION 4.0.1"|tr " " "\n"|sort -rV|head -1` = "$SWOOLE_VERSION" ] && echo "1" || echo "0")
-
     # 编译时如果没有pcre，使用时会有意想不到的结果 $memory_table->count() > 0，但是foreach 结果为空
-    CPPFLAGS="$( get_cppflags $OPENSSL_BASE/include $PCRE_BASE/include)" LDFLAGS="$(get_ldflags $OPENSSL_BASE/lib $PCRE_BASE/lib )" \
+    CPPFLAGS="$( get_cppflags $OPENSSL_BASE/include $PCRE_BASE/include)" \
+    LDFLAGS="$(get_ldflags $OPENSSL_BASE/lib $PCRE_BASE/lib )" \
     ./configure --with-php-config=$PHP_BASE/bin/php-config \
-                --enable-sockets \
-                --enable-openssl \
-                $( [ `echo "$SWOOLE_VERSION 1.9.0"|tr " " "\n"|sort -rV|head -1` = "$SWOOLE_VERSION" ] \
-                && echo "--with-openssl$([ `echo "$SWOOLE_VERSION 2.0.0"|tr " " "\n"|sort -rV|head -1` != "2.0.0" ] \
-                && echo  "-dir" || echo "")=$OPENSSL_BASE" || echo " " ) \
                 --with-swoole \
                 --enable-swoole \
-                $( [ "$is_2" = "1" ] && echo "
-                $( [ "$is_4" != "1" ] && echo "
-                --enable-coroutine" || echo "") \
+                --enable-swoole-static \
+                --enable-sockets \
+                --enable-openssl \
+                --with-openssl-dir=$OPENSSL_BASE \
+                $( is_installed postgresql "$POSTGRESQL_BASE" \
+                && echo "
+                --enable-coroutine-postgresql \
+                --with-libpq-dir=$POSTGRESQL_BASE \
+                " ) \
                 --enable-async-redis \
                 --enable-thread \
                 --enable-http2 \
-                $( [ `echo "$SWOOLE_VERSION 2.1.0"|tr " " "\n"|sort -rV|head -1` = "$SWOOLE_VERSION" ] \
-                && echo " \
-                --enable-swoole-static \
+                --enable-asan \
                 --enable-mysqlnd \
                 --enable-timewheel \
-                " || echo "") \
                 --enable-ringbuffer" || echo " ") \
 
                 #-enable-jemalloc \
 
                 # CentOS 7.1  php7.1.4 swoole2.0.7  php -m 报错 Segmentation fault
                 #$( [ `echo "$kernel_release 2.6.33" | tr " " "\n"|sort -rV|head -1 ` = "$kernel_release" ] && echo "--enable-hugepage" || echo "" )
-               # swoole 2.1.0
+
                #--enable-picohttpparser
-               # 4.0.0
-               # --enable-coroutine-postgresql --with-libpq-dir= --with-phpx-dir=
+               #--with-phpx-dir=
 }
 # }}}
 # {{{ configure_php_amqp_command()
