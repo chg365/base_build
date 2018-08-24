@@ -6980,9 +6980,10 @@ configure_php_swoole_command()
     local kernel_release=$(uname -r);
     kernel_release=${kernel_release%%-*}
 
+    # 4.0.4 编译不上 pcre 和postgresql
     # 编译时如果没有pcre，使用时会有意想不到的结果 $memory_table->count() > 0，但是foreach 结果为空
-    CPPFLAGS="$( get_cppflags $OPENSSL_BASE/include $PCRE_BASE/include)" \
-    LDFLAGS="$(get_ldflags $OPENSSL_BASE/lib $PCRE_BASE/lib )" \
+    CPPFLAGS="$( get_cppflags $OPENSSL_BASE/include $PCRE_BASE/include $POSTGRESQL_BASE/include)" \
+    LDFLAGS="$(get_ldflags $OPENSSL_BASE/lib $PCRE_BASE/lib $POSTGRESQL_BASE/lib)" \
     ./configure --with-php-config=$PHP_BASE/bin/php-config \
                 --with-swoole \
                 --enable-swoole \
@@ -6990,18 +6991,19 @@ configure_php_swoole_command()
                 --enable-sockets \
                 --enable-openssl \
                 --with-openssl-dir=$OPENSSL_BASE \
-                $( is_installed postgresql "$POSTGRESQL_BASE" \
-                && echo "
-                --enable-coroutine-postgresql \
-                --with-libpq-dir=$POSTGRESQL_BASE \
-                ") \
                 --enable-async-redis \
                 --enable-thread \
                 --enable-http2 \
                 --enable-asan \
                 --enable-mysqlnd \
-                --enable-timewheel \
-                --enable-ringbuffer \
+                --enable-timewheel
+
+                #configure 有问题，编译不上
+                #$( is_installed postgresql "$POSTGRESQL_BASE" \
+                #&& echo "
+                #--enable-coroutine-postgresql \
+                #--with-libpq-dir=$POSTGRESQL_BASE \
+                #") \
 
                 #-enable-jemalloc \
 
