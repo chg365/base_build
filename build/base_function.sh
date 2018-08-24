@@ -6994,14 +6994,14 @@ configure_php_swoole_command()
                 && echo "
                 --enable-coroutine-postgresql \
                 --with-libpq-dir=$POSTGRESQL_BASE \
-                " ) \
+                ") \
                 --enable-async-redis \
                 --enable-thread \
                 --enable-http2 \
                 --enable-asan \
                 --enable-mysqlnd \
                 --enable-timewheel \
-                --enable-ringbuffer" || echo " ") \
+                --enable-ringbuffer \
 
                 #-enable-jemalloc \
 
