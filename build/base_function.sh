@@ -6403,7 +6403,7 @@ configure_xunsearch_command()
     # 不改，使用不上字典
     sed -i.bak "s#SCWS_ETCDIR=\"\{0,1\}\$SCWS_DIR/etc\"\{0,1\}#SCWS_ETCDIR=$(sed_quote2 $SCWS_CONFIG_DIR)#" configure
     #1.4.11编译不过去。报libevent 版本不对
-    sed -i 's/_EVENT_NUMERIC_VERSION/EVENT__NUMERIC_VERSION/' configure
+    sed -i.bak 's/_EVENT_NUMERIC_VERSION/EVENT__NUMERIC_VERSION/' configure
 
     #apc 换成apcu
     for i in `find sdk/php/ -name "*.php"`; do sed -i 's/apc_/apcu_/' $i; done
