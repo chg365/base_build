@@ -5414,6 +5414,7 @@ function compile_php_extension_swoole()
     compile_openssl
     compile_pcre
     compile_hiredis
+    compile_nghttp2
 
     is_installed_php_extension swoole $SWOOLE_VERSION
     if [ "$?" = "0" ];then
@@ -6982,8 +6983,16 @@ configure_php_swoole_command()
 
     # 4.0.4 编译不上 pcre 和postgresql
     # 编译时如果没有pcre，使用时会有意想不到的结果 $memory_table->count() > 0，但是foreach 结果为空
-    CPPFLAGS="$( get_cppflags $OPENSSL_BASE/include $PCRE_BASE/include $POSTGRESQL_BASE/include)" \
-    LDFLAGS="$(get_ldflags $OPENSSL_BASE/lib $PCRE_BASE/lib $POSTGRESQL_BASE/lib)" \
+    CPPFLAGS="$( get_cppflags $OPENSSL_BASE/include \
+                              $PCRE_BASE/include \
+                              $NGHTTP2_BASE/include \
+                              $HIREDIS_BASE/include \
+                              )" \
+    LDFLAGS="$(get_ldflags $OPENSSL_BASE/lib \
+                           $PCRE_BASE/lib \
+                           $NGHTTP2_BASE/lib \
+                           $HIREDIS_BASE/lib \
+                           )" \
     ./configure --with-php-config=$PHP_BASE/bin/php-config \
                 --with-swoole \
                 --enable-swoole \
@@ -6994,10 +7003,11 @@ configure_php_swoole_command()
                 --enable-async-redis \
                 --enable-thread \
                 --enable-http2 \
-                --enable-asan \
                 --enable-mysqlnd \
                 --enable-timewheel
 
+                # 编译后，swoole.so报错
+                #--enable-asan \
                 #configure 有问题，编译不上
                 #$( is_installed postgresql "$POSTGRESQL_BASE" \
                 #&& echo "
