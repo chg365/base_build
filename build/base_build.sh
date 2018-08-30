@@ -570,3 +570,7 @@ wget --content-disposition  https://github.com/tensorflow/tensorflow/archive/v1.
 tar zxf tensorflow-1.10.0.tar.gz
 cd tensorflow-1.10.0
 PYTHON_BIN_PATH="/usr/local/chg/base/opt/python/bin/python3" ./configure
+
+https://developer.baidu.com/resources/online/doc/
+# 测试网站的tls
+https://www.ssllabs.com/ssltest/analyze.html?d=www.mochoua.com
