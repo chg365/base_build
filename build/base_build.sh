@@ -397,7 +397,7 @@ exit;
 #yum install libattr libattr-devel
 #tar zxf acl-2.2.52.src.tar.gz
 #cd acl-2.2.52
-#./configure --prefix=/usr/local/chg/base/opt/acl --enable-lib64=yes
+#./configure --prefix=$OPT_BASE/acl --enable-lib64=yes
 #make
 #make install
 #cd ..
@@ -407,7 +407,7 @@ exit;
 
 
 # php dba ext
-#./configure --with-php-config=/usr/local/chg/base/opt/php/bin/php-config  --enable-dba=shared --with-qdbm= --with-gdbm= --with-ndbm= --with-db4= --with-dbm= --with-tcadb=
+#./configure --with-php-config=$PHP_BASE/bin/php-config  --enable-dba=shared --with-qdbm= --with-gdbm= --with-ndbm= --with-db4= --with-dbm= --with-tcadb=
 
 #wget --content-disposition --no-check-certificate https://github.com/FoolCode/SphinxQL-Query-Builder/archive/0.0.2.tar.gz
 # http://stock.qq.com/a/20160718/005704.htm
@@ -420,7 +420,7 @@ wget --content-disposition --no-check-certificate  https://github.com/maxmind/ge
 tar zxf geoip-api-c-1.6.9.tar.gz
 cd geoip-api-c-1.6.9
 #./bootstrap
-./configure --prefix=/usr/local/chg/base/contrib
+./configure --prefix=$GEOIP_BASE
 make
 make install
 
@@ -429,11 +429,11 @@ make install
 wget --content-disposition --no-check-certificate https://github.com/Zakay/geoip/archive/master.tar.gz
 tar zxf geoip-master.tar.gz
 cd geoip-master
-/usr/local/chg/base/opt/php/bin/phpize
-./configure --with-php-config=/usr/local/chg/base/opt/php/bin/php-config --with-geoip=/usr/local/chg/base/contrib
+$PHP_BASE/bin/phpize
+./configure --with-php-config=$PHP_BASE/bin/php-config --with-geoip=$GEOIP_BASE
 make
 make install
-ldd /usr/local/chg/base/opt/php/lib/php/extensions/no-debug-zts-20151012/geoip.so
+ldd $PHP_BASE/lib/php/extensions/no-debug-zts-20151012/geoip.so
 
 
 
@@ -469,7 +469,7 @@ openldap
 wget ftp://ftp.openldap.org/pub/OpenLDAP/openldap-release/openldap-2.4.46.tgz
 tar zxf openldap-2.4.46.tgz
 cd openldap-2.4.46
-./configure --prefix=/usr/local/chg/base/opt/openldap --enable-dynamic --enable-proctitle --with-tls --with-threads --with-cyrus-sasl --sysconfdir=/usr/local/chg/base/etc
+./configure --prefix=$OPT_BASE/openldap --enable-dynamic --enable-proctitle --with-tls --with-threads --with-cyrus-sasl --sysconfdir=$BASE_DIR/etc
 make depend
 make
 make install
@@ -554,8 +554,8 @@ wget -c --content-disposition --no-check-certificate https://github.com/facebook
 
 
 ab只能测试http，jmeter各种性能测试都可以
-/usr/local/chg/base/opt/python/bin/pip3 install --upgrade pip
-/usr/local/chg/base/opt/python/bin/pip3 install --upgrade tensorflow
+$PYTHON_BASE/bin/pip3 install --upgrade pip
+$PYTHON_BASE/bin/pip3 install --upgrade tensorflow
 
 vim hello_tf.go
 go run hello_tf.go
@@ -569,7 +569,7 @@ sudo ./bazel-0.16.1-installer-linux-x86_64.sh
 wget --content-disposition  https://github.com/tensorflow/tensorflow/archive/v1.10.0.tar.gz
 tar zxf tensorflow-1.10.0.tar.gz
 cd tensorflow-1.10.0
-PYTHON_BIN_PATH="/usr/local/chg/base/opt/python/bin/python3" ./configure
+PYTHON_BIN_PATH="$PYTHON_BASE/bin/python3" ./configure
 
 https://developer.baidu.com/resources/online/doc/
 # 测试网站的tls

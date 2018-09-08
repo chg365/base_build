@@ -4540,8 +4540,8 @@ function configure_rsyslog_command()
         done
         find . -name "*.bak*" -delete
     fi
-    #PATH="/usr/local/chg/base/contrib/bin:$PATH" \
-    #PKG_CONFIG_PATH="/usr/local/chg/base/contrib/lib/pkgconfig"
+    #PATH="${CONTRIB_BASE}/bin:$PATH" \
+    #PKG_CONFIG_PATH="${CONTRIB_BASE}/lib/pkgconfig"
     ./configure --prefix=$RSYSLOG_BASE \
                 --sysconfdir=$RSYSLOG_CONFIG_DIR \
                 $( has_systemd && echo "--with-systemdsystemunitdir=$RSYSLOG_BASE/systemd" ) \
@@ -4848,7 +4848,7 @@ function compile_python()
 # {{{ function after_python_make_install()
 function after_python_make_install()
 {
-    /usr/local/chg/base/opt/python/bin/pip3 install --upgrade pip
+    $PYTHON_BASE/bin/pip3 install --upgrade pip
 }
 # }}}
 # {{{ function compile_php()
@@ -9677,8 +9677,8 @@ function init_setup()
 #wget --content-disposition --no-check-certificate https://github.com/vrtadmin/clamav-devel/archive/clamav-0.99.2.tar.gz
 #tar zxf clamav-devel-clamav-0.99.2.tar.gz
 #cd clamav-devel-clamav-0.99.2
-#./configure --prefix=/usr/local/chg/base/opt/clamav --with-openssl=$OPENSSL_BASE --with-pcre=$PCRE_BASE --with-zlib=$ZLIB_BASE --with-libbz2-prefix=/usr/local/chg/base/contrib --with-iconv --with-libcurl=$CURL_BASE
-#./configure --prefix=/usr/local/chg/base/opt/clamav --with-openssl=$OPENSSL_BASE --with-pcre=$PCRE_BASE --with-zlib=$ZLIB_BASE --with-libbz2-prefix=/usr/local/chg/base/contrib --with-iconv --with-libcurl=$CURL_BASE --with-xml=$LIBXML2_BASE
+#./configure --prefix=$OPT_BASE/clamav --with-openssl=$OPENSSL_BASE --with-pcre=$PCRE_BASE --with-zlib=$ZLIB_BASE --with-libbz2-prefix=$LIBBZ2_BASE --with-iconv --with-libcurl=$CURL_BASE
+#./configure --prefix=$OPT_BASE/clamav --with-openssl=$OPENSSL_BASE --with-pcre=$PCRE_BASE --with-zlib=$ZLIB_BASE --with-libbz2-prefix=$LIBBZ2_BASE --with-iconv --with-libcurl=$CURL_BASE --with-xml=$LIBXML2_BASE
 #make
 #make install
 #cd ..
@@ -9755,7 +9755,7 @@ function init_setup()
 #tar zxf swig-rel-3.0.12.tar.gz
 #cd swig-rel-3.0.12
 #./autogen.sh
-#./configure --prefix=/usr/local/chg/base/opt/swig --with-php=/usr/local/chg/base/opt/php/bin
+#./configure --prefix=$OPT_BASE/swig --with-php=$PHP_BASE/bin
 #make
 #make install
 #cd ..
