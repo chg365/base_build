@@ -57,6 +57,12 @@ do
 #            echo "${FILE_NAME} 文件可能已经损坏." >&2
 #        fi
 #        continue
+    elif [ "${FILE_NAME%%.ini}" != "$FILE_NAME" ];then
+        continue
+    elif [ "${FILE_NAME%%.xdb}" != "$FILE_NAME" ];then
+        continue
+    elif [ "${FILE_NAME%%.sh}" != "$FILE_NAME" ];then
+        continue
     else
         if [ "${FILE_NAME##*/}" = ".DS_Store" ];then
             continue

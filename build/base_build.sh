@@ -574,3 +574,8 @@ PYTHON_BIN_PATH="$PYTHON_BASE/bin/python3" ./configure
 https://developer.baidu.com/resources/online/doc/
 # 测试网站的tls
 https://www.ssllabs.com/ssltest/analyze.html?d=www.mochoua.com
+
+
+openssl ciphers  -V tls1_3 | column -t
+openssl s_client -connect www.mochoua.com:443  -tls1_3
+https://wiki.openssl.org/index.php/TLS1.3

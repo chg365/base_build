@@ -3663,11 +3663,11 @@ function compile_sqlite()
     fi
 
     SQLITE_CONFIGURE="
-        ./configure --prefix=$SQLITE_BASE \
-                    --enable-json1 \
-                    --enable-session \
-                    --enable-fts5
+        ./configure --prefix=$SQLITE_BASE
     "
+#--enable-json1 \
+#--enable-session \
+#--enable-fts5
 
     compile "sqlite" "$SQLITE_FILE_NAME" "sqlite-autoconf-$SQLITE_VERSION" "$SQLITE_BASE" "SQLITE_CONFIGURE"
 }
@@ -6786,6 +6786,7 @@ configure_nginx_command()
                 --with-pcre=../pcre-$PCRE_VERSION \
                 --with-zlib=../zlib-$ZLIB_VERSION \
                 --with-openssl=../openssl-$OPENSSL_VERSION \
+                --with-openssl-opt="enable-tls1_3 enable-weak-ssl-ciphers" \
                 --with-http_gunzip_module \
                 --build=${project_name%% *} \
                 --with-http_addition_module \
@@ -6799,6 +6800,8 @@ configure_nginx_command()
                 --with-ld-opt="$(get_ldflags $LIBMAXMINDDB_BASE/lib)" \
                 --add-dynamic-module=../ngx_http_geoip2_module-${NGINX_HTTP_GEOIP2_MODULE_VERSION}
 
+                # 为了支持IE8
+                #--with-openssl-opt="enable-weak-ssl-ciphers" \
                 # 用add-module 编译成功后，upload 和push stream模块没作用。不知道是怎么回事
                 #下面这个模块报错
                 #--add-module=../${NGINX_STICKY_MODULE_FILE_NAME%%.*} \
