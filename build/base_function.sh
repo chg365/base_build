@@ -243,14 +243,12 @@ function wget_lib_boost()
 # function wget_lib_xunsearch() {{{
 function wget_lib_xunsearch()
 {
-    XUNSEARCH_FULL_VERSION="1.4.11"
-    XUNSEARCH_FULL_FILE_NAME="xunsearch-full-${XUNSEARCH_FULL_VERSION}.tar.bz2"
     wget_lib $XUNSEARCH_FULL_FILE_NAME "http://www.xunsearch.com/download/xunsearch-full/$XUNSEARCH_FULL_FILE_NAME"
     local flag="$?"
     if [ "$flag" != "0" ];then
         return $flag;
     fi
-    if [ -f "$XUNSEARCH_FILE_NAME" ]; then
+    if [ -f "$XUNSEARCH_FILE_NAME" -a -f "$SCWS_DICT_FILE_NAME" -a -f "$SCWS_FILE_NAME" -a -f "$XAPIAN_CORE_SCWS_FILE_NAME" -a -f "$XUNSEARCH_SDK_FILE_NAME" ]; then
         return 0;
     fi
     decompress $XUNSEARCH_FULL_FILE_NAME
@@ -261,15 +259,15 @@ function wget_lib_xunsearch()
 
     for i in `echo $SCWS_DICT_FILE_NAME $SCWS_FILE_NAME $XAPIAN_CORE_SCWS_FILE_NAME $XUNSEARCH_FILE_NAME $XUNSEARCH_SDK_FILE_NAME`;
     do
-        if [ -f "./${i}" ];then
+        if [ ! -f "./xunsearch-full-${XUNSEARCH_FULL_VERSION}/packages/${i}" ];then
+            echo "Warning: file not exists. file: ./xunsearch-full-${XUNSEARCH_FULL_VERSION}/packages/${i}" >&2
             continue;
         fi
-        if [ ! -f "./xunsearch-full-${XUNSEARCH_FULL_VERSION}/packages/${i}" ];then
+        if [ -f "./${i}" ];then
             continue;
         fi
         cp xunsearch-full-${XUNSEARCH_FULL_VERSION}/packages/${i} ./
     done
-    cp xunsearch-full-${XUNSEARCH_FULL_VERSION}/packages/$XUNSEARCH_SDK_FILE_NAME ./
 
     rm -rf xunsearch-full-${XUNSEARCH_FULL_VERSION}
 }
@@ -6488,13 +6486,12 @@ configure_xapian_omega_command()
 # {{{ configure_xapian_bindings_php_command()
 configure_xapian_bindings_php_command()
 {
-
-    PHP7_EXTENSION_DIR="$PHP_BASE/lib/php/extensions/no-debug-zts-*/" \
-    PHP7="$PHP_BASE/bin/php" \
-    PHP_CONFIG7="$PHP_BASE/bin/php-config" \
-    XAPIAN_CONFIG="$XAPIAN_CORE_BASE/bin/xapian-config" \
     ./configure --prefix=$XAPIAN_BINDINGS_BASE \
-                --with-php7
+                --with-php7 \
+                PHP7_EXTENSION_DIR="$PHP_BASE/lib/php/extensions/no-debug-zts-*/" \
+                PHP7="$PHP_BASE/bin/php" \
+                PHP_CONFIG7="$PHP_BASE/bin/php-config" \
+                XAPIAN_CONFIG="$XAPIAN_CORE_BASE/bin/xapian-config"
 }
 # }}}
 # {{{ configure_geoipupdate_command()
