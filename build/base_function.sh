@@ -146,7 +146,7 @@ function echo_build_start()
     echo ""
     echo ""
     echo ""
-    echo "**************************  ${@}  $(date "+%Y-%d-%m %H:%M:%S") ************************"
+    echo "**************************  ${@}  $(date "+%Y-%m-%d %H:%M:%S") ************************"
     echo ""
     echo "===================================================================================="
     echo ""
@@ -4826,6 +4826,8 @@ function compile_rabbitmq_c()
 # {{{ function compile_python()
 function compile_python()
 {
+    #compile_expat
+    #compile_libxml2
     compile_openssl
     compile_sqlite
     compile_zlib

@@ -115,7 +115,7 @@ fi
 export LANG=C
 export LC_ALL=C
  
-echo `date "+%Y-%d-%m %H:%M:%S"` start
+echo `date "+%Y-%m-%d %H:%M:%S"` start
 start_time=`date +%s`
 
 ################################################################################
@@ -316,7 +316,7 @@ $PHP_BASE/bin/php --ini
 /bin/rm -rf $mysql_cnf.bak.$$
 
 
-echo `date "+%Y-%d-%m %H:%M:%S"` end
+echo `date "+%Y-%m-%d %H:%M:%S"` end
 end_time=`date +%s`
 echo "used times: $((end_time - start_time))s"
 
