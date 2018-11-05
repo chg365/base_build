@@ -579,3 +579,5 @@ https://www.ssllabs.com/ssltest/analyze.html?d=www.mochoua.com
 openssl ciphers  -V tls1_3 | column -t
 openssl s_client -connect www.mochoua.com:443  -tls1_3
 https://wiki.openssl.org/index.php/TLS1.3
+
+./configure --prefix=/usr/local/chg/base/opt/xapian-bindings  --with-php7 PHP_CONFIG7="/usr/local/chg/base/opt/php/bin/php-config" PHP7="/usr/local/chg/base/opt/php/bin/php" PHP7_EXTENSION_DIR="/usr/local/chg/base/opt/php/lib/php/extensions/no-debug-zts-20170718" XAPIAN_CONFIG="/usr/local/chg/base/opt/xapian/bin/xapian-config"

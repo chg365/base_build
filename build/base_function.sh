@@ -5155,6 +5155,8 @@ function compile_php_extension_pecl_http()
     compile_curl
     compile_libevent
     compile_icu
+    compile_php
+    compile_php_extension_raphf
 
     is_installed_php_extension http $PECL_HTTP_VERSION
     if [ "$?" = "0" ];then
@@ -9472,7 +9474,7 @@ function repair_dir_elf_rpath() {
         echo "要修复的目录不存在" >&2
         return 1;
     fi
-    path=`realpath $path`;
+    path=`realpath "$path"`;
     if [ ! -d "$path" ];then
         echo "要修复的目录不存在" >&2
         return 1;
@@ -9486,12 +9488,12 @@ function repair_dir_elf_rpath() {
     do
         for i in `find $j -type f`;
         do
-            is_elf_file $i
+            is_elf_file "$i"
 
             if [ "$?" != "0" ];then
                 continue
             fi
-            repair_elf_file_rpath $i
+            repair_elf_file_rpath "$i"
         done &
     done
     wait
@@ -9522,13 +9524,13 @@ function repair_elf_file_rpath() {
         return 1;
     fi
 
-    filename=`realpath $filename`;
+    filename=`realpath "$filename"`;
     if [ ! -f "$filename" ];then
         echo "要修复的文件不存在" >&2
         return 1;
     fi
 
-    is_elf_file $filename
+    is_elf_file "$filename"
 
     if [ "$?" != "0" ];then
         return 1;
