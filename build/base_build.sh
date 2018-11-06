@@ -581,3 +581,22 @@ openssl s_client -connect www.mochoua.com:443  -tls1_3
 https://wiki.openssl.org/index.php/TLS1.3
 
 ./configure --prefix=/usr/local/chg/base/opt/xapian-bindings  --with-php7 PHP_CONFIG7="/usr/local/chg/base/opt/php/bin/php-config" PHP7="/usr/local/chg/base/opt/php/bin/php" PHP7_EXTENSION_DIR="/usr/local/chg/base/opt/php/lib/php/extensions/no-debug-zts-20170718" XAPIAN_CONFIG="/usr/local/chg/base/opt/xapian/bin/xapian-config"
+
+
+https://zhuanlan.zhihu.com/p/38462399
+https://phpopencv.org/
+https://github.com/opencv/opencv/releases
+https://github.com/hihozhou/php-opencv
+https://github.com/php-opencv/php-opencv
+https://github.com/pangudashu/php7-internal
+https://github.com/php-opencv/php-opencv-examples
+https://github.com/nagadomi/waifu2x
+
+
+tar zxf swig-rel-3.0.12.tar.gz
+cd swig-rel-3.0.12
+./autogen.sh
+./configure --prefix=/root/swig --with-pcre-prefix=/usr/local/chg/base/contrib --with-php=/usr/local/chg/base/opt/php/bin/php --with-python3=/usr/local/chg/base/opt/python/bin/python3.6
+make
+make install
+
