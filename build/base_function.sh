@@ -2640,7 +2640,7 @@ function compile_xapian_bindings_php()
         configure_xapian_bindings_php_command
     "
 
-    compile "xapian_bindings_php" "$XAPIAN_BINDINGS_FILE_NAME" "xapian-bindings-$XAPIAN_BINDINGS_VERSION/" "$XAPIAN_BINDINGS_BASE" "XAPIAN_BINDINGS_PHP_CONFIGURE"
+    compile "xapian_bindings_php" "$XAPIAN_BINDINGS_FILE_NAME" "xapian-bindings-$XAPIAN_BINDINGS_VERSION/" "$XAPIAN_BINDINGS_BASE" "XAPIAN_BINDINGS_PHP_CONFIGURE" "after_xapian_bindings_php_make_install"
 }
 # }}}
 # {{{ function compile_scws()
@@ -6490,12 +6490,25 @@ configure_xapian_omega_command()
 # {{{ configure_xapian_bindings_php_command()
 configure_xapian_bindings_php_command()
 {
+    #make 时报错php7/xapian_wrap.cc:1096:27: error: 'xapian_globals' was not declared in this scope
+    if `is_new_version "1.4.9" "$XAPIAN_BINDINGS_VERSION"` ; then
+        patch -RNs php7/php7/xapian_wrap.cc -i ${curr_dir}/xapian_wrap.diff
+        if [ "$?" != "0" ];then
+            echo 'patch xapian_wrap.cc faild.' >&2
+            return 1
+        fi
+    fi
+
     ./configure --prefix=$XAPIAN_BINDINGS_BASE \
                 --with-php7 \
-                PHP7_EXTENSION_DIR="$PHP_BASE/lib/php/extensions/no-debug-zts-*/" \
-                PHP7="$PHP_BASE/bin/php" \
                 PHP_CONFIG7="$PHP_BASE/bin/php-config" \
                 XAPIAN_CONFIG="$XAPIAN_CORE_BASE/bin/xapian-config"
+}
+# }}}
+# {{{ function after_xapian_bindings_php_make_install()
+function after_xapian_bindings_php_make_install()
+{
+    write_extension_info_to_php_ini "xapian.so"
 }
 # }}}
 # {{{ configure_geoipupdate_command()

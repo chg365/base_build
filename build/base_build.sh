@@ -224,9 +224,7 @@ compile_python
 compile_xunsearch
 compile_xapian_core
 compile_xapian_omega
-# make 时报错php7/xapian_wrap.cc:1096:27: error: 'xapian_globals' was not declared in this scope
-# 1.4.5 php 7.2.1
-#compile_xapian_bindings_php
+compile_xapian_bindings_php
 if [ "$OS_NAME" != 'darwin' ];then
     # mac下 这个软件不能用
     compile_patchelf
@@ -580,9 +578,6 @@ openssl ciphers  -V tls1_3 | column -t
 openssl s_client -connect www.mochoua.com:443  -tls1_3
 https://wiki.openssl.org/index.php/TLS1.3
 
-./configure --prefix=/usr/local/chg/base/opt/xapian-bindings  --with-php7 PHP_CONFIG7="/usr/local/chg/base/opt/php/bin/php-config" PHP7="/usr/local/chg/base/opt/php/bin/php" PHP7_EXTENSION_DIR="/usr/local/chg/base/opt/php/lib/php/extensions/no-debug-zts-20170718" XAPIAN_CONFIG="/usr/local/chg/base/opt/xapian/bin/xapian-config"
-
-
 https://zhuanlan.zhihu.com/p/38462399
 https://phpopencv.org/
 https://github.com/opencv/opencv/releases
@@ -599,4 +594,3 @@ cd swig-rel-3.0.12
 ./configure --prefix=/root/swig --with-pcre-prefix=/usr/local/chg/base/contrib --with-php=/usr/local/chg/base/opt/php/bin/php --with-python3=/usr/local/chg/base/opt/python/bin/python3.6
 make
 make install
-

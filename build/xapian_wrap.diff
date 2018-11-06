@@ -1,0 +1,7 @@
+1095,1098d1094
+< #ifdef ZTS
+< #define SWIG_ErrorMsg() TSRMG(xapian_globals_id, zend_xapian_globals *, error_msg )
+< #define SWIG_ErrorCode() TSRMG(xapian_globals_id, zend_xapian_globals *, error_code )
+< #else
+1101d1096
+< #endif
