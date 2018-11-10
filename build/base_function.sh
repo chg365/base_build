@@ -8057,7 +8057,7 @@ function check_dehydrated_version()
 # {{{ function check_nasm_version()
 function check_nasm_version()
 {
-    check_ftp_version phantomjs $NASM_VERSION "https://www.nasm.us/pub/nasm/releasebuilds/" 's/^.\{1,\}[>]\([0-9.]\{1,\}\)\/[<]*.\{0,\}$/\1/p'
+    check_ftp_version nasm $NASM_VERSION "https://www.nasm.us/pub/nasm/releasebuilds/" 's/^.\{1,\}[>]\([0-9.]\{1,\}\)\/[<]*.\{0,\}$/\1/p'
     return
 
     local new_version=`curl -Lk http://www.nasm.us/ 2>/dev/null |sed -n '/The latest stable version of NASM is/{n;s/^.\{1,\}>\([0-9].\{1,\}\)<.\{1,\}$/\1/p;}'`;
