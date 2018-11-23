@@ -55,7 +55,7 @@ spl_autoload_register('base_autoload');
 
 use GeoIp2\Database\Reader;
 
-define('GEOIP2_MMDB_DIR', '/usr/local/chg/base/etc/geoip');
+define('GEOIP2_MMDB_DIR', '/usr/local/chg/base/data/geoip2');
 $ip_arr = array(
         '118.194.236.35', // 北京
         '61.128.115.110',

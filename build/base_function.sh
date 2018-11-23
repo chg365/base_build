@@ -9734,6 +9734,7 @@ function init_setup()
 #$GEOIPUPDATE_BASE/bin/geoipupdate -f $BASE_DIR/etc/GeoIP2_update.conf -d /tmp/ &
 
 # 每周三5点更新 (GeoIP2、GeoIP旧版国家及城市以及GeoIP旧版区域数据库每周二更新。所有其他数据库在每个月的第一个周二更新)
+# GeoLite2国家和城市数据库在每个月的第一个星期二更新。GeoLite2 ASN数据库每周二更新一次。
 # 时差
 #0 5 * * 3 $GEOIPUPDATE_BASE/bin/geoipupdate >/dev/null 2>&1 &
 
