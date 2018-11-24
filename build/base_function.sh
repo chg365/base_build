@@ -591,9 +591,9 @@ function wget_base_library()
     wget_lib $DIO_FILE_NAME           "https://pecl.php.net/get/$DIO_FILE_NAME"
     wget_lib $PHP_LIBEVENT_FILE_NAME  "https://pecl.php.net/get/$PHP_LIBEVENT_FILE_NAME"
     wget_lib $IMAGICK_FILE_NAME       "https://pecl.php.net/get/$IMAGICK_FILE_NAME"
-    if [ `echo "${PHP_VERSION}" "7.1.99"|tr " " "\n"|sort -rV|head -1` = "7.1.99" ]; then
+    #if [ `echo "${PHP_VERSION}" "7.1.99"|tr " " "\n"|sort -rV|head -1` = "7.1.99" ]; then
         wget_lib $PHP_LIBSODIUM_FILE_NAME "https://pecl.php.net/get/$PHP_LIBSODIUM_FILE_NAME"
-    fi
+    #fi
     wget_lib $PHP_QRENCODE_FILE_NAME  "https://github.com/chg365/qrencode/archive/${PHP_QRENCODE_FILE_NAME#*-}"
     wget_lib $COMPOSER_FILE_NAME      "https://github.com/composer/composer/archive/${COMPOSER_FILE_NAME#*-}"
     wget_lib_browscap
@@ -715,6 +715,9 @@ function wget_env_library()
 # function write_extension_info_to_php_ini() {{{ 把单独编译的php扩展写入php.ini
 function write_extension_info_to_php_ini()
 {
+    if grep -q "^ \{0,1\}extension=$(sed_quote $1)" $php_ini ;then
+        return;
+    fi
     local line=`sed -n '/^;\{0,1\}extension=/h;${x;p;}' $php_ini`;
     sed -i.bak.$$ "/^$line\$/{a\\
 extension=$1
