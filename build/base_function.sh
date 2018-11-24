@@ -8263,9 +8263,9 @@ function check_pecl_xdebug_version()
 # {{{ function check_pecl_libsodium_version()
 function check_pecl_libsodium_version()
 {
-    if [ `echo "${PHP_VERSION}" "7.1.99"|tr " " "\n"|sort -rV|head -1` != "7.1.99" ]; then
-        return;
-    fi
+    #if [ `echo "${PHP_VERSION}" "7.1.99"|tr " " "\n"|sort -rV|head -1` != "7.1.99" ]; then
+        #return;
+    #fi
     if is_new_version "7.1.99" $PHP_VERSION ;then
         check_github_soft_version libsodium-php $PHP_LIBSODIUM_VERSION "https://github.com/jedisct1/libsodium-php/releases" "\(1\.[0-9.]\{1,\}\).tar.gz" 1
     else
