@@ -231,7 +231,7 @@ function wget_lib_sqlite()
         local year=`date +%Y`
     fi
 
-    wget_lib $SQLITE_FILE_NAME "http://www.sqlite.org/${year}/$SQLITE_FILE_NAME"
+    wget_lib $SQLITE_FILE_NAME "https://sqlite.org/${year}/$SQLITE_FILE_NAME"
 }
 # }}}
 # function wget_lib_boost() {{{
