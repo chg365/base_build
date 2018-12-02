@@ -9500,6 +9500,8 @@ function repair_dir_elf_rpath() {
         return 1;
     fi
 
+    IFS_old=$IFS
+    IFS=$'\n'
     local path1=`find $path -type d \( -name lib -o -name -lib64 -o -name bin -o -name sbin \)`;
     if [ -z "$path1" ];then
         path1=$path
@@ -9517,6 +9519,7 @@ function repair_dir_elf_rpath() {
         done &
     done
     wait
+    IFS=$IFS_old
 }
 # }}}
 # {{{ function is_elf_file
@@ -9564,7 +9567,23 @@ function repair_elf_file_rpath() {
         # 修复文件
         # 相同目录
         # --set-rpath '$ORIGIN/'
-        $PATCHELF_BASE/bin/patchelf --set-rpath $rpath $filename
+        local CMD="$PATCHELF_BASE/bin/patchelf --set-rpath $rpath $filename"
+        local error=""
+        error=`$CMD 2>&1`;
+        if [ "$?" = "1" ];then
+            if echo $error|grep -q "open: Permission denied" ;then
+                chmod u+w "$filename"
+                if [ "$?" = "0" ] ;then
+                    $CMD
+                    if [ "$?" != "0" ] ;then
+                        return 1
+                    fi
+                fi
+            else
+                echo $error >&2
+                return 1;
+            fi
+        fi
         $PATCHELF_BASE/bin/patchelf --shrink-rpath $filename
     fi
 }
