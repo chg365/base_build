@@ -901,8 +901,8 @@ fi
 #                         logrotate conf file                    #
 ##################################################################
 
-sed -i "s%LOG_DIR%${LOG_DIR}%"  $BASE_DIR/etc/base_logrotate.conf
-sed -i "s%RUN_DIR%${BASE_DIR}/run%" $BASE_DIR/etc/base_logrotate.conf
+sed -i "s%LOG_DIR%${LOG_DIR}%"  $LOGROTATE_CONFIG_DIR/logrotate.conf
+sed -i "s%RUN_DIR%${BASE_DIR}/run%" $LOGROTATE_CONFIG_DIR/logrotate.conf
 
 ##################################################################
 #                         DATA DIR                               #

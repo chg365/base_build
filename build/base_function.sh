@@ -942,9 +942,9 @@ function init_nginx_conf()
 
         rm_bak_file ${i}.bak.*
     done
-    if is_new_version $NGINX_VERSION "1.13.0" ; then
-        sed -i.bak.$$ "s/\(^.\{1,\}ssl_protocols.\{1,\}\) \{0,\}; \{0,\}$/\1  TLSv1.3;/g" $NGINX_CONF_FILE
-    fi
+    #if is_new_version $NGINX_VERSION "1.13.0" ; then
+        #sed -i.bak.$$ "s/\(^.\{1,\}ssl_protocols.\{1,\}\) \{0,\}; \{0,\}$/\1  TLSv1.3;/g" $NGINX_CONF_FILE
+    #fi
 
     # nginx user
     sed -i.bak.$$ "s/^ \{0,\}\(user \{1,\}\)[^ ]\{1,\} \{1,\}[^ ]\{1,\} \{0,\};$/user  $NGINX_USER  ${NGINX_GROUP};/" $NGINX_CONFIG_DIR/conf/nginx.conf
@@ -1043,6 +1043,8 @@ function init_rsyslog_conf()
 # function init_logrotate_conf() {{{
 function init_logrotate_conf()
 {
+    mkdir -p $LOGROTATE_CONFIG_DIR
+    cp ${curr_dir}/conf/base_logrotate.conf $LOGROTATE_CONFIG_DIR/logrotate.conf
     :
 }
 # }}}
@@ -4576,7 +4578,6 @@ function compile_logrotate()
 # {{{ function after_logrotate_make_install()
 function after_logrotate_make_install()
 {
-    mkdir -p $LOGROTATE_CONFIG_DIR
     init_logrotate_conf
 }
 # }}}
@@ -6817,7 +6818,7 @@ configure_nginx_command()
                 --with-ld-opt="$(get_ldflags $LIBMAXMINDDB_BASE/lib)" \
                 --add-dynamic-module=../ngx_http_geoip2_module-${NGINX_HTTP_GEOIP2_MODULE_VERSION}
 
-                # 为了支持IE8
+                # 为了支持windows XP IE8
                 #--with-openssl-opt="enable-weak-ssl-ciphers" \
                 # 用add-module 编译成功后，upload 和push stream模块没作用。不知道是怎么回事
                 #下面这个模块报错
