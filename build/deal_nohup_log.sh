@@ -50,6 +50,18 @@ sed -i.bak.$PID '/^\[ \{0,2\}[0-9]\{1,3\}%\] /d' $1
 #sed -i.bak.$PID '/^\[ \{0,2\}[0-9]\{1,2\}%\] Buil/d' $1
 #sed -i.bak.$PID '/^\[ \{0,2\}[0-9]\{1,3\}%\] Buil/d' $1
 
+sed -i.bask.$PID '/^Compiling /d' $1
+sed -i.bask.$PID '/^changing mode of /d' $1
+sed -i.bask.$PID '/^find . -name /d' $1
+sed -i.bask.$PID '/^find: /d' $1
+sed -i.bask.$PID '/^building .\{1,\} extension$/d' $1
+sed -i.bask.$PID '/^[0-9]\{1,\}:[0-9]\{1,\}:[0-9]\{1,\} load avg: /d' $1
+sed -i.bask.$PID '/^Creating directory /d' $1
+sed -i.bask.$PID '/^Listing .\{1,\}\.\{3\}$/d' $1
+sed -i.bask.$PID '/^renaming build/d' $1
+sed -i.bask.$PID '/^running build/d' $1
+sed -i.bask.$PID '/^find build /d' $1
+
 array=( "checking" "creating" "Checking" "Linking" "installing" "Making" "making" "configure:" "ar" "libtool:" "test" "cp" "chmod" "mv" "make" "rm" "ln" "cd" "sed" "ranlib" "if" "mkdir" "m4" "gawk" )
 for i in ${array[@]};
 do
