@@ -824,6 +824,9 @@ function init_php_ini()
     local pattern='^soap\.wsdl_cache_dir \{0,\}= \{0,\}\"\/tmp\"$';
     change_php_ini "$pattern" "soap.wsdl_cache_dir= \\\"$( echo $WSDL_CACHE_DIR|sed 's/\//\\\//g' )\\\""
 
+    # session.use_strict_mode = 0
+    local pattern='^session\.use_strict_mode \{0,\}=.\{0,\}$';
+    change_php_ini "$pattern" "session.use_strict_mode = 1"
 }
 # }}}
 # function change_php_fpm_ini() {{{
