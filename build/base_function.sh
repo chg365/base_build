@@ -479,7 +479,8 @@ function wget_base_library()
     wget_lib $GITBOOK_CLI_FILE_NAME   "https://github.com/GitbookIO/gitbook-cli/archive/${GITBOOK_CLI_FILE_NAME##*-}"
     wget_lib $NGHTTP2_FILE_NAME       "https://github.com/nghttp2/nghttp2/releases/download/v${NGHTTP2_VERSION}/${NGHTTP2_FILE_NAME}"
     wget_lib $PHP_FILE_NAME           "http://cn2.php.net/distributions/$PHP_FILE_NAME"
-    wget_lib $PTHREADS_FILE_NAME      "https://pecl.php.net/get/$PTHREADS_FILE_NAME"
+    #wget_lib $PTHREADS_FILE_NAME      "https://pecl.php.net/get/$PTHREADS_FILE_NAME"
+    wget_lib $PTHREADS_FILE_NAME      "https://github.com/krakjoe/pthreads/archive/v${PTHREADS_FILE_NAME##*-}"
     wget_lib $ZIP_FILE_NAME           "https://pecl.php.net/get/$ZIP_FILE_NAME"
     wget_lib $SWOOLE_FILE_NAME        "https://pecl.php.net/get/$SWOOLE_FILE_NAME"
     wget_lib $PHP_PROTOBUF_FILE_NAME  "https://pecl.php.net/get/$PHP_PROTOBUF_FILE_NAME"
@@ -8185,6 +8186,7 @@ function check_hiredis_version()
 # {{{ function check_pecl_pthreads_version()
 function check_pecl_pthreads_version()
 {
+    check_github_soft_version pthreads $PTHREADS_VERSION "https://github.com/krakjoe/pthreads/releases"
     check_php_pecl_version pthreads $PTHREADS_VERSION
 }
 # }}}
