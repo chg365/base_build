@@ -34,7 +34,7 @@ if [ ! -f $HOME/.chg_base_compile_env ]; then
         sudo yum install -y itstool patch # fontconfig 2.12.91
 
         #wget http://dl.fedoraproject.org/pub/epel/7/x86_64/r/re2c-0.14.3-2.el7.x86_64.rpm
-        sudo yum install -y autoconf m4 automake pkg-config gettext-devel
+        sudo yum install -y autoconf m4 automake pkg-config gettext-devel meson
 
         if uname -r|grep -q 'el7' ;then
             sudo yum -y install systemd-devel
@@ -597,3 +597,10 @@ make install
 
 
 $PYTHON_BASE/bin/pip3 install --user numpy scipy matplotlib ipython jupyter pandas sympy nose
+
+
+# remove color codes
+# sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g"
+# sed "s,\x1B\[[0-9;]*[a-zA-Z],,g"
+# sed -r "s:\x1B\[[0-9;]*[mK]::g"
+# sed -r "s/\x1B\[([0-9]{1,3}((;[0-9]{1,3})*)?)?[m|K]//g

@@ -479,8 +479,8 @@ function wget_base_library()
     wget_lib $GITBOOK_CLI_FILE_NAME   "https://github.com/GitbookIO/gitbook-cli/archive/${GITBOOK_CLI_FILE_NAME##*-}"
     wget_lib $NGHTTP2_FILE_NAME       "https://github.com/nghttp2/nghttp2/releases/download/v${NGHTTP2_VERSION}/${NGHTTP2_FILE_NAME}"
     wget_lib $PHP_FILE_NAME           "http://cn2.php.net/distributions/$PHP_FILE_NAME"
-    #wget_lib $PTHREADS_FILE_NAME      "https://pecl.php.net/get/$PTHREADS_FILE_NAME"
     wget_lib $PTHREADS_FILE_NAME      "https://github.com/krakjoe/pthreads/archive/v${PTHREADS_FILE_NAME##*-}"
+    #wget_lib $PTHREADS_FILE_NAME      "https://pecl.php.net/get/$PTHREADS_FILE_NAME"
     wget_lib $ZIP_FILE_NAME           "https://pecl.php.net/get/$ZIP_FILE_NAME"
     wget_lib $SWOOLE_FILE_NAME        "https://pecl.php.net/get/$SWOOLE_FILE_NAME"
     wget_lib $PHP_PROTOBUF_FILE_NAME  "https://pecl.php.net/get/$PHP_PROTOBUF_FILE_NAME"
@@ -575,7 +575,8 @@ function wget_base_library()
     wget_lib $APACHE_FILE_NAME        "http://archive.apache.org/dist/httpd/$APACHE_FILE_NAME"
     wget_lib $APCU_FILE_NAME          "https://pecl.php.net/get/$APCU_FILE_NAME"
     wget_lib $APCU_BC_FILE_NAME       "https://pecl.php.net/get/$APCU_BC_FILE_NAME"
-    wget_lib $YAF_FILE_NAME           "https://pecl.php.net/get/$YAF_FILE_NAME"
+    wget_lib $YAF_FILE_NAME           "https://github.com/laruence/yaf/archive/$YAF_FILE_NAME"
+    #wget_lib $YAF_FILE_NAME           "https://pecl.php.net/get/$YAF_FILE_NAME"
     wget_lib $PHALCON_FILE_NAME       "https://github.com/phalcon/cphalcon/archive/v${PHALCON_FILE_NAME#*-}"
     wget_lib $XDEBUG_FILE_NAME        "https://pecl.php.net/get/$XDEBUG_FILE_NAME"
     wget_lib $RAPHF_FILE_NAME         "https://pecl.php.net/get/$RAPHF_FILE_NAME"
@@ -771,8 +772,8 @@ function change_php_ini()
 function init_php_ini()
 {
     # log_errors
-    local pattern='^log_errors \{0,\}= \{0,\}\([oO][nN]\) \{0,\}$';
-    change_php_ini "$pattern" "log_errors = Off"
+    #local pattern='^log_errors \{0,\}= \{0,\}\([oO][nN]\) \{0,\}$';
+    #change_php_ini "$pattern" "log_errors = Off"
     # error_reporting
     local pattern='^error_reporting \{0,\}= \{0,\}\(.\{1,\}\)$';
     change_php_ini "$pattern" "error_reporting = E_ALL"
@@ -782,6 +783,9 @@ function init_php_ini()
     # ignore_repeated_errors
     local pattern='^ignore_repeated_errors \{0,\}= \{0,\}\([oO][fF]\{2\}\)$';
     change_php_ini "$pattern" "ignore_repeated_errors = On"
+    # ignore_repeated_source
+    local pattern='^ignore_repeated_source \{0,\}= \{0,\}\([oO][fF]\{2\}\)$';
+    change_php_ini "$pattern" "ignore_repeated_source = On"
     # expose_php = Off
     # pattern='^expose_php \{0,\}= \{0,\}\(on\|On\|ON\) \{0,\}$'; # mac sed不支持 |
     local pattern='^expose_php \{0,\}= \{0,\}\([oO][nN]\) \{0,\}$';
@@ -860,8 +864,8 @@ function init_php_fpm_ini()
     change_php_fpm_ini "$pattern" "error_log = ${LOG_DIR}/php-fpm/php-fpm.log" "$PHP_FPM_CONFIG_DIR/php-fpm.conf"
 
     # log_level
-    local pattern='^;\(log_level \{0,\}= \{0,\}.\{1,\}\)$';
-    change_php_fpm_ini "$pattern" "\\1" "$PHP_FPM_CONFIG_DIR/php-fpm.conf"
+    #local pattern='^;\(log_level \{0,\}= \{0,\}.\{1,\}\)$';
+    #change_php_fpm_ini "$pattern" "\\1" "$PHP_FPM_CONFIG_DIR/php-fpm.conf"
 
     # access.log
     local pattern='^;access.log \{0,\}= \{0,\}.\{1,\}$';
@@ -3446,6 +3450,7 @@ function compile_pango()
         return;
     fi
 
+    #meson --prefix=$PANGO_BASE build
     PANGO_CONFIGURE="
         ./configure --prefix=$PANGO_BASE
     "
@@ -5069,7 +5074,7 @@ function compile_php_extension_yaf()
     PHP_EXTENSION_YAF_CONFIGURE="
     ./configure --with-php-config=$PHP_BASE/bin/php-config --enable-yaf
     "
-    compile "php_extension_yaf" "$YAF_FILE_NAME" "yaf-$YAF_VERSION" "yaf.so" "PHP_EXTENSION_YAF_CONFIGURE"
+    compile "php_extension_yaf" "$YAF_FILE_NAME" "yaf-yaf-$YAF_VERSION" "yaf.so" "PHP_EXTENSION_YAF_CONFIGURE"
 
     /bin/rm -rf package.xml
 }
@@ -8187,7 +8192,7 @@ function check_hiredis_version()
 function check_pecl_pthreads_version()
 {
     check_github_soft_version pthreads $PTHREADS_VERSION "https://github.com/krakjoe/pthreads/releases"
-    check_php_pecl_version pthreads $PTHREADS_VERSION
+    #check_php_pecl_version pthreads $PTHREADS_VERSION
 }
 # }}}
 # {{{ function check_pecl_zip_version()
@@ -8312,7 +8317,8 @@ function check_pecl_qrencode_version()
 # {{{ function check_pecl_yaf_version()
 function check_pecl_yaf_version()
 {
-    check_php_pecl_version yaf $YAF_VERSION
+    check_github_soft_version yaf $YAF_VERSION "https://github.com/laruence/yaf/releases" "yaf-\([0-9.]\{5,\}\)\.tar\.gz" 1
+    #check_php_pecl_version yaf $YAF_VERSION
 }
 # }}}
 # {{{ function check_pecl_mongodb_version()
