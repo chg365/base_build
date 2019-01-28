@@ -604,3 +604,21 @@ $PYTHON_BASE/bin/pip3 install --user numpy scipy matplotlib ipython jupyter pand
 # sed "s,\x1B\[[0-9;]*[a-zA-Z],,g"
 # sed -r "s:\x1B\[[0-9;]*[mK]::g"
 # sed -r "s/\x1B\[([0-9]{1,3}((;[0-9]{1,3})*)?)?[m|K]//g
+
+
+
+
+#rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org
+#rpm -Uvh elrepo-release*rpm
+rpm -Uvh http://repo.iotti.biz/CentOS/7/noarch/lux-release-7-1.noarch.rpm
+yum install abiword
+
+# 不更新，会报错
+#abiword --help
+#abiword: symbol lookup error: /lib64/libpango-1.0.so.0: undefined symbol: g_log_structured_standard
+yum install glib2
+
+# 中文字体
+cp -r /usr/local/eyou/office/setup/truetype /usr/share/fonts/
+time abiword -t pdf -o /tmp/5.pdf ~/doc/index1.docx
+
