@@ -222,7 +222,7 @@ function wget_lib()
 # function wget_lib_sqlite() {{{
 function wget_lib_sqlite()
 {
-    local year=`curl -Lk http://www.sqlite.org/chronology.html 2>/dev/null |
+    local year=`curl -Lk https://www.sqlite.org/chronology.html 2>/dev/null |
         sed -n "/^ \{0,\}<tr/{N;s/^ \{0,\}<tr.\{1,\}>\([0-9]\{4\}\)-[0-9]\{1,2\}-[0-9]\{1,2\}<.\{1,\}data-sortkey=['\"]\([0-9]\{1,\}\)['\"].\{1,\}<\/tr> \{0,\}$/\1 \2/p;}" |
         grep $SQLITE_VERSION |
         awk '{ print $1; }'`
@@ -619,7 +619,7 @@ function wget_base_library()
     #wget_lib $LIBUNWIND_FILE_NAME     "http://download.savannah.gnu.org/releases/libunwind/$LIBUNWIND_FILE_NAME"
     wget_lib $LIBUNWIND_FILE_NAME     "https://github.com/libunwind/libunwind/releases/download/v${LIBUNWIND_VERSION}/$LIBUNWIND_FILE_NAME"
     wget_lib $LIBSODIUM_FILE_NAME     "https://download.libsodium.org/libsodium/releases/$LIBSODIUM_FILE_NAME"
-    wget_lib $PHP_ZMQ_FILE_NAME       "https://github.com/mkoppanen/php-zmq/archive/${PHP_ZMQ_FILE_NAME##*-}"
+    wget_lib $PHP_ZMQ_FILE_NAME       "https://github.com/alexat/php-zmq/archive/${PHP_ZMQ_FILE_NAME##*-}"
     # wget_lib $SWFUPLOAD_FILE_NAME    "http://swfupload.googlecode.com/files/SWFUpload%20v$SWFUPLOAD_VERSION%20Core.zip"
     wget_lib $GEOLITE2_CITY_MMDB_FILE_NAME    "http://geolite.maxmind.com/download/geoip/database/$GEOLITE2_CITY_MMDB_FILE_NAME"
     wget_lib $GEOLITE2_COUNTRY_MMDB_FILE_NAME "http://geolite.maxmind.com/download/geoip/database/$GEOLITE2_COUNTRY_MMDB_FILE_NAME"
@@ -628,7 +628,8 @@ function wget_base_library()
     wget_lib $WEB_SERVICE_COMMON_PHP_FILE_NAME "https://github.com/maxmind/web-service-common-php/archive/v${WEB_SERVICE_COMMON_PHP_FILE_NAME##*-}"
     wget_lib $PKGCONFIG_FILE_NAME     "https://pkg-config.freedesktop.org/releases/$PKGCONFIG_FILE_NAME"
     wget_lib $GEOIP2_PHP_FILE_NAME    "https://github.com/maxmind/GeoIP2-php/archive/v${GEOIP2_PHP_FILE_NAME##*-}"
-    wget_lib $GEOIPUPDATE_FILE_NAME   "https://github.com/maxmind/geoipupdate/releases/download/v${GEOIPUPDATE_VERSION}/$GEOIPUPDATE_FILE_NAME"
+    wget_lib $GEOIPUPDATE_FILE_NAME   "https://github.com/maxmind/geoipupdate/archive/v${GEOIPUPDATE_FILE_NAME##*-}"
+    #wget_lib $GEOIPUPDATE_FILE_NAME   "https://github.com/maxmind/geoipupdate/releases/download/v${GEOIPUPDATE_VERSION}/$GEOIPUPDATE_FILE_NAME"
     wget_lib $ELECTRON_FILE_NAME      "https://github.com/electron/electron/archive/v${ELECTRON_FILE_NAME#*-}"
 
     #wget_lib $PHANTOMJS_FILE_NAME     "https://github.com/ariya/phantomjs/archive/${PHANTOMJS_FILE_NAME#*-}"
@@ -2084,7 +2085,7 @@ function is_installed_rsyslog()
     if [ ! -f "$RSYSLOG_BASE/sbin/rsyslogd" ];then
         return 1;
     fi
-    local version=`$RSYSLOG_BASE/sbin/rsyslogd -v 2>&1|sed -n '1{s/^rsyslogd \([0-9.]\{5,\}\),.\{0,\}$/\1/p;}'`
+    local version=`$RSYSLOG_BASE/sbin/rsyslogd -v 2>&1|head -1|sed -n '1{s/^rsyslogd \{1,\}\([0-9.]\{5,\}\)[, ].\{0,\}$/\1/p;}'`
     if [ "$version" != "$RSYSLOG_VERSION" ];then
         return 1;
     fi
@@ -3823,15 +3824,27 @@ function compile_glib()
     fi
 
     GLIB_CONFIGURE="
-    ./configure --prefix=$GLIB_BASE \
-                 --with-pcre=internal
+        configure_glib_command
     "
-                 #--with-pcre=system \
-                 #--with-threads=posix \
-                 #--with-gio-module-dir=  \
-                 #--with-libiconv=
 
     compile "glib" "$GLIB_FILE_NAME" "glib-$GLIB_VERSION" "$GLIB_BASE" "GLIB_CONFIGURE"
+}
+# }}}
+# {{{ function configure_glib_command()
+function configure_glib_command()
+{
+    local cmd="configure"
+    if [ ! -f "./$cmd" -a -f ./autogen.sh ]; then
+        cmd="autogen.sh"
+    fi
+    ./${cmd} --prefix=$GLIB_BASE \
+             --with-pcre=internal
+
+             #--with-pcre=system \
+             #--with-threads=posix \
+             #--with-gio-module-dir=  \
+             #--with-libiconv=
+
 }
 # }}}
 # {{{ function compile_libffi()
@@ -8330,7 +8343,7 @@ function check_pecl_mongodb_version()
 # {{{ function check_pecl_zmq_version()
 function check_pecl_zmq_version()
 {
-    check_github_soft_version php-zmq $PHP_ZMQ_VERSION "https://github.com/mkoppanen/php-zmq/releases"
+    check_github_soft_version php-zmq $PHP_ZMQ_VERSION "https://github.com/alexat/php-zmq/releases"
 }
 # }}}
 # {{{ function check_pecl_phalcon_version()
@@ -9803,7 +9816,7 @@ function init_setup()
 
 #yum install perl python ruby perl-devel python-devel ruby-devel lua lua-devel perl-ExtUtils-Embed
 
-#./configure --prefix=/opt/vim800 --enable-luainterp=yes --enable-perlinterp=yes --enable-pythoninterp=yes --enable-rubyinterp=yes --enable-multibyte
+#./configure --prefix=/opt/vim810 --enable-luainterp=yes --enable-perlinterp=yes --enable-pythoninterp=yes --enable-rubyinterp=yes --enable-multibyte --enable-python3interp=yes
 #./configure --enable-gui=no --without-x
 
 #wget --no-check-certificate --content-disposition https://github.com/swig/swig/archive/rel-3.0.12.tar.gz
