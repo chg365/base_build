@@ -77,7 +77,13 @@ function system_user_init()
 
     grep -q "^${user}:" /etc/passwd
     if [ "$?" != 0 ]; then
-        useradd -r -M -g $group -s $(grep 'nologin' /etc/shells|head -1) $user
+        #local nologin=`grep 'nologin' /etc/shells|head -1`;
+        local nologin=`which nologin 2>/dev/null`;
+        if [ ! -f "$nologin" ];then
+            echo "查找nologin失败" >&2;
+            return 1;
+        fi
+        useradd -r -M -g $group -s $nologin $user
         if [ "$?" != "0" ]; then
             echo "添加用户[${user}]失败" >&2;
             return 1;
