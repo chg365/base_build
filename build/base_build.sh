@@ -622,3 +622,5 @@ yum install glib2
 cp -r /usr/local/eyou/office/setup/truetype /usr/share/fonts/
 time abiword -t pdf -o /tmp/5.pdf ~/doc/index1.docx
 
+#系统监控
+wget --content-disposition --no-check-certificate https://sourceforge.net/projects/zabbix/files/ZABBIX%20Latest%20Stable/4.0.5/zabbix-4.0.5.tar.gz/download

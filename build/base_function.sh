@@ -845,7 +845,7 @@ function change_php_fpm_ini()
         exit 1;
     fi
 
-    sed -i.bak.$$ "${num[0]}s/$1/${2//\//\\/}/" $fpm_ini
+    sed -i.bak.$$ "${num[0]}s/${1//\//\\/}/${2//\//\\/}/" $fpm_ini
     if [ $? != "0" ];then
         echo "在${fpm_ini}文件中执行替换失败. pattern($1) ($2)";
         exit 1;
@@ -911,6 +911,10 @@ function init_php_fpm_ini()
     # catch_workers_output = yes
     local pattern='^;\(catch_workers_output = yes\)$';
     change_php_fpm_ini "$pattern" "\1" "$PHP_FPM_CONFIG_DIR/php-fpm.d/www.conf"
+
+    # ;pm.status_path = /status
+    local pattern='^;\{0,\}\(pm.status_path = \)[0-9./_a-zA-Z-]\{1,\}$';
+    change_php_fpm_ini "$pattern" "\1/fpm-status" "$PHP_FPM_CONFIG_DIR/php-fpm.d/www.conf"
 }
 # }}}
 # function init_mysql_cnf() {{{
@@ -4852,6 +4856,10 @@ function compile_rabbitmq_c()
 # {{{ function compile_python()
 function compile_python()
 {
+    if [ "$OS_NAME" = "darwin" ];then
+        compile_libuuid
+    fi
+    #compile_libffi
     #compile_expat
     #compile_libxml2
     compile_openssl
@@ -5792,7 +5800,7 @@ function compile_mysql()
 
         mkdir -p $MYSQL_BASE
 
-        cp -r ${MYSQL_FILE_NAME%%.tar.gz}/* $MYSQL_BASE/
+        mv ${MYSQL_FILE_NAME%%.tar.gz}/* $MYSQL_BASE/
 
         if [ "$?" != "0" ];then
             echo "install mysql faild. command: cp -r ${MYSQL_FILE_NAME%%.tar.gz}/* $MYSQL_BASE/" >&2
@@ -6540,6 +6548,13 @@ function after_xapian_bindings_php_make_install()
 # {{{ configure_geoipupdate_command()
 configure_geoipupdate_command()
 {
+    if [ ! -f "./configure" ] ;then
+        ./bootstrap
+        local flag=$?
+        if [ "$flag" != "0" ];then
+            return $flag;
+        fi
+    fi
     CPPFLAGS="$(get_cppflags $CURL_BASE/include)" LDFLAGS="$(get_ldflags $CURL_BASE/lib)" \
     ./configure --prefix=$GEOIPUPDATE_BASE --sysconfdir=$BASE_DIR/etc
 }
@@ -6634,12 +6649,23 @@ configure_harfbuzz_command()
 # {{{ configure_python_command()
 configure_python_command()
 {
+    #yum install tk tk-devel tcl-devel tcl libffi libffi-devel expat expat-devel
+
+    # rpm -qf /usr/include/uuid/uuid.h
+      #libuuid-devel-2.23.2-59.el7_6.1.x86_64
+    # rpm -qf /usr/include/uuid.h
+      #uuid-devel-1.6.2-26.el7.x86_64
+    #两个uuid.h都用了，导致报错，这里先去掉一个
+    sed -i '/<uuid.h>/d' Modules/_uuidmodule.c
+
     CFLAGS="$(get_cppflags $ZLIB_BASE/include $OPENSSL_BASE/include $READLINE_BASE/include)" \
     CPPFLAGS="$(get_cppflags $ZLIB_BASE/include $OPENSSL_BASE/include $READLINE_BASE/include)" \
     LDFLAGS="$(get_ldflags $ZLIB_BASE/lib $OPENSSL_BASE/lib $READLINE_BASE/lib)" \
     ./configure --prefix=$PYTHON_BASE \
                 --enable-optimizations \
                 --enable-ipv6 \
+                --with-system-expat \
+                --with-system-ffi \
                 --enable-loadable-sqlite-extensions \
                 --with-openssl=$OPENSSL_BASE \
 
@@ -7789,7 +7815,7 @@ function check_php_version()
         local tmp=${PHP_VERSION%.*}
     fi
 
-    local versions=`curl http://php.net/downloads.php 2>/dev/null|sed -n "s/^.\{1,\}php-\(${tmp}[0-9.]\{1,\}\)\.tar\.xz.\{1,\}$/\1/p"|sort -rV`
+    local versions=`curl https://www.php.net/downloads.php 2>/dev/null|sed -n "s/^.\{1,\}php-\(${tmp}[0-9.]\{1,\}\)\.tar\.xz.\{1,\}$/\1/p"|sort -rV`
     local new_version=`echo "$versions"|head -1`;
     if [ -z "$new_version" ];then
         echo -e "探测php新版本\033[0;31m失败\033[0m" >&2
@@ -9560,7 +9586,7 @@ function is_elf_file() {
     fi
 
     #file -b $filename |grep -q ELF
-    file -b $filename|grep dynamically |grep -q ELF
+    file -b $filename|grep dynamically |grep -q "$signatures"
 }
 # }}}
 # {{{ function repair_elf_file_rpath
@@ -9637,6 +9663,7 @@ function find_not_found_so_rpath() {
 # }}}
 # {{{ function find_found_so_rpath
 function find_found_so_rpath() {
+    local tmp_str=$1
     # 能找到的so的目录
     echo "$tmp_str"|grep '=>' | grep '/' |grep -v 'not found'|awk '{print $3;}'|xargs dirname | sort -u | tr "\n" ":"
 }
