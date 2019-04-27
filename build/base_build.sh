@@ -29,7 +29,7 @@ fi
 if [ ! -f $HOME/.chg_base_compile_env ]; then
     if [ "$OS_NAME" = "linux" ]; then
         sudo yum install -y bison cmake gcc xz texinfo bzip2 xz-devel gcc-c++ ncurses-devel ncurses byacc file file-devel re2c libtool-ltdl-devel popt-devel re2c wget curl libtool coreutils nasm
-        sudo yum install -y curl nss cyrus-sasl cyrus-sasl-devel cyrus-sasl-lib libacl libacl-devel libattr libattr-devel gperf pam pam-devel krb5-devel krb5-libs uuid uuid-devel libmount libmount-devel libuuid-devel libuuid  zlib-devel readline-devel bzip2-devel gdbm-devel tk-devel tk libffi-devel
+        sudo yum install -y curl nss cyrus-sasl cyrus-sasl-devel cyrus-sasl-lib libacl libacl-devel libattr libattr-devel gperf pam pam-devel krb5-devel krb5-libs uuid uuid-devel libmount libmount-devel libuuid-devel libuuid  zlib-devel readline-devel bzip2-devel gdbm-devel tk-devel tk libffi libffi-devel tcl-devel tcl expat expat-devel
 
         sudo yum install -y itstool patch # fontconfig 2.12.91
 
@@ -224,7 +224,6 @@ compile_python
 compile_xunsearch
 compile_xapian_core
 compile_xapian_omega
-compile_xapian_bindings_php
 if [ "$OS_NAME" != 'darwin' ];then
     # mac下 这个软件不能用
     compile_patchelf
@@ -294,6 +293,7 @@ compile_php_extension_tidy
 compile_php_extension_sphinx
 compile_php_extension_imagick
 compile_php_extension_scws
+compile_xapian_bindings_php
 # geoip2
 compile_libmaxminddb
 compile_php_extension_maxminddb

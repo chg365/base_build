@@ -3088,18 +3088,40 @@ function compile_tidy()
 # {{{ function compile_sphinx()
 function compile_sphinx()
 {
-    compile_mysql
+    #compile_mysql
+    #compile_postgresql
 
     is_installed sphinx "$SPHINX_BASE"
     if [ "$?" = "0" ];then
         return;
     fi
 
+    local WITH_MYSQL="--without-mysql"
+    if [ -d "$MYSQL_BASE" -a -f "$MYSQL_BASE/bin/mysql" ];then
+        WITH_MYSQL="--with-mysql=$MYSQL_BASE"
+    fi
+
+    local WITH_PGSQL=""
+    if [ -d "$POSTGRESQL_BASE" -a -f "$POSTGRESQL_BASE/bin/pg_ctl" ];then
+        WITH_PGSQL="--with-pgsql=$POSTGRESQL_BASE"
+    fi
+
     SPHINX_CONFIGURE="
     ./configure --prefix=$SPHINX_BASE \
-                --sysconfdir=$BASE_DIR/etc/sphinx
-                --with-mysql=$MYSQL_BASE
+                --enable-dl \
+                --sysconfdir=$BASE_DIR/etc/sphinx \
+                --with-iconv \
+                --with-syslog \
+                $WITH_MYSQL \
+                $WITH_PGSQL
     "
+
+    #--with-libexpat
+    #--with-re2
+    #--with-rlp
+    #--with-unixodbc
+    #contrib/scripts/searchd
+    #--with-pgsql=$POSTGRESQL_BASE \
 
     compile "sphinx" "$SPHINX_FILE_NAME" "sphinx-${SPHINX_VERSION}-release" "$SPHINX_BASE" "SPHINX_CONFIGURE"
 }
