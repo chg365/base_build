@@ -4951,6 +4951,11 @@ function compile_php()
     fi
     local pattern='^[; ]\{0,\}\(browscap \{0,\}= \).\{1,\}$';
     change_php_ini "$pattern" "\1$(sed_quote $PHP_CONFIG_DIR/extra/browscap.ini)"
+
+    $PHP_BASE/bin/php ${curr_dir}/../test/test_php_memory_overflow.php
+    if [ "$?" = "1" ];then
+        echo "有内存溢出风险" > $PHP_BASE/error.txt
+    fi
 }
 # }}}
 # {{{ function after_php_make_install()
