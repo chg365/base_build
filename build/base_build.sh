@@ -259,7 +259,7 @@ if [ "$OS_NAME" != "darwin" ]; then
     compile_logrotate
 fi
 compile_rsyslog
-compile_php_extension_zip
+#compile_php_extension_zip
 compile_php_extension_dio
 compile_php_extension_pthreads
 compile_php_extension_qrencode

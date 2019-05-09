@@ -2647,7 +2647,6 @@ function compile_xapian_omega()
 function compile_xapian_bindings_php()
 {
     compile_xapian_core
-    compile_php
 
     is_installed_php_extension xapian $XAPIAN_BINDINGS_VERSION
     if [ "$?" = "0" ];then
@@ -4912,6 +4911,8 @@ function compile_php()
 {
     compile_openssl
     compile_sqlite
+    compile_libzip
+    compile_expat
     compile_zlib
     compile_libxml2
     compile_gettext
@@ -5912,7 +5913,7 @@ function compile_mysql()
     #ENABLED_PROFILING:BOOL=ON
     #// Enable gprof (optimized, Linux builds only)
     #ENABLE_GPROF:BOOL=OFF
-    
+
     #// Enable SASL on InnoDB Memcached
     #ENABLE_MEMCACHED_SASL:BOOL=OFF
 
@@ -6724,12 +6725,15 @@ configure_php_command()
                 $(is_installed_apache && echo --with-apxs2=$APACHE_BASE/bin/apxs || echo "") \
                 --with-openssl=$OPENSSL_BASE \
                 --enable-mysqlnd  \
+                --with-zlib=$ZLIB_BASE \
                 --with-zlib-dir=$ZLIB_BASE \
                 --with-pdo-mysql=mysqlnd \
                 --with-pdo-sqlite=$SQLITE_BASE --without-sqlite3 \
-                $( [ `echo "$PHP_VERSION 7.2.0"|tr " " "\n"|sort -rV|head -1` = "$PHP_VERSION" ] && echo "" || echo "--enable-zip --with-zlib-dir=$ZLIB_BASE" ) \
+                $( [ `echo "$PHP_VERSION 5.2.0"|tr " " "\n"|sort -rV|head -1` = "5.2.0" ] && echo "" || echo "--enable-zip --with-libzip=$LIBZIP_BASE" ) \
                 --enable-soap \
                 --with-libxml-dir=$LIBXML2_BASE \
+                --with-iconv-dir=$LIBICONV_BASE \
+                --with-libexpat-dir=$EXPAT_BASE \
                 --with-gettext=$GETTEXT_BASE \
                 --with-iconv=$LIBICONV_BASE \
                 $( [ `echo "$PHP_VERSION 7.1.99"|tr " " "\n"|sort -rV|head -1` = "$PHP_VERSION" ] && echo "" || echo "--with-mcrypt=$LIBMCRYPT_BASE" ) \
@@ -6740,7 +6744,6 @@ configure_php_command()
                 --enable-sysvshm \
                 --enable-shmop \
                 --enable-mbstring \
-                --enable-xml \
                 --disable-debug \
                 --enable-bcmath \
                 --enable-exif \
@@ -6763,6 +6766,7 @@ configure_php_command()
                 $( [ `echo "$PHP_VERSION 7.1.0"|tr " " "\n"|sort -rV|head -1` = "$PHP_VERSION" ] && echo "--disable-zend-signals" ||echo " ") \
                 --enable-opcache
 
+                # --enable-xml \
                 # --enable-phpdbg \
                 # --enable-phpdbg-webhelper \
                 # --with-openssl=$OPENSSL_BASE --with-system-ciphers --with-kerberos=$KERBEROS_BASE
