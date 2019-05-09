@@ -5538,7 +5538,7 @@ function compile_php_extension_grpc()
 # {{{ function configure_php_ext_grpc_command()
 function configure_php_ext_grpc_command()
 {
-    CPPFLAGS="$(get_cppflags $ZLIB_BASE/include)" LDFLAGS="$(get_ldflags $ZLIB_BASE/lib)" \
+    #CPPFLAGS="$(get_cppflags $ZLIB_BASE/include)" LDFLAGS="$(get_ldflags $ZLIB_BASE/lib)"
     ./configure --with-php-config=$PHP_BASE/bin/php-config \
                 --enable-grpc
 
