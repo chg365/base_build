@@ -222,7 +222,7 @@ wget_base_library
 
 compile_python
 compile_xunsearch
-compile_xapian_core
+#compile_xapian_core
 compile_xapian_omega
 if [ "$OS_NAME" != 'darwin' ];then
     # mac下 这个软件不能用
@@ -253,7 +253,8 @@ if [ "$OS_NAME" != "darwin" ]; then
     gcc_version=`gcc --version 2>/dev/null|head -1|awk '{ print $3;}'`;
     gcc_new_version=`echo $gcc_version $gcc_minimum_version|tr " " "\n"|sort -rV|head -1`;
     if [ "$gcc_new_version" != "$gcc_minimum_version" ]; then
-        compile_pdf2htmlEX
+        #compile_pdf2htmlEX
+        :
     fi
     compile_php_extension_gearman
     compile_logrotate
