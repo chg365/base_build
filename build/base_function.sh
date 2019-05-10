@@ -2628,7 +2628,11 @@ function compile_xapian_omega()
     #compile_pkgconfig
     compile_libiconv
     compile_pcre
-    compile_xapian_core
+    if [ "$XAPIAN_CORE_SCWS_VERSION" = "$XAPIAN_OMEGA_VERSION" ]; then
+        compile_xapian_core_scws
+    elif [ "$XAPIAN_CORE_VERSION" = "$XAPIAN_OMEGA_VERSION" ]; then
+        compile_xapian_core
+    fi
 
     # yum install file-devel
     is_installed xapian_omega "$XAPIAN_OMEGA_BASE"
@@ -2646,7 +2650,11 @@ function compile_xapian_omega()
 # {{{ function compile_xapian_bindings_php()
 function compile_xapian_bindings_php()
 {
-    compile_xapian_core
+    if [ "$XAPIAN_CORE_SCWS_VERSION" = "$XAPIAN_BINDINGS_VERSION" ]; then
+        compile_xapian_core_scws
+    elif [ "$XAPIAN_CORE_VERSION" = "$XAPIAN_BINDINGS_VERSION" ]; then
+        compile_xapian_core
+    fi
 
     is_installed_php_extension xapian $XAPIAN_BINDINGS_VERSION
     if [ "$?" = "0" ];then
@@ -6540,9 +6548,16 @@ configure_fribidi_command()
 # {{{ configure_xapian_omega_command()
 configure_xapian_omega_command()
 {
+    local XAPIAN_BASE=$XAPIAN_CORE_SCWS_BASE
+    if [ "$XAPIAN_CORE_SCWS_VERSION" = "$XAPIAN_OMEGA_VERSION" ]; then
+        XAPIAN_BASE=$XAPIAN_CORE_SCWS_BASE
+    elif [ "$XAPIAN_CORE_VERSION" = "$XAPIAN_OMEGA_VERSION" ]; then
+        XAPIAN_BASE=$XAPIAN_CORE_BASE
+    fi
+
     #PKG_CONFIG="$PKGCONFIG_BASE/bin/pkg-config" \
     #mac     brew install libmagic
-    XAPIAN_CONFIG="$XAPIAN_CORE_BASE/bin/xapian-config" \
+    XAPIAN_CONFIG="$XAPIAN_BASE/bin/xapian-config" \
     PCRE_CONFIG="$PCRE_BASE/bin/pcre-config" \
     ./configure --prefix=$XAPIAN_OMEGA_BASE \
                 --sysconfdir=$XAPIAN_OMEGA_CONFIG_DIR \
@@ -6561,10 +6576,17 @@ configure_xapian_bindings_php_command()
         fi
     fi
 
+    local XAPIAN_BASE=$XAPIAN_CORE_SCWS_BASE
+    if [ "$XAPIAN_CORE_SCWS_VERSION" = "$XAPIAN_BINDINGS_VERSION" ]; then
+        XAPIAN_BASE=$XAPIAN_CORE_SCWS_BASE
+    elif [ "$XAPIAN_CORE_VERSION" = "$XAPIAN_BINDINGS_VERSION" ]; then
+        XAPIAN_BASE=$XAPIAN_CORE_BASE
+    fi
+
     ./configure --prefix=$XAPIAN_BINDINGS_BASE \
                 --with-php7 \
                 PHP_CONFIG7="$PHP_BASE/bin/php-config" \
-                XAPIAN_CONFIG="$XAPIAN_CORE_BASE/bin/xapian-config"
+                XAPIAN_CONFIG="$XAPIAN_BASE/bin/xapian-config"
 }
 # }}}
 # {{{ function after_xapian_bindings_php_make_install()
