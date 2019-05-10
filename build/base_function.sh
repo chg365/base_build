@@ -4912,6 +4912,11 @@ function compile_python()
 function after_python_make_install()
 {
     $PYTHON_BASE/bin/pip3 install --upgrade pip
+    #中文分词
+    #$PYTHON_BASE/bin/pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple  -U pkuseg
+    $PYTHON_BASE/bin/pip3 install -U pkuseg
+    #tensorflow
+    $PYTHON_BASE/bin/pip3 install --upgrade tensorflow
 }
 # }}}
 # {{{ function compile_php()
