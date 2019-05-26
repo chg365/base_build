@@ -3646,7 +3646,7 @@ compile_gearmand()
     compile "gearmand" "$GEARMAND_FILE_NAME" "gearmand-$GEARMAND_VERSION" "$GEARMAND_BASE" "GEARMAND_CONFIGURE"
 
     if [ "$OS_NAME" = "linux" ]; then
-        repair_elf_file_rpath $GEARMAND/sbin/gearmand
+        repair_elf_file_rpath $GEARMAND_BASE/sbin/gearmand
     fi
 }
 # }}}
@@ -3700,23 +3700,33 @@ configure_gearmand_command()
             return 1;
         fi
     fi
-    CPPFLAGS="$(get_cppflags $LIBEVENT_BASE/include $CURL_BASE/include $BOOST_BASE/include)" \
-    LDFLAGS="$(get_ldflags $LIBEVENT_BASE/lib $CURL_BASE/lib $BOOST_BASE/lib)" \
+
+    # $CURL_BASE/include
+    CURL_CONFIG=$CURL_BASE/bin/curl-config \
+    CPPFLAGS="$(get_cppflags $LIBEVENT_BASE/include $BOOST_BASE/include)" \
+    LDFLAGS="$(get_ldflags $LIBEVENT_BASE/lib $BOOST_BASE/lib)" \
     ./configure --prefix=$GEARMAND_BASE \
+                --sysconfdir=$BASE_DIR/etc \
+                --with-sqlite3=$SQLITE_BASE \
                 --enable-ssl \
                 --without-mysql \
+                --with-memcached=$MEMCACHED_BASE/bin/memcached \
                 --with-boost=$( is_installed_boost && echo ${BOOST_BASE} || echo yes ) \
-                --with-openssl=$OPENSSL_BASE \
+                --with-postgresql=$( is_installed_postgresql && echo ${POSTGRESQL_BASE}/bin/pg_config || echo yes ) \
+                --with-openssl=$OPENSSL_BASE
 
+
+                #--with-mysql=$( is_installed_mysql && echo ${MYSQL_BASE}/bin/mysql_config || echo yes ) \
                 #--enable-cyassl \
+                #--with-curl-exec-prefix=$CURL_BASE \
                 #--with-curl-prefix=$CURL_BASE # 加上后make时报错 Makefile:2138: *** missing separator. Stop.
+                #--with-curl-prefix=$CURL_BASE \
                 #--with-boost-libdir=${BOOST_BASE}/lib \
                 #--enable-jobserver[=no/yes/#]
                 #--with-drizzled=
                 #--with-sqlite3=
                 #--with-postgresql=
-                #--with-memcached=
-                #--with-sphinx-build=
+                #--with-sphinx-build=$SPHINX_BASE/bin \
                 #--with-lcov=
                 #--with-genhtml=
 

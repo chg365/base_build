@@ -247,6 +247,7 @@ compile_sphinx
 compile_mysql
 compile_nginx
 compile_sqlite
+compile_gearmand
 compile_phantomjs
 if [ "$OS_NAME" != "darwin" ]; then
     gcc_minimum_version="4.7.99"
