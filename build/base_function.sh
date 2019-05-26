@@ -1,10 +1,10 @@
-#!/bin/bash
+#!/bin/sh
 # laravel框架关键技术解析
 
 #IFS_old=$IFS
 #IFS=$'\n'
 
-function check_minimum_env_requirements()
+check_minimum_env_requirements()
 {
 # coreutils 7.0 sort
     :
@@ -29,8 +29,8 @@ function check_minimum_env_requirements()
 # yum install libtool-ltdl-devel
 # yum install texinfo
 }
-# {{{ function sed_quote()
-function sed_quote()
+# {{{ sed_quote()
+sed_quote()
 {
     # mac sed 不支持\< \> |
     local a=$1;
@@ -44,8 +44,8 @@ function sed_quote()
     #line=`sed -n "/^$(sed_quote $ext),/=" MIME_table.txt`
 }
 # }}}
-# {{{ function sed_quote2()
-function sed_quote2()
+# {{{ sed_quote2()
+sed_quote2()
 {
     local a=$1;
     # 替换转义符
@@ -55,14 +55,14 @@ function sed_quote2()
     echo $a;
 }
 # }}}
-# {{{ function has_systemd 判断系统是否支持systemd服务启动方式 centos7
-function has_systemd()
+# {{{ has_systemd 判断系统是否支持systemd服务启动方式 centos7
+has_systemd()
 {
     which systemctl 1>/dev/null 2>&1
 }
 # }}}
-# {{{ function check_bison_version()
-function check_bison_version()
+# {{{ check_bison_version()
+check_bison_version()
 {
     which bison 1>/dev/null 2>/dev/null
     if [ "$?" != "0" ];then
@@ -95,7 +95,7 @@ function check_bison_version()
     fi
 }
 # }}}
-# {{{ function get_ldflags()
+# {{{ get_ldflags()
 get_ldflags()
 {
     #mac下不支持 LDFLAGS -Wl, -R.../lib
@@ -122,7 +122,7 @@ get_ldflags()
     echo $str
 }
 # }}}
-# {{{ function get_cppflags()
+# {{{ get_cppflags()
 get_cppflags()
 {
     local i=1;
@@ -140,8 +140,8 @@ get_cppflags()
     echo $str
 }
 # }}}
-# function echo_build_start {{{
-function echo_build_start()
+# echo_build_start {{{
+echo_build_start()
 {
     echo ""
     echo ""
@@ -152,8 +152,8 @@ function echo_build_start()
     echo ""
 }
 # }}}
-# function make_run() {{{ 判断configure是否成功，并执行make && make install
-function make_run()
+# make_run() {{{ 判断configure是否成功，并执行make && make install
+make_run()
 {
     if [ "${1%/*}" != "0" ];then
         echo "Install ${@#*/} failed." >&2;
@@ -173,8 +173,8 @@ function make_run()
     fi
 }
 # }}}
-# function is_finished_wget() {{{ 判断wget 下载文件是否成功
-function is_finished_wget()
+# is_finished_wget() {{{ 判断wget 下载文件是否成功
+is_finished_wget()
 {
     if [ "${1%/*}" != "0" ];then
         echo "wget file ${@#*/} failed." >&2
@@ -183,8 +183,8 @@ function is_finished_wget()
     fi
 }
 # }}}
-# function wget_lib() {{{ Download open source libray
-function wget_lib()
+# wget_lib() {{{ Download open source libray
+wget_lib()
 {
     local FILE_NAME="$1"
     local FILE_URL="$2"
@@ -219,8 +219,8 @@ function wget_lib()
     return $?;
 }
 # }}}
-# function wget_lib_sqlite() {{{
-function wget_lib_sqlite()
+# wget_lib_sqlite() {{{
+wget_lib_sqlite()
 {
     local year=`curl -Lk https://www.sqlite.org/chronology.html 2>/dev/null |
         sed -n "/^ \{0,\}<tr/{N;s/^ \{0,\}<tr.\{1,\}>\([0-9]\{4\}\)-[0-9]\{1,2\}-[0-9]\{1,2\}<.\{1,\}data-sortkey=['\"]\([0-9]\{1,\}\)['\"].\{1,\}<\/tr> \{0,\}$/\1 \2/p;}" |
@@ -234,14 +234,14 @@ function wget_lib_sqlite()
     wget_lib $SQLITE_FILE_NAME "https://sqlite.org/${year}/$SQLITE_FILE_NAME"
 }
 # }}}
-# function wget_lib_boost() {{{
-function wget_lib_boost()
+# wget_lib_boost() {{{
+wget_lib_boost()
 {
     wget_lib $BOOST_FILE_NAME "https://sourceforge.net/projects/boost/files/boost/${BOOST_VERSION//_/.}/$BOOST_FILE_NAME/download"
 }
 # }}}
-# function wget_lib_xunsearch() {{{
-function wget_lib_xunsearch()
+# wget_lib_xunsearch() {{{
+wget_lib_xunsearch()
 {
     wget_lib $XUNSEARCH_FULL_FILE_NAME "http://www.xunsearch.com/download/xunsearch-full/$XUNSEARCH_FULL_FILE_NAME"
     local flag="$?"
@@ -272,16 +272,16 @@ function wget_lib_xunsearch()
     rm -rf xunsearch-full-${XUNSEARCH_FULL_VERSION}
 }
 # }}}
-# function wget_lib_browscap() {{{
-function wget_lib_browscap()
+# wget_lib_browscap() {{{
+wget_lib_browscap()
 {
     #wget_lib $BROWSCAP_INI_FILE_NAME  "https://browscap.org/stream?q=PHP_BrowsCapINI"
     # wget_lib $BROWSCAP_INI_FILE_NAME  "https://browscap.org/stream?q=Full_PHP_BrowsCapINI"
     wget_lib $BROWSCAP_INI_FILE_NAME  "https://browscap.org/stream?q=Lite_PHP_BrowsCapINI"
 }
 # }}}
-# function rm_bak_file() {{{
-function rm_bak_file()
+# rm_bak_file() {{{
+rm_bak_file()
 {
     for i in `find $1 -type f | grep '\.bak\.'`;
     do
@@ -291,8 +291,8 @@ function rm_bak_file()
     done
 }
 # }}}
-# {{{ function decompress()
-function decompress()
+# {{{ decompress()
+decompress()
 {
     local FILE_NAME="$1"
     local exdir="$2"
@@ -336,8 +336,8 @@ function decompress()
     # return $?;
 }
 # }}}
-# {{{ function compile()
-function compile()
+# {{{ compile()
+compile()
 {
     local NAME=$1
     local FILE_NAME=$2
@@ -432,8 +432,8 @@ function compile()
     fi
 }
 # }}}}
-# {{{ function function_exists() 检测函数是否定义
-function function_exists()
+# {{{ function_exists() 检测函数是否定义
+function_exists()
 {
     type -t "$1" 2>/dev/null|grep -q 'function'
     if [ "$?" != "0" ];then
@@ -442,10 +442,11 @@ function function_exists()
     return 0;
 }
 # }}}
-# function wget_base_library() {{{ Download open source libray
-function wget_base_library()
+# wget_base_library() {{{ Download open source libray
+wget_base_library()
 {
     wget_fail=0;
+    wget_lib $CLAMAV_FILE_NAME        "https://www.clamav.net/downloads/production/$CLAMAV_FILE_NAME"
     wget_lib $OPENSSL_FILE_NAME       "http://www.openssl.org/source/$OPENSSL_FILE_NAME"
     wget_lib $ICU_FILE_NAME           "http://download.icu-project.org/files/icu4c/$ICU_VERSION/$ICU_FILE_NAME"
     #wget_lib $ICU_FILE_NAME           "https://fossies.org/linux/misc/$ICU_FILE_NAME"
@@ -669,8 +670,8 @@ function wget_base_library()
     fi
 }
 # }}}
-# function wget_env_library() {{{ Download open source libray
-function wget_env_library()
+# wget_env_library() {{{ Download open source libray
+wget_env_library()
 {
     wget_fail="0"
     # http://ftp.gnu.org/gnu/wget/wget-1.18.tar.xz
@@ -715,8 +716,8 @@ function wget_env_library()
 }
 # }}}
 # {{{ nginx mysql php 配置修改
-# function write_extension_info_to_php_ini() {{{ 把单独编译的php扩展写入php.ini
-function write_extension_info_to_php_ini()
+# write_extension_info_to_php_ini() {{{ 把单独编译的php扩展写入php.ini
+write_extension_info_to_php_ini()
 {
     if grep -q "^ \{0,1\}extension=$(sed_quote $1)" $php_ini ;then
         return;
@@ -732,8 +733,8 @@ extension=$1
     rm_bak_file ${php_ini}.bak.*
 }
 # }}}
-# function write_zend_extension_info_to_php_ini() {{{ 把单独编译的php扩展写入php.ini
-function write_zend_extension_info_to_php_ini()
+# write_zend_extension_info_to_php_ini() {{{ 把单独编译的php扩展写入php.ini
+write_zend_extension_info_to_php_ini()
 {
     local line=`sed -n '/^;\{0,1\}extension=/h;${x;p;}' $php_ini`;
     sed -i.bak "/^$line\$/{a\\
@@ -746,8 +747,8 @@ zend_extension=$1
     rm_bak_file ${php_ini}.bak.*
 }
 # }}}
-# function change_php_ini() {{{
-function change_php_ini()
+# change_php_ini() {{{
+change_php_ini()
 {
     local num=`sed -n "/$1/=" $php_ini`;
     if [ "$num" = "" ];then
@@ -769,8 +770,8 @@ function change_php_ini()
     rm_bak_file ${php_ini}.bak.*
 }
 # }}}
-# function init_php_ini() {{{
-function init_php_ini()
+# init_php_ini() {{{
+init_php_ini()
 {
     # log_errors
     #local pattern='^log_errors \{0,\}= \{0,\}\([oO][nN]\) \{0,\}$';
@@ -835,8 +836,8 @@ function init_php_ini()
     change_php_ini "$pattern" "session.use_strict_mode = 1"
 }
 # }}}
-# function change_php_fpm_ini() {{{
-function change_php_fpm_ini()
+# change_php_fpm_ini() {{{
+change_php_fpm_ini()
 {
     local fpm_ini=$3;
     local num=`sed -n "/$1/=" $fpm_ini`;
@@ -853,8 +854,8 @@ function change_php_fpm_ini()
     rm_bak_file ${fpm_ini}.bak.*
 }
 # }}}
-# function init_php_fpm_ini() {{{
-function init_php_fpm_ini()
+# init_php_fpm_ini() {{{
+init_php_fpm_ini()
 {
     # pid
     local pattern='^;pid \{0,\}= \{0,\}.\{1,\}$';
@@ -917,8 +918,8 @@ function init_php_fpm_ini()
     change_php_fpm_ini "$pattern" "\1/fpm-status" "$PHP_FPM_CONFIG_DIR/php-fpm.d/www.conf"
 }
 # }}}
-# function init_mysql_cnf() {{{
-function init_mysql_cnf()
+# init_mysql_cnf() {{{
+init_mysql_cnf()
 {
     sed -i.bak.$$ "s/\<MYSQL_BASE_DIR\>/$( echo $MYSQL_BASE|sed 's/\//\\\//g' )/" $mysql_cnf;
     sed -i.bak.$$ "s/\<MYSQL_RUN_DIR\>/$( echo $MYSQL_RUN_DIR|sed 's/\//\\\//g' )/" $mysql_cnf;
@@ -929,8 +930,8 @@ function init_mysql_cnf()
     rm_bak_file ${mysql_cnf}.bak.*
 }
 # }}}
-# function init_nginx_conf() {{{
-function init_nginx_conf()
+# init_nginx_conf() {{{
+init_nginx_conf()
 {
     mkdir -p $NGINX_CONFIG_DIR/
     local NGINX_CONF_FILE="$NGINX_CONFIG_DIR/conf/nginx.conf"
@@ -967,8 +968,8 @@ function init_nginx_conf()
     # sed -i.bak.$$ "s/^\(fastcgi_param \{1,\}SERVER_SOFTWARE \{1,\}\)nginx\/\$nginx_version;$/\1${project_name%% *}\/1.0;/" $NGINX_CONFIG_DIR/conf/fastcgi.conf;
 }
 # }}}
-# function init_dehydrated_conf() {{{
-function init_dehydrated_conf()
+# init_dehydrated_conf() {{{
+init_dehydrated_conf()
 {
     sed -i.bak.$$ "s/^ \{0,\}#\{0,\} \{0,\}\(BASEDIR=\).\{0,\}$/\1\"$(sed_quote2 $DEHYDRATED_CONFIG_DIR )\"/g" $DEHYDRATED_CONFIG_DIR/config
     sed -i.bak.$$ "s/^ \{0,\}#\{0,\} \{0,\}\(WELLKNOWN=\).\{0,\}$/\1\"$(sed_quote2 $TMP_DATA_DIR/dehydrated )\"/g" $DEHYDRATED_CONFIG_DIR/config
@@ -990,8 +991,8 @@ function init_dehydrated_conf()
     cp -r $curr_dir/conf/dehydrated/certs $DEHYDRATED_CONFIG_DIR/
 }
 # }}}
-# function change_redis_conf() {{{
-function change_redis_conf()
+# change_redis_conf() {{{
+change_redis_conf()
 {
     local redis_conf=$REDIS_CONFIG_DIR/redis.conf;
     local num=`sed -n "/$1/=" $redis_conf`;
@@ -1008,8 +1009,8 @@ function change_redis_conf()
     rm_bak_file ${redis_conf}.bak.*
 }
 # }}}
-# function init_redis_conf() {{{
-function init_redis_conf()
+# init_redis_conf() {{{
+init_redis_conf()
 {
 # 启动redis服务
 # ./bin/redis-server redis.conf
@@ -1047,24 +1048,50 @@ function init_redis_conf()
 
 }
 # }}}
-# function init_rsyslog_conf() {{{
-function init_rsyslog_conf()
+# init_rsyslog_conf() {{{
+init_rsyslog_conf()
 {
     :
 }
 # }}}
-# function init_logrotate_conf() {{{
-function init_logrotate_conf()
+# init_logrotate_conf() {{{
+init_logrotate_conf()
 {
     mkdir -p $LOGROTATE_CONFIG_DIR
     cp ${curr_dir}/conf/base_logrotate.conf $LOGROTATE_CONFIG_DIR/logrotate.conf
     :
 }
 # }}}
+# init_clamav_conf() {{{
+init_clamav_conf()
+{
+    cp $CLAMAV_CONF_DIR/freshclam.conf.sample $CLAMAV_CONF_DIR/freshclam.conf
+    cp $CLAMAV_CONF_DIR/freshclam.conf.sample $CLAMAV_CONF_DIR/freshclam.conf
+    #cp $CLAMAV_CONF_DIR/clamav-milter.conf.sample $CLAMAV_CONF_DIR/clamav-milter.conf
+
+    ll /usr/lib/systemd/system/
+    clamav-daemon.service     clamav-daemon.socket      clamav-freshclam.service
+
+    sudo vim $CLAMAV_BASE/etc/freshclam.conf
+
+    sudo groupadd clamav
+    sudo useradd -r -M -g clamav -s /usr/sbin/nologin clamav
+    mkdir $CLAMAV_DATA_DIR
+    sudo chown -R clamav:clamav $CLAMAV_DATA_DIR
+    #升级病毒库，每4小时一次
+    sudo $CLAMAV_BASE/bin/freshclam
+    #启动服务
+    sudo systemctl start clamav-daemon.service
+
+    CLAMAV_USER="clamav"
+    CLAMAV_GROUP="clamav"
+
+}
+# }}}
 # }}}
 # {{{ is_installed functions
-# {{{ function is_installed()
-function is_installed()
+# {{{ is_installed()
+is_installed()
 {
     local func="is_installed_${1}"
     function_exists "$func"
@@ -1092,8 +1119,8 @@ function is_installed()
 
 }
 # }}}
-# {{{ function is_installed_jpeg()
-function is_installed_jpeg()
+# {{{ is_installed_jpeg()
+is_installed_jpeg()
 {
     local FILENAME="$JPEG_BASE/bin/djpeg"
     if [ ! -f "$FILENAME" ];then
@@ -1107,8 +1134,8 @@ function is_installed_jpeg()
     return;
 }
 # }}}
-# {{{ function is_installed_memcached()
-function is_installed_memcached()
+# {{{ is_installed_memcached()
+is_installed_memcached()
 {
     if [ ! -f "$MEMCACHED_BASE/bin/memcached" ];then
         return 1;
@@ -1120,8 +1147,8 @@ function is_installed_memcached()
     return;
 }
 # }}}
-# {{{ function is_installed_redis()
-function is_installed_redis()
+# {{{ is_installed_redis()
+is_installed_redis()
 {
     if [ ! -f "$REDIS_BASE/bin/redis-cli" ];then
         return 1;
@@ -1133,8 +1160,8 @@ function is_installed_redis()
     return;
 }
 # }}}
-# {{{ function is_installed_gearmand()
-function is_installed_gearmand()
+# {{{ is_installed_gearmand()
+is_installed_gearmand()
 {
     local FILENAME="$GEARMAND_BASE/lib/pkgconfig/gearmand.pc"
     if [ ! -f "$FILENAME" ];then
@@ -1147,8 +1174,8 @@ function is_installed_gearmand()
     return;
 }
 # }}}
-# {{{ function is_installed_readline()
-function is_installed_readline()
+# {{{ is_installed_readline()
+is_installed_readline()
 {
     local FILENAME="$READLINE_BASE/lib/libreadline$([ "$OS_NAME" != "darwin" ] && echo ".so").${READLINE_VERSION}$([ "$OS_NAME" = "darwin" ] && echo ".dylib")"
     if [ ! -f "$FILENAME" ];then
@@ -1157,8 +1184,8 @@ function is_installed_readline()
     return;
 }
 # }}}
-# {{{ function is_installed_phantomjs()
-function is_installed_phantomjs()
+# {{{ is_installed_phantomjs()
+is_installed_phantomjs()
 {
     local FILENAME="$PHANTOMJS_BASE/bin/phantomjs"
     if [ ! -f "$FILENAME" ];then
@@ -1171,8 +1198,8 @@ function is_installed_phantomjs()
     return;
 }
 # }}}
-# {{{ function is_installed_nodejs()
-function is_installed_nodejs()
+# {{{ is_installed_nodejs()
+is_installed_nodejs()
 {
     local FILENAME="$NODEJS_BASE/bin/node"
     if [ ! -f "$FILENAME" ];then
@@ -1185,8 +1212,8 @@ function is_installed_nodejs()
     return;
 }
 # }}}
-# {{{ function is_installed_calibre()
-function is_installed_calibre()
+# {{{ is_installed_calibre()
+is_installed_calibre()
 {
     local FILENAME="$CALIBRE_BASE/calibre"
     if [ ! -f "$FILENAME" ];then
@@ -1199,8 +1226,8 @@ function is_installed_calibre()
     return;
 }
 # }}}
-# {{{ function is_installed_gitbook()
-function is_installed_gitbook()
+# {{{ is_installed_gitbook()
+is_installed_gitbook()
 {
     is_installed nodejs $NODEJS_BASE || return 1;
 
@@ -1217,8 +1244,8 @@ function is_installed_gitbook()
     return;
 }
 # }}}
-# {{{ function is_installed_gitbook_cli()
-function is_installed_gitbook_cli()
+# {{{ is_installed_gitbook_cli()
+is_installed_gitbook_cli()
 {
     is_installed nodejs $NODEJS_BASE || return 1;
 
@@ -1234,8 +1261,8 @@ function is_installed_gitbook_cli()
     return;
 }
 # }}}
-# {{{ function is_installed_gitbook_pdf()
-function is_installed_gitbook_pdf()
+# {{{ is_installed_gitbook_pdf()
+is_installed_gitbook_pdf()
 {
     is_installed nodejs $NODEJS_BASE || return 1;
 
@@ -1251,8 +1278,8 @@ function is_installed_gitbook_pdf()
     return;
 }
 # }}}
-# {{{ function is_installed_tidy()
-function is_installed_tidy()
+# {{{ is_installed_tidy()
+is_installed_tidy()
 {
     if [ ! -f "$TIDY_BASE/bin/tidy" ];then
         return 1;
@@ -1264,8 +1291,8 @@ function is_installed_tidy()
     return;
 }
 # }}}
-# {{{ function is_installed_sphinx()
-function is_installed_sphinx()
+# {{{ is_installed_sphinx()
+is_installed_sphinx()
 {
     if [ ! -f "$SPHINX_BASE/bin/searchd" ];then
         return 1;
@@ -1277,8 +1304,8 @@ function is_installed_sphinx()
     return;
 }
 # }}}
-# {{{ function is_installed_sphinxclient()
-function is_installed_sphinxclient()
+# {{{ is_installed_sphinxclient()
+is_installed_sphinxclient()
 {
     if [ ! -f "$SPHINX_CLIENT_BASE/lib/libsphinxclient.so" ];then
         return 1;
@@ -1292,8 +1319,8 @@ function is_installed_sphinxclient()
     return;
 }
 # }}}
-# {{{ function is_installed_libmcrypt()
-function is_installed_libmcrypt()
+# {{{ is_installed_libmcrypt()
+is_installed_libmcrypt()
 {
     if [ ! -f "$LIBMCRYPT_BASE/bin/libmcrypt-config" ];then
         return 1;
@@ -1305,8 +1332,8 @@ function is_installed_libmcrypt()
     return;
 }
 # }}}
-# {{{ function is_installed_libwbxml()
-function is_installed_libwbxml()
+# {{{ is_installed_libwbxml()
+is_installed_libwbxml()
 {
     local FILENAME="$LIBWBXML_BASE/lib/pkgconfig/libwbxml2.pc"
     if [ ! -f "${FILENAME}" ];then
@@ -1320,8 +1347,8 @@ function is_installed_libwbxml()
     return;
 }
 # }}}
-# {{{ function is_installed_gettext()
-function is_installed_gettext()
+# {{{ is_installed_gettext()
+is_installed_gettext()
 {
     if [ ! -f "$GETTEXT_BASE/bin/gettext" ];then
         return 1;
@@ -1333,8 +1360,8 @@ function is_installed_gettext()
     return;
 }
 # }}}
-# {{{ function is_installed_libiconv()
-function is_installed_libiconv()
+# {{{ is_installed_libiconv()
+is_installed_libiconv()
 {
     if [ ! -f "$LIBICONV_BASE/bin/iconv" ];then
         return 1;
@@ -1346,8 +1373,8 @@ function is_installed_libiconv()
     return;
 }
 # }}}
-# {{{ function is_installed_pcre()
-function is_installed_pcre()
+# {{{ is_installed_pcre()
+is_installed_pcre()
 {
     local FILENAME="$PCRE_BASE/lib/pkgconfig/libpcre.pc"
     if [ ! -f "$PCRE_BASE/bin/pcre-config" ];then
@@ -1361,8 +1388,8 @@ function is_installed_pcre()
     return;
 }
 # }}}
-# {{{ function is_installed_openssl()
-function is_installed_openssl()
+# {{{ is_installed_openssl()
+is_installed_openssl()
 {
     local FILENAME=""
 
@@ -1380,8 +1407,8 @@ function is_installed_openssl()
     return;
 }
 # }}}
-# {{{ function is_installed_icu()
-function is_installed_icu()
+# {{{ is_installed_icu()
+is_installed_icu()
 {
 #    if [ ! -f "$ICU_BASE/bin/icu-config" ];then
 #        return 1;
@@ -1399,8 +1426,8 @@ function is_installed_icu()
     return;
 }
 # }}}
-# {{{ function is_installed_boost()
-function is_installed_boost()
+# {{{ is_installed_boost()
+is_installed_boost()
 {
     local FILENAME="${BOOST_BASE}/include/boost/version.hpp"
     if [ ! -f "$FILENAME" ];then
@@ -1418,8 +1445,8 @@ function is_installed_boost()
     return;
 }
 # }}}
-# {{{ function is_installed_zlib()
-function is_installed_zlib()
+# {{{ is_installed_zlib()
+is_installed_zlib()
 {
     local FILENAME="$ZLIB_BASE/lib/pkgconfig/zlib.pc"
     if [ ! -f "$FILENAME" ];then
@@ -1432,8 +1459,8 @@ function is_installed_zlib()
     return;
 }
 # }}}
-# {{{ function is_installed_libzip()
-function is_installed_libzip()
+# {{{ is_installed_libzip()
+is_installed_libzip()
 {
     local FILENAME="$LIBZIP_BASE/lib/pkgconfig/libzip.pc"
     if [ ! -f "$FILENAME" ];then
@@ -1446,8 +1473,8 @@ function is_installed_libzip()
     return;
 }
 # }}}
-# {{{ function is_installed_libxml2()
-function is_installed_libxml2()
+# {{{ is_installed_libxml2()
+is_installed_libxml2()
 {
 #    if [ ! -f "$LIBXML2_BASE/bin/xml2-config" ];then
 #        return 1;
@@ -1465,8 +1492,8 @@ function is_installed_libxml2()
     return;
 }
 # }}}
-# {{{ function is_installed_libwebp()
-function is_installed_libwebp()
+# {{{ is_installed_libwebp()
+is_installed_libwebp()
 {
     local FILENAME="$LIBWEBP_BASE/bin/cwebp"
     if [ ! -f "$FILENAME" ];then
@@ -1479,8 +1506,8 @@ function is_installed_libwebp()
     return;
 }
 # }}}
-# {{{ function is_installed_fribidi()
-function is_installed_fribidi()
+# {{{ is_installed_fribidi()
+is_installed_fribidi()
 {
     local FILENAME="$FRIBIDI_BASE/lib/pkgconfig/fribidi.pc"
     if [ ! -f "$FILENAME" ];then
@@ -1493,8 +1520,8 @@ function is_installed_fribidi()
     return;
 }
 # }}}
-# {{{ function is_installed_libxslt()
-function is_installed_libxslt()
+# {{{ is_installed_libxslt()
+is_installed_libxslt()
 {
     local FILENAME="$LIBXSLT_BASE/lib/pkgconfig/libxslt.pc"
     if [ ! -f "$FILENAME" ];then
@@ -1507,8 +1534,8 @@ function is_installed_libxslt()
     return;
 }
 # }}}
-# {{{ function is_installed_libevent()
-function is_installed_libevent()
+# {{{ is_installed_libevent()
+is_installed_libevent()
 {
     local FILENAME=$LIBEVENT_BASE/lib/pkgconfig/libevent.pc;
     if [ ! -f "$FILENAME" ];then
@@ -1522,8 +1549,8 @@ function is_installed_libevent()
     return;
 }
 # }}}
-# {{{ function is_installed_patchelf()
-function is_installed_patchelf()
+# {{{ is_installed_patchelf()
+is_installed_patchelf()
 {
     local FILENAME=$PATCHELF_BASE/bin/patchelf;
     if [ ! -f "$FILENAME" ];then
@@ -1536,8 +1563,8 @@ function is_installed_patchelf()
     return;
 }
 # }}}
-# {{{ function is_installed_tesseract()
-function is_installed_tesseract()
+# {{{ is_installed_tesseract()
+is_installed_tesseract()
 {
     local FILENAME=$TESSERACT_BASE/bin/tesseract;
     if [ ! -f "$FILENAME" ];then
@@ -1550,8 +1577,8 @@ function is_installed_tesseract()
     return;
 }
 # }}}
-# {{{ function is_installed_expat()
-function is_installed_expat()
+# {{{ is_installed_expat()
+is_installed_expat()
 {
     local FILENAME="$EXPAT_BASE/lib/pkgconfig/expat.pc"
     if [ ! -f "$FILENAME" ];then
@@ -1564,8 +1591,8 @@ function is_installed_expat()
     return;
 }
 # }}}
-# {{{ function is_installed_libpng()
-function is_installed_libpng()
+# {{{ is_installed_libpng()
+is_installed_libpng()
 {
     local FILENAME="$LIBPNG_BASE/lib/pkgconfig/libpng.pc"
     if [ ! -f "$FILENAME" ];then
@@ -1578,8 +1605,8 @@ function is_installed_libpng()
     return;
 }
 # }}}
-# {{{ function is_installed_openjpeg()
-function is_installed_openjpeg()
+# {{{ is_installed_openjpeg()
+is_installed_openjpeg()
 {
     local FILENAME="$OPENJPEG_BASE/lib/pkgconfig/libopenjp2.pc"
     if [ ! -f "$FILENAME" ];then
@@ -1592,8 +1619,8 @@ function is_installed_openjpeg()
     return;
 }
 # }}}
-# {{{ function is_installed_sqlite()
-function is_installed_sqlite()
+# {{{ is_installed_sqlite()
+is_installed_sqlite()
 {
     local FILENAME="$SQLITE_BASE/lib/pkgconfig/sqlite3.pc"
     if [ ! -f "$FILENAME" ];then
@@ -1607,8 +1634,8 @@ function is_installed_sqlite()
     return;
 }
 # }}}
-# {{{ function is_installed_curl()
-function is_installed_curl()
+# {{{ is_installed_curl()
+is_installed_curl()
 {
     local FILENAME="$CURL_BASE/lib/pkgconfig/libcurl.pc"
     if [ ! -f "$FILENAME" ];then
@@ -1621,8 +1648,24 @@ function is_installed_curl()
     return;
 }
 # }}}
-# {{{ function is_installed_xapian_core()
-function is_installed_xapian_core()
+# {{{ is_installed_clamav()
+is_installed_clamav()
+{
+    #local FILENAME="$CLAMAV_BASE/lib64/pkgconfig/libclamav.pc"
+    local FILENAME="$CLAMAV_BASE/sbin/clamd"
+    if [ ! -f "$FILENAME" ];then
+        return 1;
+    fi
+    #local version=`pkg-config --modversion $FILENAME`
+    local version=`$FILENAME --version|awk '{ print $NF;}'|head -1`
+    if [ "${version}" != "$CLAMAV_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
+# {{{ is_installed_xapian_core()
+is_installed_xapian_core()
 {
     local FILENAME="$XAPIAN_CORE_BASE/lib/pkgconfig/xapian-core.pc"
     if [ ! -f "$FILENAME" ];then
@@ -1635,8 +1678,8 @@ function is_installed_xapian_core()
     return;
 }
 # }}}
-# {{{ function is_installed_xapian_omega()
-function is_installed_xapian_omega()
+# {{{ is_installed_xapian_omega()
+is_installed_xapian_omega()
 {
 
     local FILENAME="$XAPIAN_OMEGA_BASE/bin/omindex"
@@ -1651,8 +1694,8 @@ function is_installed_xapian_omega()
     return;
 }
 # }}}
-# {{{ function is_installed_scws()
-function is_installed_scws()
+# {{{ is_installed_scws()
+is_installed_scws()
 {
     local FILENAME="$SCWS_BASE/bin/scws"
 
@@ -1666,8 +1709,8 @@ function is_installed_scws()
     return;
 }
 # }}}
-# {{{ function is_installed_xapian_core_scws()
-function is_installed_xapian_core_scws()
+# {{{ is_installed_xapian_core_scws()
+is_installed_xapian_core_scws()
 {
     local FILENAME="$XAPIAN_CORE_SCWS_BASE/lib/pkgconfig/xapian-core.pc"
     if [ ! -f "$FILENAME" ];then
@@ -1680,8 +1723,8 @@ function is_installed_xapian_core_scws()
     return;
 }
 # }}}
-# {{{ function is_installed_xunsearch()
-function is_installed_xunsearch()
+# {{{ is_installed_xunsearch()
+is_installed_xunsearch()
 {
     local FILENAME="$XUNSEARCH_BASE/bin/xs-searchd"
     if [ ! -f "$FILENAME" ];then
@@ -1694,8 +1737,8 @@ function is_installed_xunsearch()
     return;
 }
 # }}}
-# {{{ function is_installed_nghttp2()
-function is_installed_nghttp2()
+# {{{ is_installed_nghttp2()
+is_installed_nghttp2()
 {
     local FILENAME="$NGHTTP2_BASE/lib/pkgconfig/libnghttp2.pc"
     if [ ! -f "$FILENAME" ];then
@@ -1708,8 +1751,8 @@ function is_installed_nghttp2()
     return;
 }
 # }}}
-# {{{ function is_installed_pkgconfig()
-function is_installed_pkgconfig()
+# {{{ is_installed_pkgconfig()
+is_installed_pkgconfig()
 {
     if [ ! -f "$PKGCONFIG_BASE/bin/pkg-config" ];then
         return 1;
@@ -1721,8 +1764,8 @@ function is_installed_pkgconfig()
     return;
 }
 # }}}
-# {{{ function is_installed_freetype()
-function is_installed_freetype()
+# {{{ is_installed_freetype()
+is_installed_freetype()
 {
     if [ ! -f "$FREETYPE_BASE/bin/freetype-config" ];then
         return 1;
@@ -1734,8 +1777,8 @@ function is_installed_freetype()
     return;
 }
 # }}}
-# {{{ function is_installed_xproto()
-function is_installed_xproto()
+# {{{ is_installed_xproto()
+is_installed_xproto()
 {
     local FILENAME="$XPROTO_BASE/lib/pkgconfig/xproto.pc"
     if [ ! -f "$FILENAME" ];then
@@ -1748,8 +1791,8 @@ function is_installed_xproto()
     return;
 }
 # }}}
-# {{{ function is_installed_macros()
-function is_installed_macros()
+# {{{ is_installed_macros()
+is_installed_macros()
 {
     local FILENAME="$MACROS_BASE/share/pkgconfig/xorg-macros.pc"
     if [ ! -f "$FILENAME" ];then
@@ -1762,8 +1805,8 @@ function is_installed_macros()
     return;
 }
 # }}}
-# {{{ function is_installed_xcb_proto()
-function is_installed_xcb_proto()
+# {{{ is_installed_xcb_proto()
+is_installed_xcb_proto()
 {
     local FILENAME="$XCB_PROTO_BASE/lib/pkgconfig/xcb-proto.pc"
     if [ ! -f "$FILENAME" ];then
@@ -1776,8 +1819,8 @@ function is_installed_xcb_proto()
     return;
 }
 # }}}
-# {{{ function is_installed_libpthread_stubs()
-function is_installed_libpthread_stubs()
+# {{{ is_installed_libpthread_stubs()
+is_installed_libpthread_stubs()
 {
     local FILENAME="$LIBPTHREAD_STUBS_BASE/lib/pkgconfig/pthread-stubs.pc"
     if [ ! -f "$FILENAME" ];then
@@ -1790,8 +1833,8 @@ function is_installed_libpthread_stubs()
     return;
 }
 # }}}
-# {{{ function is_installed_libXau()
-function is_installed_libXau()
+# {{{ is_installed_libXau()
+is_installed_libXau()
 {
     local FILENAME="$LIBXAU_BASE/lib/pkgconfig/xau.pc"
     if [ ! -f "$FILENAME" ];then
@@ -1804,8 +1847,8 @@ function is_installed_libXau()
     return;
 }
 # }}}
-# {{{ function is_installed_libxcb()
-function is_installed_libxcb()
+# {{{ is_installed_libxcb()
+is_installed_libxcb()
 {
     local FILENAME="$LIBXCB_BASE/lib/pkgconfig/xcb.pc"
     if [ ! -f "$FILENAME" ];then
@@ -1818,8 +1861,8 @@ function is_installed_libxcb()
     return;
 }
 # }}}
-# {{{ function is_installed_kbproto()
-function is_installed_kbproto()
+# {{{ is_installed_kbproto()
+is_installed_kbproto()
 {
     local FILENAME="$KBPROTO_BASE/lib/pkgconfig/kbproto.pc"
     if [ ! -f "$FILENAME" ];then
@@ -1832,8 +1875,8 @@ function is_installed_kbproto()
     return;
 }
 # }}}
-# {{{ function is_installed_inputproto()
-function is_installed_inputproto()
+# {{{ is_installed_inputproto()
+is_installed_inputproto()
 {
     local FILENAME="$INPUTPROTO_BASE/lib/pkgconfig/inputproto.pc"
     if [ ! -f "$FILENAME" ];then
@@ -1846,8 +1889,8 @@ function is_installed_inputproto()
     return;
 }
 # }}}
-# {{{ function is_installed_xextproto()
-function is_installed_xextproto()
+# {{{ is_installed_xextproto()
+is_installed_xextproto()
 {
     local FILENAME="$XEXTPROTO_BASE/lib/pkgconfig/xextproto.pc"
     if [ ! -f "$FILENAME" ];then
@@ -1860,8 +1903,8 @@ function is_installed_xextproto()
     return;
 }
 # }}}
-# {{{ function is_installed_xtrans()
-function is_installed_xtrans()
+# {{{ is_installed_xtrans()
+is_installed_xtrans()
 {
     local FILENAME="$XTRANS_BASE/share/pkgconfig/xtrans.pc"
     if [ ! -f "$FILENAME" ];then
@@ -1874,8 +1917,8 @@ function is_installed_xtrans()
     return;
 }
 # }}}
-# {{{ function is_installed_xf86bigfontproto()
-function is_installed_xf86bigfontproto()
+# {{{ is_installed_xf86bigfontproto()
+is_installed_xf86bigfontproto()
 {
     local FILENAME="$XF86BIGFONTPROTO_BASE/lib/pkgconfig/xf86bigfontproto.pc"
     if [ ! -f "$FILENAME" ];then
@@ -1888,8 +1931,8 @@ function is_installed_xf86bigfontproto()
     return;
 }
 # }}}
-# {{{ function is_installed_libX11()
-function is_installed_libX11()
+# {{{ is_installed_libX11()
+is_installed_libX11()
 {
     local FILENAME="$LIBX11_BASE/lib/pkgconfig/x11.pc"
     if [ ! -f "$FILENAME" ];then
@@ -1902,8 +1945,8 @@ function is_installed_libX11()
     return;
 }
 # }}}
-# {{{ function is_installed_libXpm()
-function is_installed_libXpm()
+# {{{ is_installed_libXpm()
+is_installed_libXpm()
 {
     local FILENAME="$LIBXPM_BASE/lib/pkgconfig/xpm.pc"
     if [ ! -f "$FILENAME" ];then
@@ -1916,8 +1959,8 @@ function is_installed_libXpm()
     return;
 }
 # }}}
-# {{{ function is_installed_libXext()
-function is_installed_libXext()
+# {{{ is_installed_libXext()
+is_installed_libXext()
 {
     local FILENAME="$LIBXEXT_BASE/lib/pkgconfig/xext.pc"
     if [ ! -f "$FILENAME" ];then
@@ -1930,8 +1973,8 @@ function is_installed_libXext()
     return;
 }
 # }}}
-# {{{ function is_installed_fontconfig()
-function is_installed_fontconfig()
+# {{{ is_installed_fontconfig()
+is_installed_fontconfig()
 {
     local FILENAME="$FONTCONFIG_BASE/lib/pkgconfig/fontconfig.pc"
     if [ ! -f "$FILENAME" ];then
@@ -1944,8 +1987,8 @@ function is_installed_fontconfig()
     return;
 }
 # }}}
-# {{{ function is_installed_gmp()
-function is_installed_gmp()
+# {{{ is_installed_gmp()
+is_installed_gmp()
 {
     local FILENAME="$GMP_BASE/share/info/gmp.info"
     if [ ! -f "$FILENAME" ];then
@@ -1958,8 +2001,8 @@ function is_installed_gmp()
     return;
 }
 # }}}
-# {{{ function is_installed_imap()
-function is_installed_imap()
+# {{{ is_installed_imap()
+is_installed_imap()
 {
     local FILENAME="$IMAP_BASE/lib/libc-client.a"
     if [ ! -f "$FILENAME" ];then
@@ -1973,8 +2016,8 @@ function is_installed_imap()
 #    return;
 }
 # }}}
-# {{{ function is_installed_kerberos()
-function is_installed_kerberos()
+# {{{ is_installed_kerberos()
+is_installed_kerberos()
 {
     local FILENAME="$KERBEROS_BASE/lib/pkgconfig/krb5.pc"
     if [ ! -f "$FILENAME" ];then
@@ -1987,8 +2030,8 @@ function is_installed_kerberos()
     return;
 }
 # }}}
-# {{{ function is_installed_libmemcached()
-function is_installed_libmemcached()
+# {{{ is_installed_libmemcached()
+is_installed_libmemcached()
 {
     local FILENAME="$LIBMEMCACHED_BASE/lib/pkgconfig/libmemcached.pc"
     if [ ! -f "$FILENAME" ];then
@@ -2001,8 +2044,8 @@ function is_installed_libmemcached()
     return;
 }
 # }}}
-# {{{ function is_installed_apr()
-function is_installed_apr()
+# {{{ is_installed_apr()
+is_installed_apr()
 {
     local FILENAME="$APR_BASE/lib/pkgconfig/apr-1.pc"
     if [ ! -f "$FILENAME" ];then
@@ -2015,8 +2058,8 @@ function is_installed_apr()
     return;
 }
 # }}}
-# {{{ function is_installed_apr_util()
-function is_installed_apr_util()
+# {{{ is_installed_apr_util()
+is_installed_apr_util()
 {
     local FILENAME="$APR_UTIL_BASE/lib/pkgconfig/apr-util-1.pc"
     if [ ! -f "$FILENAME" ];then
@@ -2029,8 +2072,8 @@ function is_installed_apr_util()
     return;
 }
 # }}}
-# {{{ function is_installed_postgresql()
-function is_installed_postgresql()
+# {{{ is_installed_postgresql()
+is_installed_postgresql()
 {
     local FILENAME="$POSTGRESQL_BASE/lib/pkgconfig/libpq.pc"
     if [ ! -f "$FILENAME" ];then
@@ -2043,8 +2086,8 @@ function is_installed_postgresql()
     return;
 }
 # }}}
-# {{{ function is_installed_pgbouncer()
-function is_installed_pgbouncer()
+# {{{ is_installed_pgbouncer()
+is_installed_pgbouncer()
 {
     local FILENAME="$PGBOUNCER_BASE/bin/pgbouncer"
     if [ ! -f "$FILENAME" ];then
@@ -2057,8 +2100,8 @@ function is_installed_pgbouncer()
     return;
 }
 # }}}
-# {{{ function is_installed_apache()
-function is_installed_apache()
+# {{{ is_installed_apache()
+is_installed_apache()
 {
     if [ ! -f "$APACHE_BASE/bin/httpd" ];then
         return 1;
@@ -2070,8 +2113,8 @@ function is_installed_apache()
     return;
 }
 # }}}
-# {{{ function is_installed_nginx()
-function is_installed_nginx()
+# {{{ is_installed_nginx()
+is_installed_nginx()
 {
     if [ ! -f "$NGINX_BASE/sbin/nginx" ];then
         return 1;
@@ -2083,8 +2126,8 @@ function is_installed_nginx()
     return;
 }
 # }}}
-# {{{ function is_installed_rsyslog()
-function is_installed_rsyslog()
+# {{{ is_installed_rsyslog()
+is_installed_rsyslog()
 {
     if [ ! -f "$RSYSLOG_BASE/sbin/rsyslogd" ];then
         return 1;
@@ -2096,8 +2139,8 @@ function is_installed_rsyslog()
     return;
 }
 # }}}
-# {{{ function is_installed_logrotate()
-function is_installed_logrotate()
+# {{{ is_installed_logrotate()
+is_installed_logrotate()
 {
     local FILENAME="$LOGROTATE_BASE/sbin/logrotate"
     if [ ! -f "$FILENAME" ];then
@@ -2110,8 +2153,8 @@ function is_installed_logrotate()
     return;
 }
 # }}}
-# {{{ function is_installed_libuuid()
-function is_installed_libuuid()
+# {{{ is_installed_libuuid()
+is_installed_libuuid()
 {
     local FILENAME="$LIBUUID_BASE/lib/pkgconfig/uuid.pc"
     if [ ! -f "$FILENAME" ];then
@@ -2124,8 +2167,8 @@ function is_installed_libuuid()
     return;
 }
 # }}}
-# {{{ function is_installed_liblogging()
-function is_installed_liblogging()
+# {{{ is_installed_liblogging()
+is_installed_liblogging()
 {
     local FILENAME="$LIBLOGGING_BASE/lib/pkgconfig/liblogging-stdlog.pc"
     if [ ! -f "$FILENAME" ];then
@@ -2138,8 +2181,8 @@ function is_installed_liblogging()
     return;
 }
 # }}}
-# {{{ function is_installed_libgcrypt()
-function is_installed_libgcrypt()
+# {{{ is_installed_libgcrypt()
+is_installed_libgcrypt()
 {
     local FILENAME="$LIBGCRYPT_BASE/bin/libgcrypt-config"
     if [ ! -f $FILENAME ];then
@@ -2152,8 +2195,8 @@ function is_installed_libgcrypt()
     return;
 }
 # }}}
-# {{{ function is_installed_libgpg_error()
-function is_installed_libgpg_error()
+# {{{ is_installed_libgpg_error()
+is_installed_libgpg_error()
 {
     local FILENAME="$LIBGPG_ERROR_BASE/bin/gpg-error-config"
     if [ ! -f $FILENAME ];then
@@ -2166,8 +2209,8 @@ function is_installed_libgpg_error()
     return;
 }
 # }}}
-# {{{ function is_installed_libestr()
-function is_installed_libestr()
+# {{{ is_installed_libestr()
+is_installed_libestr()
 {
     local FILENAME="$LIBESTR_BASE/lib/pkgconfig/libestr.pc"
     if [ ! -f "$FILENAME" ];then
@@ -2180,8 +2223,8 @@ function is_installed_libestr()
     return;
 }
 # }}}
-# {{{ function is_installed_json()
-function is_installed_json()
+# {{{ is_installed_json()
+is_installed_json()
 {
     local FILENAME="$JSON_BASE/lib/pkgconfig/json-c.pc"
     if [ ! -f "$FILENAME" ];then
@@ -2194,8 +2237,8 @@ function is_installed_json()
     return;
 }
 # }}}
-# {{{ function is_installed_libfastjson()
-function is_installed_libfastjson()
+# {{{ is_installed_libfastjson()
+is_installed_libfastjson()
 {
     local FILENAME="$LIBFASTJSON_BASE/lib/pkgconfig/libfastjson.pc"
     if [ ! -f "$FILENAME" ];then
@@ -2208,8 +2251,8 @@ function is_installed_libfastjson()
     return;
 }
 # }}}
-# {{{ function is_installed_libgd()
-function is_installed_libgd()
+# {{{ is_installed_libgd()
+is_installed_libgd()
 {
     local FILENAME="$LIBGD_BASE/lib/pkgconfig/gdlib.pc"
     if [ ! -f "$FILENAME" ];then
@@ -2222,8 +2265,8 @@ function is_installed_libgd()
     return;
 }
 # }}}
-# {{{ function is_installed_ImageMagick()
-function is_installed_ImageMagick()
+# {{{ is_installed_ImageMagick()
+is_installed_ImageMagick()
 {
     local FILENAME="$IMAGEMAGICK_BASE/lib/pkgconfig/ImageMagick.pc"
     if [ ! -f "$FILENAME" ];then
@@ -2242,8 +2285,8 @@ function is_installed_ImageMagick()
     return;
 }
 # }}}
-# {{{ function is_installed_php()
-function is_installed_php()
+# {{{ is_installed_php()
+is_installed_php()
 {
     if [ ! -f "$PHP_BASE/bin/php" ];then
         return 1;
@@ -2254,8 +2297,8 @@ function is_installed_php()
     fi
 }
 # }}}
-# {{{ function is_installed_python()
-function is_installed_python()
+# {{{ is_installed_python()
+is_installed_python()
 {
     local FILE_NAME="$PYTHON_BASE/bin/python${PYTHON_VERSION%%.*}"
     if [ ! -f "$FILE_NAME" ];then
@@ -2267,8 +2310,8 @@ function is_installed_python()
     fi
 }
 # }}}
-# {{{ function is_installed_php_extension()
-function is_installed_php_extension()
+# {{{ is_installed_php_extension()
+is_installed_php_extension()
 {
     if [ ! -f "$PHP_BASE/bin/php" ];then
         return 1;
@@ -2303,8 +2346,8 @@ function is_installed_php_extension()
     return;
 }
 # }}}
-# {{{ function is_installed_mysql()
-function is_installed_mysql()
+# {{{ is_installed_mysql()
+is_installed_mysql()
 {
     if [ ! -f "$MYSQL_BASE/bin/mysql_config" ];then
         return 1;
@@ -2316,8 +2359,8 @@ function is_installed_mysql()
     return;
 }
 # }}}
-# {{{ function is_installed_qrencode()
-function is_installed_qrencode()
+# {{{ is_installed_qrencode()
+is_installed_qrencode()
 {
     if [ ! -f "$QRENCODE_BASE/bin/qrencode" ];then
         return 1;
@@ -2329,8 +2372,8 @@ function is_installed_qrencode()
     return;
 }
 # }}}
-# {{{ function is_installed_libsodium()
-function is_installed_libsodium()
+# {{{ is_installed_libsodium()
+is_installed_libsodium()
 {
     local FILENAME="$LIBSODIUM_BASE/lib/pkgconfig/libsodium.pc"
     if [ ! -f "$FILENAME" ];then
@@ -2343,8 +2386,8 @@ function is_installed_libsodium()
     return;
 }
 # }}}
-# {{{ function is_installed_zeromq()
-function is_installed_zeromq()
+# {{{ is_installed_zeromq()
+is_installed_zeromq()
 {
     local FILENAME="$ZEROMQ_BASE/lib/pkgconfig/libzmq.pc"
     if [ ! -f "$FILENAME" ];then
@@ -2357,8 +2400,8 @@ function is_installed_zeromq()
     return;
 }
 # }}}
-# {{{ function is_installed_hiredis()
-function is_installed_hiredis()
+# {{{ is_installed_hiredis()
+is_installed_hiredis()
 {
     local FILENAME="$HIREDIS_BASE/lib/pkgconfig/hiredis.pc"
     if [ ! -f "$FILENAME" ];then
@@ -2371,8 +2414,8 @@ function is_installed_hiredis()
     return;
 }
 # }}}
-# {{{ function is_installed_libunwind()
-function is_installed_libunwind()
+# {{{ is_installed_libunwind()
+is_installed_libunwind()
 {
     local FILENAME="$LIBUNWIND_BASE/lib/pkgconfig/libunwind.pc"
     if [ ! -f "$FILENAME" ];then
@@ -2385,8 +2428,8 @@ function is_installed_libunwind()
     return;
 }
 # }}}
-# {{{ function is_installed_rabbitmq_c()
-function is_installed_rabbitmq_c()
+# {{{ is_installed_rabbitmq_c()
+is_installed_rabbitmq_c()
 {
     local FILENAME=""
 
@@ -2404,8 +2447,8 @@ function is_installed_rabbitmq_c()
     return;
 }
 # }}}
-# {{{ function is_installed_libmaxminddb()
-function is_installed_libmaxminddb()
+# {{{ is_installed_libmaxminddb()
+is_installed_libmaxminddb()
 {
     local FILENAME="$LIBMAXMINDDB_BASE/lib/pkgconfig/libmaxminddb.pc"
     if [ ! -f "$FILENAME" ];then
@@ -2418,8 +2461,8 @@ function is_installed_libmaxminddb()
     return;
 }
 # }}}
-# {{{ function is_installed_geoipupdate()
-function is_installed_geoipupdate()
+# {{{ is_installed_geoipupdate()
+is_installed_geoipupdate()
 {
     if [ ! -f "$GEOIPUPDATE_BASE/bin/geoipupdate" ];then
         return 1;
@@ -2431,8 +2474,8 @@ function is_installed_geoipupdate()
     return;
 }
 # }}}
-# {{{ function is_installed_nasm()
-function is_installed_nasm()
+# {{{ is_installed_nasm()
+is_installed_nasm()
 {
     local FILENAME="$NASM_BASE/bin/nasm"
     if [ ! -f "$FILENAME" ];then
@@ -2445,8 +2488,8 @@ function is_installed_nasm()
     return;
 }
 # }}}
-# {{{ function is_installed_libjpeg()
-function is_installed_libjpeg()
+# {{{ is_installed_libjpeg()
+is_installed_libjpeg()
 {
     local FILENAME="$LIBJPEG_BASE/lib/pkgconfig/libjpeg.pc"
     if [ ! -f "$FILENAME" ];then
@@ -2459,8 +2502,8 @@ function is_installed_libjpeg()
     return;
 }
 # }}}
-# {{{ function is_installed_cairo()
-function is_installed_cairo()
+# {{{ is_installed_cairo()
+is_installed_cairo()
 {
     local FILENAME="$CAIRO_BASE/lib/pkgconfig/cairo.pc"
     if [ ! -f "$FILENAME" ];then
@@ -2473,8 +2516,8 @@ function is_installed_cairo()
     return;
 }
 # }}}
-# {{{ function is_installed_poppler()
-function is_installed_poppler()
+# {{{ is_installed_poppler()
+is_installed_poppler()
 {
     local FILENAME="$POPPLER_BASE/lib/pkgconfig/poppler.pc"
     if [ ! -f "$FILENAME" ];then
@@ -2487,8 +2530,8 @@ function is_installed_poppler()
     return;
 }
 # }}}
-# {{{ function is_installed_pixman()
-function is_installed_pixman()
+# {{{ is_installed_pixman()
+is_installed_pixman()
 {
     local FILENAME="$PIXMAN_BASE/lib/pkgconfig/pixman-1.pc"
     if [ ! -f "$FILENAME" ];then
@@ -2501,8 +2544,8 @@ function is_installed_pixman()
     return;
 }
 # }}}
-# {{{ function is_installed_glib()
-function is_installed_glib()
+# {{{ is_installed_glib()
+is_installed_glib()
 {
     local FILENAME="$GLIB_BASE/lib/pkgconfig/glib-2.0.pc"
     if [ ! -f "$FILENAME" ];then
@@ -2515,8 +2558,8 @@ function is_installed_glib()
     return;
 }
 # }}}
-# {{{ function is_installed_libffi()
-function is_installed_libffi()
+# {{{ is_installed_libffi()
+is_installed_libffi()
 {
     local FILENAME="$LIBFFI_BASE/lib/pkgconfig/libffi.pc"
     if [ ! -f "$FILENAME" ];then
@@ -2529,8 +2572,8 @@ function is_installed_libffi()
     return;
 }
 # }}}
-# {{{ function is_installed_util_linux()
-function is_installed_util_linux()
+# {{{ is_installed_util_linux()
+is_installed_util_linux()
 {
     local FILENAME="$UTIL_LINUX_BASE/lib/pkgconfig/mount.pc"
     if [ ! -f "$FILENAME" ];then
@@ -2543,8 +2586,8 @@ function is_installed_util_linux()
     return;
 }
 # }}}
-# {{{ function is_installed_harfbuzz()
-function is_installed_harfbuzz()
+# {{{ is_installed_harfbuzz()
+is_installed_harfbuzz()
 {
     local FILENAME="$HARFBUZZ_BASE/lib/pkgconfig/harfbuzz.pc"
     if [ ! -f "$FILENAME" ];then
@@ -2557,8 +2600,8 @@ function is_installed_harfbuzz()
     return;
 }
 # }}}
-# {{{ function is_installed_pango()
-function is_installed_pango()
+# {{{ is_installed_pango()
+is_installed_pango()
 {
     local FILENAME="$PANGO_BASE/lib/pkgconfig/pango.pc"
     if [ ! -f "$FILENAME" ];then
@@ -2571,8 +2614,8 @@ function is_installed_pango()
     return;
 }
 # }}}
-# {{{ function is_installed_fontforge()
-function is_installed_fontforge()
+# {{{ is_installed_fontforge()
+is_installed_fontforge()
 {
     local FILENAME="$FONTFORGE_BASE/lib/pkgconfig/libfontforge.pc"
     if [ ! -f "$FILENAME" ];then
@@ -2586,8 +2629,8 @@ function is_installed_fontforge()
     return;
 }
 # }}}
-# {{{ function is_installed_pdf2htmlEX()
-function is_installed_pdf2htmlEX()
+# {{{ is_installed_pdf2htmlEX()
+is_installed_pdf2htmlEX()
 {
     local FILENAME="$PDF2HTMLEX_BASE/bin/pdf2htmlEX"
     if [ ! -f "$FILENAME" ];then
@@ -2604,8 +2647,48 @@ function is_installed_pdf2htmlEX()
 # }}}
 # }}}
 # {{{ compile functions
-# {{{ function compile_xapian_core()
-function compile_xapian_core()
+# {{{ compile_clamav()
+compile_clamav()
+{
+    compile_libxml2
+    compile_openssl
+    compile_pcre
+    compile_zlib
+    compile_libiconv
+    compile_curl
+
+    is_installed clamav "$CLAMAV_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    CLAMAV_CONFIGURE="
+        ./configure --prefix=$CLAMAV_BASE \
+                    --sysconfdir=$CLAMAV_CONF_DIR \
+                    --with-dbdir=$DATA_DIR/clamav \
+                    --enable-libfreshclam \
+                    --with-included-ltdl \
+                    --with-xml=$LIBXML2_BASE \
+                    --with-openssl=$OPENSSL_BASE \
+                    --with-pcre=$PCRE_BASE \
+                    --with-zlib=$ZLIB_BASE \
+                    --with-libbz2-prefix \
+                    --with-iconv \
+                    --with-libncurses-prefix \
+                    --with-libpdcurses-prefix \
+                    --with-libcurl=$CURL_BASE \
+    "
+    #--with-libjson=$LIBJSON_BASE \
+    #--with-libncurses-prefix=$LIBNCURSES_BASE \
+    #--with-user=$CLAMAV_USER \
+    #--with-group=$CLAMAV_GROUP \
+    #--enable-milter \
+
+    compile "clamav" "$CLAMAV_FILE_NAME" "clamav-$CLAMAV_VERSION/" "$CLAMAV_BASE" "CLAMAV_CONFIGURE" "init_clamav_conf"
+}
+# }}}
+# {{{ compile_xapian_core()
+compile_xapian_core()
 {
     is_installed xapian_core "$XAPIAN_CORE_BASE"
     if [ "$?" = "0" ];then
@@ -2622,8 +2705,8 @@ function compile_xapian_core()
     compile "xapian_core" "$XAPIAN_CORE_FILE_NAME" "xapian-core-$XAPIAN_CORE_VERSION/" "$XAPIAN_CORE_BASE" "XAPIAN_CORE_CONFIGURE"
 }
 # }}}
-# {{{ function compile_xapian_omega()
-function compile_xapian_omega()
+# {{{ compile_xapian_omega()
+compile_xapian_omega()
 {
     #compile_pkgconfig
     compile_libiconv
@@ -2647,8 +2730,8 @@ function compile_xapian_omega()
     compile "xapian_omega" "$XAPIAN_OMEGA_FILE_NAME" "xapian-omega-$XAPIAN_OMEGA_VERSION/" "$XAPIAN_OMEGA_BASE" "XAPIAN_OMEGA_CONFIGURE"
 }
 # }}}
-# {{{ function compile_xapian_bindings_php()
-function compile_xapian_bindings_php()
+# {{{ compile_xapian_bindings_php()
+compile_xapian_bindings_php()
 {
     if [ "$XAPIAN_CORE_SCWS_VERSION" = "$XAPIAN_BINDINGS_VERSION" ]; then
         compile_xapian_core_scws
@@ -2668,8 +2751,8 @@ function compile_xapian_bindings_php()
     compile "xapian_bindings_php" "$XAPIAN_BINDINGS_FILE_NAME" "xapian-bindings-$XAPIAN_BINDINGS_VERSION/" "$XAPIAN_BINDINGS_BASE" "XAPIAN_BINDINGS_PHP_CONFIGURE" "after_xapian_bindings_php_make_install"
 }
 # }}}
-# {{{ function compile_scws()
-function compile_scws()
+# {{{ compile_scws()
+compile_scws()
 {
 
     is_installed scws $SCWS_BASE
@@ -2692,8 +2775,8 @@ function compile_scws()
     fi
 }
 # }}}
-# {{{ function compile_xapian_core_scws()
-function compile_xapian_core_scws()
+# {{{ compile_xapian_core_scws()
+compile_xapian_core_scws()
 {
     compile_scws
 
@@ -2709,8 +2792,8 @@ function compile_xapian_core_scws()
     compile "xapian_core_scws" "$XAPIAN_CORE_SCWS_FILE_NAME" "xapian-core-scws-$XAPIAN_CORE_SCWS_VERSION/" "$XAPIAN_CORE_SCWS_BASE" "XAPIAN_CORE_SCWS_CONFIGURE"
 }
 # }}}
-# {{{ function compile_xunsearch()
-function compile_xunsearch()
+# {{{ compile_xunsearch()
+compile_xunsearch()
 {
     compile_libevent
     compile_scws
@@ -2728,8 +2811,8 @@ function compile_xunsearch()
     compile "xunsearch" "$XUNSEARCH_FILE_NAME" "xunsearch-$XUNSEARCH_VERSION/" "$XUNSEARCH_BASE" "XUNSEARCH_CONFIGURE" "after_xunsearch_make_install"
 }
 # }}}
-# {{{ function compile_re2c()
-function compile_re2c()
+# {{{ compile_re2c()
+compile_re2c()
 {
     is_installed re2c $RE2C_BASE
     if [ "$?" = "0" ];then
@@ -2749,8 +2832,8 @@ function compile_re2c()
     compile "re2c" "$RE2C_FILE_NAME" "re2c-$RE2C_VERSION" "$RE2C_BASE" "RE2C_CONFIGURE"
 }
 # }}}
-# {{{ function compile_pkgconfig()
-function compile_pkgconfig()
+# {{{ compile_pkgconfig()
+compile_pkgconfig()
 {
     is_installed pkgconfig "$PKGCONFIG_BASE"
     if [ "$?" = "0" ];then
@@ -2769,8 +2852,8 @@ function compile_pkgconfig()
     export PKG_CONFIG="$PKGCONFIG_BASE/bin/pkg-config"
 }
 # }}}
-# {{{ function compile_pcre()
-function compile_pcre()
+# {{{ compile_pcre()
+compile_pcre()
 {
     is_installed pcre $PCRE_BASE
     if [ "$?" = "0" ];then
@@ -2787,8 +2870,8 @@ function compile_pcre()
     compile "pcre" "$PCRE_FILE_NAME" "pcre-$PCRE_VERSION" "$PCRE_BASE" "PCRE_CONFIGURE"
 }
 # }}}
-# {{{ function compile_openssl()
-function compile_openssl()
+# {{{ compile_openssl()
+compile_openssl()
 {
     is_installed openssl "$OPENSSL_BASE"
     if [ "$?" = "0" ];then
@@ -2815,8 +2898,8 @@ function compile_openssl()
     $OPENSSL_BASE/bin/openssl dhparam -out $SSL_CONFIG_DIR/dhparams.pem 2048
 }
 # }}}
-# {{{ function compile_icu()
-function compile_icu()
+# {{{ compile_icu()
+compile_icu()
 {
     is_installed icu "$ICU_BASE"
     if [ "$?" = "0" ];then
@@ -2837,8 +2920,8 @@ function compile_icu()
 
 }
 # }}}
-# {{{ function compile_boost()
-function compile_boost()
+# {{{ compile_boost()
+compile_boost()
 {
     compile_icu
     if [ "$OS_NAME" = "darwin" ];then
@@ -2915,8 +2998,8 @@ function compile_boost()
 
 }
 # }}}
-# {{{ function compile_zlib()
-function compile_zlib()
+# {{{ compile_zlib()
+compile_zlib()
 {
     is_installed zlib "$ZLIB_BASE"
     if [ "$?" = "0" ];then
@@ -2930,8 +3013,8 @@ function compile_zlib()
     compile "zlib" "$ZLIB_FILE_NAME" "zlib-$ZLIB_VERSION" "$ZLIB_BASE" "ZLIB_CONFIGURE"
 }
 # }}}
-# {{{ function compile_libzip()
-function compile_libzip()
+# {{{ compile_libzip()
+compile_libzip()
 {
     compile_zlib
 
@@ -2948,8 +3031,8 @@ function compile_libzip()
     compile "libzip" "$LIBZIP_FILE_NAME" "libzip-$LIBZIP_VERSION" "$LIBZIP_BASE" "LIBZIP_CONFIGURE"
 }
 # }}}
-# {{{ function compile_libiconv()
-function compile_libiconv()
+# {{{ compile_libiconv()
+compile_libiconv()
 {
     is_installed libiconv "$LIBICONV_BASE"
     if [ "$?" = "0" ];then
@@ -2964,8 +3047,8 @@ function compile_libiconv()
     compile "libiconv" "$LIBICONV_FILE_NAME" "libiconv-$LIBICONV_VERSION" "$LIBICONV_BASE" "LIBICONV_CONFIGURE"
 }
 # }}}
-# {{{ function compile_gettext()
-function compile_gettext()
+# {{{ compile_gettext()
+compile_gettext()
 {
     is_installed gettext "$GETTEXT_BASE"
     if [ "$?" = "0" ];then
@@ -2983,8 +3066,8 @@ function compile_gettext()
     compile "gettext" "$GETTEXT_FILE_NAME" "gettext-$GETTEXT_VERSION" "$GETTEXT_BASE" "GETTEXT_CONFIGURE"
 }
 # }}}
-# {{{ function compile_libxml2()
-function compile_libxml2()
+# {{{ compile_libxml2()
+compile_libxml2()
 {
     compile_zlib
     compile_libiconv
@@ -3007,8 +3090,8 @@ function compile_libxml2()
     compile "libxml2" "$LIBXML2_FILE_NAME" "libxml2-$LIBXML2_VERSION" "$LIBXML2_BASE" "LIBXML2_CONFIGURE"
 }
 # }}}
-# {{{ function compile_libwebp()
-function compile_libwebp()
+# {{{ compile_libwebp()
+compile_libwebp()
 {
     compile_zlib
     compile_libjpeg
@@ -3030,8 +3113,8 @@ function compile_libwebp()
     #fi
 }
 # }}}
-# {{{ function compile_fribidi()
-function compile_fribidi()
+# {{{ compile_fribidi()
+compile_fribidi()
 {
     is_installed fribidi "$FRIBIDI_BASE"
     if [ "$?" = "0" ];then
@@ -3045,8 +3128,8 @@ function compile_fribidi()
     compile "fribidi" "$FRIBIDI_FILE_NAME" "fribidi-$FRIBIDI_VERSION" "$FRIBIDI_BASE" "FRIBIDI_CONFIGURE"
 }
 # }}}
-# {{{ function compile_libxslt()
-function compile_libxslt()
+# {{{ compile_libxslt()
+compile_libxslt()
 {
     compile_libxml2
 
@@ -3063,8 +3146,8 @@ function compile_libxslt()
     compile "libxslt" "$LIBXSLT_FILE_NAME" "libxslt-$LIBXSLT_VERSION" "$LIBXSLT_BASE" "LIBXSLT_CONFIGURE"
 }
 # }}}
-# {{{ function compile_tidy()
-function compile_tidy()
+# {{{ compile_tidy()
+compile_tidy()
 {
     compile_libxslt
 
@@ -3092,8 +3175,8 @@ function compile_tidy()
     fi
 }
 # }}}
-# {{{ function compile_sphinx()
-function compile_sphinx()
+# {{{ compile_sphinx()
+compile_sphinx()
 {
     #compile_mysql
     #compile_postgresql
@@ -3133,8 +3216,8 @@ function compile_sphinx()
     compile "sphinx" "$SPHINX_FILE_NAME" "sphinx-${SPHINX_VERSION}-release" "$SPHINX_BASE" "SPHINX_CONFIGURE"
 }
 # }}}
-# {{{ function compile_sphinxclient()
-function compile_sphinxclient()
+# {{{ compile_sphinxclient()
+compile_sphinxclient()
 {
     is_installed sphinxclient "$SPHINX_CLIENT_BASE"
     if [ "$?" = "0" ];then
@@ -3148,8 +3231,8 @@ function compile_sphinxclient()
     compile "sphinxclient" "$SPHINX_FILE_NAME" "sphinx-${SPHINX_VERSION}-release/api/libsphinxclient" "$SPHINX_CLIENT_BASE" "SPHINXCLIENT_CONFIGURE"
 }
 # }}}
-# {{{ function compile_json()
-function compile_json()
+# {{{ compile_json()
+compile_json()
 {
     is_installed json "$JSON_BASE"
     if [ "$?" = "0" ];then
@@ -3163,8 +3246,8 @@ function compile_json()
     compile "json-c" "$JSON_FILE_NAME" "json-c-$JSON_VERSION" "$JSON_BASE" "JSON_CONFIGURE"
 }
 # }}}
-# {{{ function compile_libfastjson()
-function compile_libfastjson()
+# {{{ compile_libfastjson()
+compile_libfastjson()
 {
     is_installed libfastjson "$LIBFASTJSON_BASE"
     if [ "$?" = "0" ];then
@@ -3178,8 +3261,8 @@ function compile_libfastjson()
     compile "libfastjson" "$LIBFASTJSON_FILE_NAME" "libfastjson-$LIBFASTJSON_VERSION" "$LIBFASTJSON_BASE" "LIBFASTJSON_CONFIGURE"
 }
 # }}}
-# {{{ function compile_libmcrypt()
-function compile_libmcrypt()
+# {{{ compile_libmcrypt()
+compile_libmcrypt()
 {
     is_installed libmcrypt "$LIBMCRYPT_BASE"
     if [ "$?" = "0" ];then
@@ -3193,8 +3276,8 @@ function compile_libmcrypt()
     compile "libmcrypt" "$LIBMCRYPT_FILE_NAME" "libmcrypt-$LIBMCRYPT_VERSION" "$LIBMCRYPT_BASE" "LIBMCRYPT_CONFIGURE"
 }
 # }}}
-# {{{ function compile_libwbxml()
-function compile_libwbxml()
+# {{{ compile_libwbxml()
+compile_libwbxml()
 {
     is_installed libwbxml "$LIBWBXML_BASE"
     if [ "$?" = "0" ];then
@@ -3219,8 +3302,8 @@ function compile_libwbxml()
     rm -rf libwbxml-${LIBWBXML_VERSION}
 }
 # }}}
-# {{{ function compile_libevent()
-function compile_libevent()
+# {{{ compile_libevent()
+compile_libevent()
 {
     compile_openssl
 
@@ -3236,8 +3319,8 @@ function compile_libevent()
     compile "libevent" "$LIBEVENT_FILE_NAME" "libevent-release-${LIBEVENT_VERSION}-stable" "$LIBEVENT_BASE" "LIBEVENT_CONFIGURE"
 }
 # }}}
-# {{{ function compile_patchelf()
-function compile_patchelf()
+# {{{ compile_patchelf()
+compile_patchelf()
 {
     is_installed patchelf "$PATCHELF_BASE"
     if [ "$?" = "0" ];then
@@ -3251,8 +3334,8 @@ function compile_patchelf()
     compile "patchelf" "$PATCHELF_FILE_NAME" "patchelf-${PATCHELF_VERSION}" "$PATCHELF_BASE" "PATCHELF_CONFIGURE"
 }
 # }}}
-# {{{ function compile_tesseract()
-function compile_tesseract()
+# {{{ compile_tesseract()
+compile_tesseract()
 {
     is_installed tesseract "$TESSERACT_BASE"
     if [ "$?" = "0" ];then
@@ -3266,8 +3349,8 @@ function compile_tesseract()
     compile "tesseract" "$TESSERACT_FILE_NAME" "tesseract-${TESSERACT_VERSION}" "$TESSERACT_BASE" "TESSERACT_CONFIGURE"
 }
 # }}}
-# {{{ function compile_readline()
-function compile_readline()
+# {{{ compile_readline()
+compile_readline()
 {
     is_installed readline "$READLINE_BASE"
     if [ "$?" = "0" ];then
@@ -3283,8 +3366,8 @@ function compile_readline()
     compile "readline" "$READLINE_FILE_NAME" "readline-${READLINE_VERSION}" "$READLINE_BASE" "READLINE_CONFIGURE"
 }
 # }}}
-# {{{ function compile_jpeg()
-function compile_jpeg()
+# {{{ compile_jpeg()
+compile_jpeg()
 {
     is_installed jpeg "$JPEG_BASE"
     if [ "$?" = "0" ];then
@@ -3305,8 +3388,8 @@ function compile_jpeg()
     fi
 }
 # }}}
-# {{{ function compile_pdf2htmlEX()
-function compile_pdf2htmlEX()
+# {{{ compile_pdf2htmlEX()
+compile_pdf2htmlEX()
 {
     compile_poppler
     compile_cairo
@@ -3324,8 +3407,8 @@ function compile_pdf2htmlEX()
     compile "pdf2htmlEX" "$PDF2HTMLEX_FILE_NAME" "pdf2htmlEX-$PDF2HTMLEX_VERSION" "$PDF2HTMLEX_BASE" "PDF2HTMLEX_CONFIGURE"
 }
 # }}}
-# {{{ function compile_poppler()
-function compile_poppler()
+# {{{ compile_poppler()
+compile_poppler()
 {
     compile_libpng
     compile_libjpeg
@@ -3389,8 +3472,8 @@ configure_poppler_command()
     fi
 }
 # }}}
-# {{{ function compile_cairo()
-function compile_cairo()
+# {{{ compile_cairo()
+compile_cairo()
 {
     compile_zlib
     compile_libpng
@@ -3420,8 +3503,8 @@ configure_cairo_command()
                  --disable-dependency-tracking
 }
 # }}}
-# {{{ function compile_openjpeg()
-function compile_openjpeg()
+# {{{ compile_openjpeg()
+compile_openjpeg()
 {
     is_installed openjpeg "$OPENJPEG_BASE"
     if [ "$?" = "0" ];then
@@ -3444,8 +3527,8 @@ function compile_openjpeg()
     fi
 }
 # }}}
-# {{{ function compile_fontforge()
-function compile_fontforge()
+# {{{ compile_fontforge()
+compile_fontforge()
 {
     # yum install -y libtool-ltdl libtool-ltdl-devel patch
     #compile_pkgconfig
@@ -3470,8 +3553,8 @@ function compile_fontforge()
     export PATH="$old_path"
 }
 # }}}
-# {{{ function compile_pango()
-function compile_pango()
+# {{{ compile_pango()
+compile_pango()
 {
     compile_cairo
     [ "$OS_NAME" != "darwin" ] && compile_glib
@@ -3492,8 +3575,8 @@ function compile_pango()
     compile "pango" "$PANGO_FILE_NAME" "pango-$PANGO_VERSION" "$PANGO_BASE" "PANGO_CONFIGURE"
 }
 # }}}
-# {{{ function compile_memcached()
-function compile_memcached()
+# {{{ compile_memcached()
+compile_memcached()
 {
     compile_libevent
 
@@ -3509,8 +3592,8 @@ function compile_memcached()
     compile "memcached" "$MEMCACHED_FILE_NAME" "memcached-$MEMCACHED_VERSION" "$MEMCACHED_BASE" "MEMCACHED_CONFIGURE"
 }
 # }}}
-# {{{ function configure_memcached_command()
-function configure_memcached_command()
+# {{{ configure_memcached_command()
+configure_memcached_command()
 {
     # 没有configure
     if [ ! -f "./configure" ]; then
@@ -3527,8 +3610,8 @@ function configure_memcached_command()
                 # --enable-dtrace
 }
 # }}}
-# {{{ function compile_redis()
-function compile_redis()
+# {{{ compile_redis()
+compile_redis()
 {
     is_installed redis "$REDIS_BASE"
     if [ "$?" = "0" ];then
@@ -3541,13 +3624,14 @@ function compile_redis()
     compile "redis" "$REDIS_FILE_NAME" "redis-$REDIS_VERSION" "$REDIS_BASE" "REDIS_CONFIGURE" "after_redis_make_install"
 }
 # }}}
-# {{{ function compile_gearmand()
-function compile_gearmand()
+# {{{ compile_gearmand()
+compile_gearmand()
 {
     compile_openssl
     compile_libevent
     compile_curl
     compile_boost
+    #compile_libuuid
     #yum install boost boost-devel
     #yum install gperf
 
@@ -3560,18 +3644,22 @@ function compile_gearmand()
         configure_gearmand_command
     "
     compile "gearmand" "$GEARMAND_FILE_NAME" "gearmand-$GEARMAND_VERSION" "$GEARMAND_BASE" "GEARMAND_CONFIGURE"
+
+    if [ "$OS_NAME" = "linux" ]; then
+        repair_elf_file_rpath $GEARMAND/sbin/gearmand
+    fi
 }
 # }}}
-# {{{ function configure_hiredis_command()
-function configure_hiredis_command()
+# {{{ configure_hiredis_command()
+configure_hiredis_command()
 {
     # 没有configure
     # 本来要make PREFIX=... install,这里改了Makefile里的PREFIX，就不需要了
     sed -i.bak "s/$(sed_quote2 'PREFIX?=/usr/local')/$(sed_quote2 PREFIX?=$HIREDIS_BASE)/" Makefile
 }
 # }}}
-# {{{ function configure_redis_command()
-function configure_redis_command()
+# {{{ configure_redis_command()
+configure_redis_command()
 {
     # 没有configure
     # 本来要make PREFIX=... install,这里改了Makefile里的PREFIX，就不需要了
@@ -3601,8 +3689,8 @@ function configure_redis_command()
     fi
 }
 # }}}
-# {{{ function configure_gearmand_command()
-function configure_gearmand_command()
+# {{{ configure_gearmand_command()
+configure_gearmand_command()
 {
     # 没有configure
     if [ ! -f "./configure" ]; then
@@ -3634,8 +3722,8 @@ function configure_gearmand_command()
 
 }
 # }}}
-# {{{ function after_redis_make_install()
-function after_redis_make_install()
+# {{{ after_redis_make_install()
+after_redis_make_install()
 {
     mkdir -p $REDIS_CONFIG_DIR
     if [ "$?" != "0" ];then
@@ -3658,8 +3746,8 @@ function after_redis_make_install()
     init_redis_conf
 }
 # }}}
-# {{{ function compile_expat()
-function compile_expat()
+# {{{ compile_expat()
+compile_expat()
 {
     is_installed expat "$EXPAT_BASE"
     if [ "$?" = "0" ];then
@@ -3674,8 +3762,8 @@ function compile_expat()
     compile "expat" "$EXPAT_FILE_NAME" "expat-$EXPAT_VERSION" "$EXPAT_BASE" "EXPAT_CONFIGURE"
 }
 # }}}
-# {{{ function compile_libpng()
-function compile_libpng()
+# {{{ compile_libpng()
+compile_libpng()
 {
     compile_zlib
 
@@ -3700,8 +3788,8 @@ configure_libpng_command()
                 # --with-zlib-prefix=$ZLIB_BASE
 }
 # }}}
-# {{{ function compile_sqlite()
-function compile_sqlite()
+# {{{ compile_sqlite()
+compile_sqlite()
 {
     is_installed sqlite "$SQLITE_BASE"
     if [ "$?" = "0" ];then
@@ -3718,8 +3806,8 @@ function compile_sqlite()
     compile "sqlite" "$SQLITE_FILE_NAME" "sqlite-autoconf-$SQLITE_VERSION" "$SQLITE_BASE" "SQLITE_CONFIGURE"
 }
 # }}}
-# {{{ function compile_curl()
-function compile_curl()
+# {{{ compile_curl()
+compile_curl()
 {
     compile_zlib
     compile_openssl
@@ -3745,8 +3833,8 @@ function compile_curl()
     fi
 }
 # }}}
-# {{{ function compile_nghttp2()
-function compile_nghttp2()
+# {{{ compile_nghttp2()
+compile_nghttp2()
 {
     compile_zlib
     compile_openssl
@@ -3778,8 +3866,8 @@ function compile_nghttp2()
     fi
 }
 # }}}
-# {{{ function compile_freetype()
-function compile_freetype()
+# {{{ compile_freetype()
+compile_freetype()
 {
     # 强制安装时，传一个参数，不安装harfbuzz,
     local is_force="$1"
@@ -3805,8 +3893,8 @@ function compile_freetype()
     compile "freetype" "$FREETYPE_FILE_NAME" "freetype-$FREETYPE_VERSION" "$FREETYPE_BASE" "FREETYPE_CONFIGURE"
 }
 # }}}
-# {{{ function compile_harfbuzz()
-function compile_harfbuzz()
+# {{{ compile_harfbuzz()
+compile_harfbuzz()
 {
     [ "$OS_NAME" != "darwin" ] && compile_glib
     compile_icu
@@ -3835,8 +3923,8 @@ function compile_harfbuzz()
     compile_freetype 1
 }
 # }}}
-# {{{ function compile_glib()
-function compile_glib()
+# {{{ compile_glib()
+compile_glib()
 {
     compile_zlib
     # 使用这个，报错 checking for Unicode support in PCRE... no , 只能使用内部自己的
@@ -3863,8 +3951,8 @@ function compile_glib()
     compile "glib" "$GLIB_FILE_NAME" "glib-$GLIB_VERSION" "$GLIB_BASE" "GLIB_CONFIGURE"
 }
 # }}}
-# {{{ function configure_glib_command()
-function configure_glib_command()
+# {{{ configure_glib_command()
+configure_glib_command()
 {
     local cmd="configure"
     if [ ! -f "./$cmd" -a -f ./autogen.sh ]; then
@@ -3880,8 +3968,8 @@ function configure_glib_command()
 
 }
 # }}}
-# {{{ function compile_libffi()
-function compile_libffi()
+# {{{ compile_libffi()
+compile_libffi()
 {
     is_installed libffi "$LIBFFI_BASE"
     if [ "$?" = "0" ];then
@@ -3895,8 +3983,8 @@ function compile_libffi()
     compile "libffi" "$LIBFFI_FILE_NAME" "libffi-$LIBFFI_VERSION" "$LIBFFI_BASE" "LIBFFI_CONFIGURE"
 }
 # }}}
-# {{{ function compile_util_linux()
-function compile_util_linux()
+# {{{ compile_util_linux()
+compile_util_linux()
 {
     is_installed util_linux "$UTIL_LINUX_BASE"
     if [ "$?" = "0" ];then
@@ -3912,8 +4000,8 @@ function compile_util_linux()
     compile "util-linux" "$UTIL_LINUX_FILE_NAME" "util-linux-$UTIL_LINUX_VERSION" "$UTIL_LINUX_BASE" "UTIL_LINUX_CONFIGURE"
 }
 # }}}
-# {{{ function compile_xproto()
-function compile_xproto()
+# {{{ compile_xproto()
+compile_xproto()
 {
     # compile_macros
 
@@ -3929,8 +4017,8 @@ function compile_xproto()
     compile "xproto" "$XPROTO_FILE_NAME" "xproto-$XPROTO_VERSION" "$XPROTO_BASE" "XPROTO_CONFIGURE"
 }
 # }}}
-# {{{ function compile_macros()
-function compile_macros()
+# {{{ compile_macros()
+compile_macros()
 {
     compile_xproto
 
@@ -3946,8 +4034,8 @@ function compile_macros()
     compile "util-macros" "$MACROS_FILE_NAME" "util-macros-$MACROS_VERSION" "$MACROS_BASE" "MACROS_CONFIGURE"
 }
 # }}}
-# {{{ function compile_xcb_proto()
-function compile_xcb_proto()
+# {{{ compile_xcb_proto()
+compile_xcb_proto()
 {
     is_installed xcb_proto "$XCB_PROTO_BASE"
     if [ "$?" = "0" ];then
@@ -3961,8 +4049,8 @@ function compile_xcb_proto()
     compile "xcb-proto" "$XCB_PROTO_FILE_NAME" "xcb-proto-$XCB_PROTO_VERSION" "$XCB_PROTO_BASE" "XCB_PROTO_CONFIGURE"
 }
 # }}}
-# {{{ function compile_libpthread_stubs()
-function compile_libpthread_stubs()
+# {{{ compile_libpthread_stubs()
+compile_libpthread_stubs()
 {
     is_installed libpthread_stubs "$LIBPTHREAD_STUBS_BASE"
     if [ "$?" = "0" ];then
@@ -3976,8 +4064,8 @@ function compile_libpthread_stubs()
     compile "libpthread-stubs" "$LIBPTHREAD_STUBS_FILE_NAME" "libpthread-stubs-$LIBPTHREAD_STUBS_VERSION" "$LIBPTHREAD_STUBS_BASE" "LIBPTHREAD_STUBS_CONFIGURE"
 }
 # }}}
-# {{{ function compile_libXau()
-function compile_libXau()
+# {{{ compile_libXau()
+compile_libXau()
 {
     is_installed libXau "$LIBXAU_BASE"
     if [ "$?" = "0" ];then
@@ -3991,8 +4079,8 @@ function compile_libXau()
     compile "libXau" "$LIBXAU_FILE_NAME" "libXau-$LIBXAU_VERSION" "$LIBXAU_BASE" "LIBXAU_CONFIGURE"
 }
 # }}}
-# {{{ function compile_libxcb()
-function compile_libxcb()
+# {{{ compile_libxcb()
+compile_libxcb()
 {
     compile_libpthread_stubs
 
@@ -4008,8 +4096,8 @@ function compile_libxcb()
     compile "libxcb" "$LIBXCB_FILE_NAME" "libxcb-$LIBXCB_VERSION" "$LIBXCB_BASE" "LIBXCB_CONFIGURE"
 }
 # }}}
-# {{{ function compile_kbproto()
-function compile_kbproto()
+# {{{ compile_kbproto()
+compile_kbproto()
 {
     is_installed kbproto "$KBPROTO_BASE"
     if [ "$?" = "0" ];then
@@ -4023,8 +4111,8 @@ function compile_kbproto()
     compile "kbproto" "$KBPROTO_FILE_NAME" "kbproto-$KBPROTO_VERSION" "$KBPROTO_BASE" "KBPROTO_CONFIGURE"
 }
 # }}}
-# {{{ function compile_inputproto()
-function compile_inputproto()
+# {{{ compile_inputproto()
+compile_inputproto()
 {
     is_installed inputproto "$INPUTPROTO_BASE"
     if [ "$?" = "0" ];then
@@ -4038,8 +4126,8 @@ function compile_inputproto()
     compile "inputproto" "$INPUTPROTO_FILE_NAME" "inputproto-$INPUTPROTO_VERSION" "$INPUTPROTO_BASE" "INPUTPROTO_CONFIGURE"
 }
 # }}}
-# {{{ function compile_xextproto()
-function compile_xextproto()
+# {{{ compile_xextproto()
+compile_xextproto()
 {
     is_installed xextproto "$XEXTPROTO_BASE"
     if [ "$?" = "0" ];then
@@ -4053,8 +4141,8 @@ function compile_xextproto()
     compile "xextproto" "$XEXTPROTO_FILE_NAME" "xextproto-$XEXTPROTO_VERSION" "$XEXTPROTO_BASE" "XEXTPROTO_CONFIGURE"
 }
 # }}}
-# {{{ function compile_xtrans()
-function compile_xtrans()
+# {{{ compile_xtrans()
+compile_xtrans()
 {
     is_installed xtrans "$XTRANS_BASE"
     if [ "$?" = "0" ];then
@@ -4068,8 +4156,8 @@ function compile_xtrans()
     compile "xtrans" "$XTRANS_FILE_NAME" "xtrans-$XTRANS_VERSION" "$XTRANS_BASE" "XTRANS_CONFIGURE"
 }
 # }}}
-# {{{ function compile_xf86bigfontproto()
-function compile_xf86bigfontproto()
+# {{{ compile_xf86bigfontproto()
+compile_xf86bigfontproto()
 {
     is_installed xf86bigfontproto "$XF86BIGFONTPROTO_BASE"
     if [ "$?" = "0" ];then
@@ -4083,8 +4171,8 @@ function compile_xf86bigfontproto()
     compile "xf86bigfontproto" "$XF86BIGFONTPROTO_FILE_NAME" "xf86bigfontproto-$XF86BIGFONTPROTO_VERSION" "$XF86BIGFONTPROTO_BASE" "XF86BIGFONTPROTO_CONFIGURE"
 }
 # }}}
-# {{{ function compile_libX11()
-function compile_libX11()
+# {{{ compile_libX11()
+compile_libX11()
 {
     compile_macros
     compile_xcb_proto
@@ -4112,8 +4200,8 @@ function compile_libX11()
     # LC_ALL=$T_LC_ALL
 }
 # }}}
-# {{{ function compile_libXpm()
-function compile_libXpm()
+# {{{ compile_libXpm()
+compile_libXpm()
 {
 #    if [ "$OS_NAME" = 'darwin' ];then
         compile_xproto
@@ -4132,8 +4220,8 @@ function compile_libXpm()
     compile "libXpm" "$LIBXPM_FILE_NAME" "libXpm-$LIBXPM_VERSION" "$LIBXPM_BASE" "LIBXPM_CONFIGURE"
 }
 # }}}
-# {{{ function compile_libXext()
-function compile_libXext()
+# {{{ compile_libXext()
+compile_libXext()
 {
     is_installed libXext "$LIBXEXT_BASE"
     if [ "$?" = "0" ];then
@@ -4147,8 +4235,8 @@ function compile_libXext()
     compile "libXext" "$LIBXEXT_FILE_NAME" "libXext-$LIBXEXT_VERSION" "$LIBXEXT_BASE" "LIBXEXT_CONFIGURE"
 }
 # }}}
-# {{{ function compile_fontconfig()
-function compile_fontconfig()
+# {{{ compile_fontconfig()
+compile_fontconfig()
 {
     compile_expat
     compile_freetype
@@ -4169,8 +4257,8 @@ function compile_fontconfig()
     compile "fontconfig" "$FONTCONFIG_FILE_NAME" "fontconfig-$FONTCONFIG_VERSION" "$FONTCONFIG_BASE" "FONTCONFIG_CONFIGURE"
 }
 # }}}
-# {{{ function compile_gmp()
-function compile_gmp()
+# {{{ compile_gmp()
+compile_gmp()
 {
     is_installed gmp "$GMP_BASE"
     if [ "$?" = "0" ];then
@@ -4184,8 +4272,8 @@ function compile_gmp()
     compile "gmp" "$GMP_FILE_NAME" "gmp-$GMP_VERSION" "$GMP_BASE" "GMP_CONFIGURE"
 }
 # }}}
-# {{{ function compile_imap()
-function compile_imap()
+# {{{ compile_imap()
+compile_imap()
 {
     #yum install openssl openssl-devel
     #yum install kerberos-devel krb5-workstation
@@ -4252,8 +4340,8 @@ function compile_imap()
     rm -rf imap-${IMAP_VERSION}
 }
 # }}}
-# {{{ function configure_imap_command()
-function configure_imap_command()
+# {{{ configure_imap_command()
+configure_imap_command()
 {
     if is_new_version $OPENSSL_VERSION "1.1.0" ; then
         local OPENSSL_BASE=$IMAP_OPENSSL_BASE
@@ -4332,8 +4420,8 @@ function configure_imap_command()
 
 }
 # }}}
-# {{{ function compile_kerberos()
-function compile_kerberos()
+# {{{ compile_kerberos()
+compile_kerberos()
 {
     is_installed kerberos "$KERBEROS_BASE"
     if [ "$?" = "0" ];then
@@ -4347,8 +4435,8 @@ function compile_kerberos()
     compile "kerberos" "$KERBEROS_FILE_NAME" "krb5-$KERBEROS_VERSION/src" "$KERBEROS_BASE" "KERBEROS_CONFIGURE"
 }
 # }}}
-# {{{ function compile_libmemcached()
-function compile_libmemcached()
+# {{{ compile_libmemcached()
+compile_libmemcached()
 {
     is_installed libmemcached "$LIBMEMCACHED_BASE"
     if [ "$?" = "0" ];then
@@ -4365,8 +4453,8 @@ function compile_libmemcached()
     compile "libmemcached" "$LIBMEMCACHED_FILE_NAME" "libmemcached-$LIBMEMCACHED_VERSION" "$LIBMEMCACHED_BASE" "LIBMEMCACHED_CONFIGURE"
 }
 # }}}
-# {{{ function compile_apr()
-function compile_apr()
+# {{{ compile_apr()
+compile_apr()
 {
     is_installed apr "$APR_BASE"
     if [ "$?" = "0" ];then
@@ -4380,8 +4468,8 @@ function compile_apr()
     compile "apache-apr" "$APR_FILE_NAME" "apr-$APR_VERSION" "$APR_BASE" "APR_CONFIGURE"
 }
 # }}}
-# {{{ function compile_apr_util()
-function compile_apr_util()
+# {{{ compile_apr_util()
+compile_apr_util()
 {
     compile_expat
     compile_openssl
@@ -4405,8 +4493,8 @@ function compile_apr_util()
     compile "apache-apr-util" "$APR_UTIL_FILE_NAME" "apr-util-$APR_UTIL_VERSION" "$APR_UTIL_BASE" "APR_UTIL_CONFIGURE"
 }
 # }}}
-# {{{ function compile_postgresql()
-function compile_postgresql()
+# {{{ compile_postgresql()
+compile_postgresql()
 {
     if [ "$OS_NAME" = "darwin" ];then
         compile_libuuid
@@ -4430,8 +4518,8 @@ function compile_postgresql()
     compile "postgresql" "$POSTGRESQL_FILE_NAME" "postgresql-$POSTGRESQL_VERSION" "$POSTGRESQL_BASE" "POSTGRESQL_CONFIGURE"
 }
 # }}}
-# {{{ function compile_pgbouncer()
-function compile_pgbouncer()
+# {{{ compile_pgbouncer()
+compile_pgbouncer()
 {
     if [ "$OS_NAME" = "darwin" ];then
         compile_libuuid
@@ -4456,8 +4544,8 @@ function compile_pgbouncer()
     fi
 }
 # }}}
-# {{{ function compile_apache()
-function compile_apache()
+# {{{ compile_apache()
+compile_apache()
 {
     compile_nghttp2
     compile_pcre
@@ -4494,8 +4582,8 @@ function compile_apache()
     compile "apache" "$APACHE_FILE_NAME" "httpd-$APACHE_VERSION" "$APACHE_BASE" "APACHE_CONFIGURE"
 }
 # }}}
-# {{{ function compile_nginx()
-function compile_nginx()
+# {{{ compile_nginx()
+compile_nginx()
 {
     is_installed nginx "$NGINX_BASE"
     if [ "$?" = "0" ];then
@@ -4533,8 +4621,8 @@ function compile_nginx()
     init_nginx_conf
 }
 # }}}
-# {{{ function compile_libuuid()
-function compile_libuuid()
+# {{{ compile_libuuid()
+compile_libuuid()
 {
     is_installed libuuid "$LIBUUID_BASE"
     if [ "$?" = "0" ];then
@@ -4548,8 +4636,8 @@ function compile_libuuid()
     compile "libuuid" "$LIBUUID_FILE_NAME" "libuuid-$LIBUUID_VERSION" "$LIBUUID_BASE" "LIBUUID_CONFIGURE"
 }
 # }}}
-# {{{ function compile_rsyslog()
-function compile_rsyslog()
+# {{{ compile_rsyslog()
+compile_rsyslog()
 {
     if [ "$OS_NAME" = "darwin" ];then
         compile_libuuid
@@ -4578,16 +4666,16 @@ function compile_rsyslog()
 
 }
 # }}}
-# {{{ function after_rsyslog_make_install()
-function after_rsyslog_make_install()
+# {{{ after_rsyslog_make_install()
+after_rsyslog_make_install()
 {
     mkdir -p $RSYSLOG_CONFIG_DIR
     cp ./platform/redhat/rsyslog.conf $RSYSLOG_CONFIG_DIR/
     init_rsyslog_conf
 }
 # }}}
-# {{{ function configure_rsyslog_command()
-function configure_rsyslog_command()
+# {{{ configure_rsyslog_command()
+configure_rsyslog_command()
 {
     if [ "$OS_NAME" = "darwin" ];then
         for i in `grep -rl 'whole-archive' ./`;
@@ -4615,8 +4703,8 @@ function configure_rsyslog_command()
         # --enable-snmp \
 }
 # }}}
-# {{{ function compile_logrotate()
-function compile_logrotate()
+# {{{ compile_logrotate()
+compile_logrotate()
 {
     is_installed logrotate "$LOGROTATE_BASE"
     if [ "$?" = "0" ];then
@@ -4630,14 +4718,14 @@ function compile_logrotate()
     compile "logrotate" "$LOGROTATE_FILE_NAME" "logrotate-$LOGROTATE_VERSION" "$LOGROTATE_BASE" "LOGROTATE_CONFIGURE" "after_logrotate_make_install"
 }
 # }}}
-# {{{ function after_logrotate_make_install()
-function after_logrotate_make_install()
+# {{{ after_logrotate_make_install()
+after_logrotate_make_install()
 {
     init_logrotate_conf
 }
 # }}}
-# {{{ function configure_logrotate_command()
-function configure_logrotate_command()
+# {{{ configure_logrotate_command()
+configure_logrotate_command()
 {
     ./configure --prefix=$LOGROTATE_BASE \
                 --sysconfdir=$LOGROTATE_CONFIG_DIR \
@@ -4652,8 +4740,8 @@ function configure_logrotate_command()
                 # --with-acl
 }
 # }}}
-# {{{ function compile_liblogging()
-function compile_liblogging()
+# {{{ compile_liblogging()
+compile_liblogging()
 {
     is_installed liblogging "$LIBLOGGING_BASE"
     if [ "$?" = "0" ];then
@@ -4668,8 +4756,8 @@ function compile_liblogging()
     compile "liblogging" "$LIBLOGGING_FILE_NAME" "liblogging-$LIBLOGGING_VERSION" "$LIBLOGGING_BASE" "LIBLOGGING_CONFIGURE"
 }
 # }}}
-# {{{ function configure_liblogging_command()
-function configure_liblogging_command()
+# {{{ configure_liblogging_command()
+configure_liblogging_command()
 {
     local cmd="configure"
     if [ ! -f "$cmd" -a -f ./autogen.sh ]; then
@@ -4682,8 +4770,8 @@ function configure_liblogging_command()
                 #--enable-stdlog
 }
 # }}}
-# {{{ function compile_libgcrypt()
-function compile_libgcrypt()
+# {{{ compile_libgcrypt()
+compile_libgcrypt()
 {
     compile_libgpg_error
 
@@ -4699,8 +4787,8 @@ function compile_libgcrypt()
     compile "libgcrypt" "$LIBGCRYPT_FILE_NAME" "libgcrypt-$LIBGCRYPT_VERSION" "$LIBGCRYPT_BASE" "LIBGCRYPT_CONFIGURE"
 }
 # }}}
-# {{{ function compile_libgpg_error()
-function compile_libgpg_error()
+# {{{ compile_libgpg_error()
+compile_libgpg_error()
 {
     is_installed libgpg_error "$LIBGPG_ERROR_BASE"
     if [ "$?" = "0" ];then
@@ -4718,8 +4806,8 @@ function compile_libgpg_error()
     compile "libgpg-error" "$LIBGPG_ERROR_FILE_NAME" "libgpg-error-$LIBGPG_ERROR_VERSION" "$LIBGPG_ERROR_BASE" "LIBGPG_ERROR_CONFIGURE"
 }
 # }}}
-# {{{ function compile_libestr()
-function compile_libestr()
+# {{{ compile_libestr()
+compile_libestr()
 {
     is_installed libestr "$LIBESTR_BASE"
     if [ "$?" = "0" ];then
@@ -4734,8 +4822,8 @@ function compile_libestr()
 
 }
 # }}}
-# {{{ function compile_libgd()
-function compile_libgd()
+# {{{ compile_libgd()
+compile_libgd()
 {
     compile_zlib
     compile_libpng
@@ -4769,8 +4857,8 @@ function compile_libgd()
     compile "libgd" "$LIBGD_FILE_NAME" "libgd-$LIBGD_VERSION" "$LIBGD_BASE" "LIBGD_CONFIGURE"
 }
 # }}}
-# {{{ function compile_ImageMagick()
-function compile_ImageMagick()
+# {{{ compile_ImageMagick()
+compile_ImageMagick()
 {
     compile_zlib
     #compile_jpeg
@@ -4792,8 +4880,8 @@ function compile_ImageMagick()
     compile "ImageMagick" "$IMAGEMAGICK_FILE_NAME" "ImageMagick-$IMAGEMAGICK_VERSION" "$IMAGEMAGICK_BASE" "IMAGEMAGICK_CONFIGURE"
 }
 # }}}
-# {{{ function compile_libsodium()
-function compile_libsodium()
+# {{{ compile_libsodium()
+compile_libsodium()
 {
     is_installed libsodium "$LIBSODIUM_BASE"
     if [ "$?" = "0" ];then
@@ -4807,8 +4895,8 @@ function compile_libsodium()
     compile "libsodium" "$LIBSODIUM_FILE_NAME" "libsodium-$LIBSODIUM_VERSION" "$LIBSODIUM_BASE" "LIBSODIUM_CONFIGURE"
 }
 # }}}
-# {{{ function compile_zeromq()
-function compile_zeromq()
+# {{{ compile_zeromq()
+compile_zeromq()
 {
     if [ "$OS_NAME" != "darwin" ]; then
         compile_libunwind
@@ -4827,8 +4915,8 @@ function compile_zeromq()
     compile "zeromq" "$ZEROMQ_FILE_NAME" "zeromq-$ZEROMQ_VERSION" "$ZEROMQ_BASE" "ZEROMQ_CONFIGURE"
 }
 # }}}
-# {{{ function compile_hiredis()
-function compile_hiredis()
+# {{{ compile_hiredis()
+compile_hiredis()
 {
     is_installed hiredis "$HIREDIS_BASE"
     if [ "$?" = "0" ];then
@@ -4845,8 +4933,8 @@ function compile_hiredis()
     fi
 }
 # }}}
-# {{{ function compile_libunwind()
-function compile_libunwind()
+# {{{ compile_libunwind()
+compile_libunwind()
 {
     is_installed libunwind "$LIBUNWIND_BASE"
     if [ "$?" = "0" ];then
@@ -4864,8 +4952,8 @@ function compile_libunwind()
     sed -i.bak '80s/UNW_INFO_FORMAT_IP_OFFSET,/UNW_INFO_FORMAT_IP_OFFSET/' $LIBUNWIND_BASE/include/libunwind-dynamic.h
 }
 # }}}
-# {{{ function compile_rabbitmq_c()
-function compile_rabbitmq_c()
+# {{{ compile_rabbitmq_c()
+compile_rabbitmq_c()
 {
     is_installed rabbitmq_c "$RABBITMQ_C_BASE"
     if [ "$?" = "0" ];then
@@ -4882,8 +4970,8 @@ function compile_rabbitmq_c()
     compile "rabbitmq-c" "$RABBITMQ_C_FILE_NAME" "rabbitmq-c-${RABBITMQ_C_VERSION}" "$RABBITMQ_C_BASE" "RABBITMQ_C_CONFIGURE"
 }
 # }}}
-# {{{ function compile_python()
-function compile_python()
+# {{{ compile_python()
+compile_python()
 {
     if [ "$OS_NAME" = "darwin" ];then
         compile_libuuid
@@ -4908,8 +4996,8 @@ function compile_python()
     compile "python" "$PYTHON_FILE_NAME" "Python-$PYTHON_VERSION" "$PYTHON_BASE" "PYTHON_CONFIGURE" "after_python_make_install"
 }
 # }}}
-# {{{ function after_python_make_install()
-function after_python_make_install()
+# {{{ after_python_make_install()
+after_python_make_install()
 {
     $PYTHON_BASE/bin/pip3 install --upgrade pip
     #中文分词
@@ -4919,8 +5007,8 @@ function after_python_make_install()
     $PYTHON_BASE/bin/pip3 install --upgrade tensorflow
 }
 # }}}
-# {{{ function compile_php()
-function compile_php()
+# {{{ compile_php()
+compile_php()
 {
     compile_openssl
     compile_sqlite
@@ -4971,8 +5059,8 @@ function compile_php()
     fi
 }
 # }}}
-# {{{ function after_php_make_install()
-function after_php_make_install()
+# {{{ after_php_make_install()
+after_php_make_install()
 {
     mkdir -p $PHP_CONFIG_DIR $UPLOAD_TMP_DIR
     if [ "$?" != "0" ];then
@@ -5020,8 +5108,8 @@ function after_php_make_install()
     write_zend_extension_info_to_php_ini "opcache.so"
 }
 # }}}
-# {{{ function compile_php_extension_intl()
-function compile_php_extension_intl()
+# {{{ compile_php_extension_intl()
+compile_php_extension_intl()
 {
     compile_icu
 
@@ -5048,8 +5136,8 @@ function compile_php_extension_intl()
     fi
 }
 # }}}
-# {{{ function compile_php_extension_pdo_pgsql()
-function compile_php_extension_pdo_pgsql()
+# {{{ compile_php_extension_pdo_pgsql()
+compile_php_extension_pdo_pgsql()
 {
     compile_postgresql
 
@@ -5065,8 +5153,8 @@ function compile_php_extension_pdo_pgsql()
     compile "php_extension_pdo_pgsql" "$PHP_FILE_NAME" "php-$PHP_VERSION/ext/pdo_pgsql/" "pdo_pgsql.so" "PHP_EXTENSION_PDO_PGSQL_CONFIGURE"
 }
 # }}}
-# {{{ function compile_php_extension_apcu()
-function compile_php_extension_apcu()
+# {{{ compile_php_extension_apcu()
+compile_php_extension_apcu()
 {
     is_installed_php_extension apcu $APCU_VERSION
     if [ "$?" = "0" ];then
@@ -5085,8 +5173,8 @@ function compile_php_extension_apcu()
     /bin/rm -rf package.xml
 }
 # }}}
-# {{{ function after_php_extension_apcu_make_install()
-function after_php_extension_apcu_make_install()
+# {{{ after_php_extension_apcu_make_install()
+after_php_extension_apcu_make_install()
 {
     mkdir -p $BASE_DIR/inc/apcu
     if [ "$?" != "0" ];then
@@ -5107,8 +5195,8 @@ function after_php_extension_apcu_make_install()
     echo 'apc.rfc1867 = 1' >> $php_ini
 }
 # }}}
-# {{{ function compile_php_extension_apcu_bc()
-function compile_php_extension_apcu_bc()
+# {{{ compile_php_extension_apcu_bc()
+compile_php_extension_apcu_bc()
 {
     compile_php_extension_apcu
 
@@ -5125,8 +5213,8 @@ function compile_php_extension_apcu_bc()
     /bin/rm -rf package.xml
 }
 # }}}
-# {{{ function compile_php_extension_yaf()
-function compile_php_extension_yaf()
+# {{{ compile_php_extension_yaf()
+compile_php_extension_yaf()
 {
     is_installed_php_extension yaf $YAF_VERSION
     if [ "$?" = "0" ];then
@@ -5141,8 +5229,8 @@ function compile_php_extension_yaf()
     /bin/rm -rf package.xml
 }
 # }}}
-# {{{ function compile_php_extension_phalcon()
-function compile_php_extension_phalcon()
+# {{{ compile_php_extension_phalcon()
+compile_php_extension_phalcon()
 {
     compile_php
 
@@ -5171,8 +5259,8 @@ function compile_php_extension_phalcon()
     /bin/rm -rf package.xml
 }
 # }}}
-# {{{ function compile_php_extension_xdebug()
-function compile_php_extension_xdebug()
+# {{{ compile_php_extension_xdebug()
+compile_php_extension_xdebug()
 {
     is_installed_php_extension xdebug $XDEBUG_VERSION
     if [ "$?" = "0" ];then
@@ -5191,8 +5279,8 @@ function compile_php_extension_xdebug()
     /bin/rm -rf package.xml
 }
 # }}}
-# {{{ function compile_php_extension_raphf()
-function compile_php_extension_raphf()
+# {{{ compile_php_extension_raphf()
+compile_php_extension_raphf()
 {
     is_installed_php_extension raphf $RAPHF_VERSION
     if [ "$?" = "0" ];then
@@ -5207,8 +5295,8 @@ function compile_php_extension_raphf()
     /bin/rm -rf package.xml
 }
 # }}}
-# {{{ function compile_php_extension_propro()
-function compile_php_extension_propro()
+# {{{ compile_php_extension_propro()
+compile_php_extension_propro()
 {
     is_installed_php_extension propro $PROPRO_VERSION
     if [ "$?" = "0" ];then
@@ -5223,8 +5311,8 @@ function compile_php_extension_propro()
     /bin/rm -rf package.xml
 }
 # }}}
-# {{{ function compile_php_extension_pecl_http()
-function compile_php_extension_pecl_http()
+# {{{ compile_php_extension_pecl_http()
+compile_php_extension_pecl_http()
 {
     compile_zlib
     compile_curl
@@ -5264,8 +5352,8 @@ function compile_php_extension_pecl_http()
     fi
 }
 # }}}
-# {{{ function compile_php_extension_amqp()
-function compile_php_extension_amqp()
+# {{{ compile_php_extension_amqp()
+compile_php_extension_amqp()
 {
     compile_rabbitmq_c
 
@@ -5283,8 +5371,8 @@ function compile_php_extension_amqp()
     /bin/rm -rf package.xml
 }
 # }}}
-# {{{ function compile_php_extension_mailparse()
-function compile_php_extension_mailparse()
+# {{{ compile_php_extension_mailparse()
+compile_php_extension_mailparse()
 {
     is_installed_php_extension mailparse $MAILPARSE_VERSION
     if [ "$?" = "0" ];then
@@ -5300,8 +5388,8 @@ function compile_php_extension_mailparse()
     /bin/rm -rf package.xml
 }
 # }}}
-# {{{ function compile_php_extension_redis()
-function compile_php_extension_redis()
+# {{{ compile_php_extension_redis()
+compile_php_extension_redis()
 {
     is_installed_php_extension redis $PHP_REDIS_VERSION
     if [ "$?" = "0" ];then
@@ -5319,8 +5407,8 @@ function compile_php_extension_redis()
     /bin/rm -rf package.xml
 }
 # }}}
-# {{{ function compile_php_extension_gearman()
-function compile_php_extension_gearman()
+# {{{ compile_php_extension_gearman()
+compile_php_extension_gearman()
 {
     compile_gearmand
 
@@ -5340,8 +5428,8 @@ function compile_php_extension_gearman()
     /bin/rm -rf package.xml
 }
 # }}}
-# {{{ function compile_php_extension_mongodb()
-function compile_php_extension_mongodb()
+# {{{ compile_php_extension_mongodb()
+compile_php_extension_mongodb()
 {
     compile_openssl
     compile_pcre
@@ -5361,8 +5449,8 @@ function compile_php_extension_mongodb()
     /bin/rm -rf package.xml
 }
 # }}}
-# {{{ function compile_php_extension_solr()
-function compile_php_extension_solr()
+# {{{ compile_php_extension_solr()
+compile_php_extension_solr()
 {
     compile_curl
     compile_libxml2
@@ -5384,8 +5472,8 @@ function compile_php_extension_solr()
     /bin/rm -rf package.xml
 }
 # }}}
-# {{{ function compile_php_extension_memcached()
-function compile_php_extension_memcached()
+# {{{ compile_php_extension_memcached()
+compile_php_extension_memcached()
 {
     compile_zlib
     compile_libmemcached
@@ -5404,8 +5492,8 @@ function compile_php_extension_memcached()
     /bin/rm -rf package.xml
 }
 # }}}
-# {{{ function configure_php_ext_memcached_command()
-function configure_php_ext_memcached_command()
+# {{{ configure_php_ext_memcached_command()
+configure_php_ext_memcached_command()
 {
     # yum install cyrus-sasl-devel or --disable-memcached-sasl
     CPPFLAGS="$(get_cppflags $OPENSSL_BASE/include)" LDFLAGS="$(get_ldflags $OPENSSL_BASE/lib)" \
@@ -5422,8 +5510,8 @@ function configure_php_ext_memcached_command()
 
 }
 # }}}
-# {{{ function compile_php_extension_pthreads()
-function compile_php_extension_pthreads()
+# {{{ compile_php_extension_pthreads()
+compile_php_extension_pthreads()
 {
     is_installed_php_extension pthreads $PTHREADS_VERSION
     if [ "$?" = "0" ];then
@@ -5441,8 +5529,8 @@ function compile_php_extension_pthreads()
     /bin/rm -rf package.xml
 }
 # }}}
-# {{{ function compile_php_extension_scws()
-function compile_php_extension_scws()
+# {{{ compile_php_extension_scws()
+compile_php_extension_scws()
 {
     compile_scws
 
@@ -5464,8 +5552,8 @@ function compile_php_extension_scws()
     # scws.default.fpath = $BASE_DIR/etc/scws
 }
 # }}}
-# {{{ function compile_php_extension_zip()
-function compile_php_extension_zip()
+# {{{ compile_php_extension_zip()
+compile_php_extension_zip()
 {
     compile_libzip
 
@@ -5485,8 +5573,8 @@ function compile_php_extension_zip()
     /bin/rm -rf package.xml
 }
 # }}}
-# {{{ function compile_php_extension_swoole()
-function compile_php_extension_swoole()
+# {{{ compile_php_extension_swoole()
+compile_php_extension_swoole()
 {
     compile_openssl
     compile_pcre
@@ -5514,8 +5602,8 @@ function compile_php_extension_swoole()
     fi
 }
 # }}}
-# {{{ function compile_php_extension_protobuf()
-function compile_php_extension_protobuf()
+# {{{ compile_php_extension_protobuf()
+compile_php_extension_protobuf()
 {
     is_installed_php_extension protobuf $PHP_PROTOBUF_VERSION
     if [ "$?" = "0" ];then
@@ -5530,8 +5618,8 @@ function compile_php_extension_protobuf()
     compile "php_extension_protobuf" "$PHP_PROTOBUF_FILE_NAME" "protobuf-$PHP_PROTOBUF_VERSION" "protobuf.so" "PHP_EXTENSION_PROTOBUF_CONFIGURE"
 }
 # }}}
-# {{{ function compile_php_extension_grpc()
-function compile_php_extension_grpc()
+# {{{ compile_php_extension_grpc()
+compile_php_extension_grpc()
 {
     compile_zlib
     is_installed_php_extension grpc $PHP_GRPC_VERSION
@@ -5548,8 +5636,8 @@ function compile_php_extension_grpc()
     /bin/rm -rf package.xml
 }
 # }}}
-# {{{ function configure_php_ext_grpc_command()
-function configure_php_ext_grpc_command()
+# {{{ configure_php_ext_grpc_command()
+configure_php_ext_grpc_command()
 {
     #CPPFLAGS="$(get_cppflags $ZLIB_BASE/include)" LDFLAGS="$(get_ldflags $ZLIB_BASE/lib)"
     ./configure --with-php-config=$PHP_BASE/bin/php-config \
@@ -5557,8 +5645,8 @@ function configure_php_ext_grpc_command()
 
 }
 # }}}
-# {{{ function compile_php_extension_qrencode()
-function compile_php_extension_qrencode()
+# {{{ compile_php_extension_qrencode()
+compile_php_extension_qrencode()
 {
     compile_qrencode
 
@@ -5577,8 +5665,8 @@ function compile_php_extension_qrencode()
     /bin/rm -rf package.xml
 }
 # }}}
-# {{{ function compile_php_extension_dio()
-function compile_php_extension_dio()
+# {{{ compile_php_extension_dio()
+compile_php_extension_dio()
 {
     is_installed_php_extension dio $DIO_VERSION
     if [ "$?" = "0" ];then
@@ -5594,8 +5682,8 @@ function compile_php_extension_dio()
     /bin/rm -rf package.xml
 }
 # }}}
-# {{{ function compile_php_extension_event()
-function compile_php_extension_event()
+# {{{ compile_php_extension_event()
+compile_php_extension_event()
 {
     compile_openssl
     compile_libevent
@@ -5616,8 +5704,8 @@ function compile_php_extension_event()
     /bin/rm -rf package.xml
 }
 # }}}
-# {{{ function compile_php_extension_libevent()
-function compile_php_extension_libevent()
+# {{{ compile_php_extension_libevent()
+compile_php_extension_libevent()
 {
     compile_libevent
 
@@ -5635,8 +5723,8 @@ function compile_php_extension_libevent()
     /bin/rm -rf package.xml
 }
 # }}}
-# {{{ function compile_php_extension_imagick()
-function compile_php_extension_imagick()
+# {{{ compile_php_extension_imagick()
+compile_php_extension_imagick()
 {
     compile_ImageMagick
 
@@ -5654,8 +5742,8 @@ function compile_php_extension_imagick()
     /bin/rm -rf package.xml
 }
 # }}}
-# {{{ function compile_php_extension_zeromq()
-function compile_php_extension_zeromq()
+# {{{ compile_php_extension_zeromq()
+compile_php_extension_zeromq()
 {
     compile_zeromq
 
@@ -5674,8 +5762,8 @@ function compile_php_extension_zeromq()
     compile "php_extension_zeromq" "$PHP_ZMQ_FILE_NAME" "php-zmq-$PHP_ZMQ_VERSION" "zmq.so" "PHP_EXTENSION_ZEROMQ_CONFIGURE"
 }
 # }}}
-# {{{ function compile_php_extension_libsodium()
-function compile_php_extension_libsodium()
+# {{{ compile_php_extension_libsodium()
+compile_php_extension_libsodium()
 {
     compile_libsodium
 
@@ -5701,8 +5789,8 @@ function compile_php_extension_libsodium()
     /bin/rm -rf package.xml
 }
 # }}}
-# {{{ function configure_php_libsodium_command()
-function configure_php_ext_libsodium_command()
+# {{{ configure_php_libsodium_command()
+configure_php_ext_libsodium_command()
 {
     CPPFLAGS="$(get_cppflags $LIBSODIUM_BASE/include)" \
     LDFLAGS="$(get_ldflags $LIBSODIUM_BASE/lib)" \
@@ -5710,8 +5798,8 @@ function configure_php_ext_libsodium_command()
                 --with-$( is_new_version 7.1.99 $PHP_VERSION && echo 'lib')sodium=$LIBSODIUM_BASE
 }
 # }}}
-# {{{ function compile_php_extension_tidy()
-function compile_php_extension_tidy()
+# {{{ compile_php_extension_tidy()
+compile_php_extension_tidy()
 {
     compile_tidy
 
@@ -5740,8 +5828,8 @@ function compile_php_extension_tidy()
     fi
 }
 # }}}
-# {{{ function compile_php_extension_imap()
-function compile_php_extension_imap()
+# {{{ compile_php_extension_imap()
+compile_php_extension_imap()
 {
     #compile_kerberos
     compile_imap
@@ -5765,8 +5853,8 @@ function compile_php_extension_imap()
     fi
 }
 # }}}
-# {{{ function configure_php_ext_imap_command()
-function configure_php_ext_imap_command()
+# {{{ configure_php_ext_imap_command()
+configure_php_ext_imap_command()
 {
     if is_new_version $OPENSSL_VERSION "1.1.0" ; then
         local OPENSSL_BASE=$IMAP_OPENSSL_BASE
@@ -5798,8 +5886,8 @@ function configure_php_ext_imap_command()
                 # --with-libdir=lib64 \
 }
 # }}}
-# {{{ function compile_php_extension_sphinx()
-function compile_php_extension_sphinx()
+# {{{ compile_php_extension_sphinx()
+compile_php_extension_sphinx()
 {
     compile_sphinxclient
 
@@ -5817,8 +5905,8 @@ function compile_php_extension_sphinx()
     /bin/rm -rf package.xml
 }
 # }}}
-# {{{ function compile_mysql()
-function compile_mysql()
+# {{{ compile_mysql()
+compile_mysql()
 {
     compile_openssl
 
@@ -5994,8 +6082,8 @@ function compile_mysql()
     init_mysql_cnf
 }
 # }}}}
-# {{{ function compile_qrencode()
-function compile_qrencode()
+# {{{ compile_qrencode()
+compile_qrencode()
 {
     compile_libiconv
 
@@ -6012,8 +6100,8 @@ function compile_qrencode()
     compile "qrencode" "$QRENCODE_FILE_NAME" "qrencode-$QRENCODE_VERSION" "$QRENCODE_BASE" "QRENCODE_CONFIGURE"
 }
 # }}}
-# {{{ function compile_nasm()
-function compile_nasm()
+# {{{ compile_nasm()
+compile_nasm()
 {
     is_installed nasm "$NASM_BASE"
     if [ "$?" = "0" ];then
@@ -6027,8 +6115,8 @@ function compile_nasm()
     compile "nasm" "$NASM_FILE_NAME" "nasm-$NASM_VERSION" "$NASM_BASE" "NASM_CONFIGURE"
 }
 # }}}
-# {{{ function compile_libjpeg()
-function compile_libjpeg()
+# {{{ compile_libjpeg()
+compile_libjpeg()
 {
     # yum install nasm
     #compile_nasm
@@ -6045,8 +6133,8 @@ function compile_libjpeg()
     compile "libjpeg" "$LIBJPEG_FILE_NAME" "libjpeg-turbo-$LIBJPEG_VERSION" "$LIBJPEG_BASE" "LIBJPEG_CONFIGURE"
 }
 # }}}
-# {{{ function compile_pixman()
-function compile_pixman()
+# {{{ compile_pixman()
+compile_pixman()
 {
     is_installed pixman "$PIXMAN_BASE"
     if [ "$?" = "0" ];then
@@ -6060,8 +6148,8 @@ function compile_pixman()
     compile "pixman" "$PIXMAN_FILE_NAME" "pixman-$PIXMAN_VERSION" "$PIXMAN_BASE" "PIXMAN_CONFIGURE"
 }
 # }}}
-# {{{ function compile_libmaxminddb()
-function compile_libmaxminddb()
+# {{{ compile_libmaxminddb()
+compile_libmaxminddb()
 {
     is_installed libmaxminddb "$LIBMAXMINDDB_BASE"
     if [ "$?" = "0" ];then
@@ -6075,8 +6163,8 @@ function compile_libmaxminddb()
     compile "libmaxminddb" "$LIBMAXMINDDB_FILE_NAME" "libmaxminddb-$LIBMAXMINDDB_VERSION" "$LIBMAXMINDDB_BASE" "LIBMAXMINDDB_CONFIGURE"
 }
 # }}}
-# {{{ function compile_php_extension_maxminddb()
-function compile_php_extension_maxminddb()
+# {{{ compile_php_extension_maxminddb()
+compile_php_extension_maxminddb()
 {
     compile_libmaxminddb
 
@@ -6094,8 +6182,8 @@ function compile_php_extension_maxminddb()
     compile "php_extension_maxminddb" "$file_name" "$ext_dir" "maxminddb.so" "PHP_EXTENSION_MAXMINDDB_CONFIGURE" "after_php_extension_maxminddb_make_install"
 }
 # }}}
-# {{{ function after_php_extension_maxminddb_make_install()
-function after_php_extension_maxminddb_make_install()
+# {{{ after_php_extension_maxminddb_make_install()
+after_php_extension_maxminddb_make_install()
 {
     mkdir -p $BASE_DIR/inc/MaxMind
     if [ "$?" != "0" ];then
@@ -6109,8 +6197,8 @@ function after_php_extension_maxminddb_make_install()
     fi
 }
 # }}}
-# {{{ function compile_geoipupdate()
-function compile_geoipupdate()
+# {{{ compile_geoipupdate()
+compile_geoipupdate()
 {
     is_installed geoipupdate "$GEOIPUPDATE_BASE"
     if [ "$?" = "0" ];then
@@ -6131,8 +6219,8 @@ function compile_geoipupdate()
 }
 # }}}
 # }}}
-# {{{ function cp_GeoLite2_data()
-function cp_GeoLite2_data()
+# {{{ cp_GeoLite2_data()
+cp_GeoLite2_data()
 {
     if [ -z "$GEOIP2_DATA_DIR" ];then
         echo "variable GEOIP2_DATA_DIR is nod exists." >&2
@@ -6164,8 +6252,8 @@ function cp_GeoLite2_data()
     return 0;
 }
 # }}}
-# {{{ function install_dehydrated()
-function install_dehydrated()
+# {{{ install_dehydrated()
+install_dehydrated()
 {
     echo_build_start "install_dehydrated"
 
@@ -6201,8 +6289,8 @@ function install_dehydrated()
     init_dehydrated_conf
 }
 # }}}
-# {{{ function install_web_service_common_php()
-function install_web_service_common_php()
+# {{{ install_web_service_common_php()
+install_web_service_common_php()
 {
     echo_build_start "install_web_service_common_php"
     decompress $WEB_SERVICE_COMMON_PHP_FILE_NAME
@@ -6235,8 +6323,8 @@ function install_web_service_common_php()
 
 }
 # }}}
-# {{{ function install_geoip2_php()
-function install_geoip2_php()
+# {{{ install_geoip2_php()
+install_geoip2_php()
 {
     echo_build_start "install_geoip2_php"
     decompress $GEOIP2_PHP_FILE_NAME
@@ -6268,8 +6356,8 @@ function install_geoip2_php()
     fi
 }
 # }}}
-# {{{ function compile_zendFramework()
-function compile_zendFramework()
+# {{{ compile_zendFramework()
+compile_zendFramework()
 {
 #    is_installed zendFramework $ZEND_BASE
 #    if [ "$?" = "0" ];then
@@ -6284,8 +6372,8 @@ function compile_zendFramework()
     /bin/rm -rf ZendFramework-$ZEND_VERSION
 }
 # }}}
-# {{{ function compile_smarty()
-function compile_smarty()
+# {{{ compile_smarty()
+compile_smarty()
 {
 #    is_installed smarty $SMARTY_BASE
 #    if [ "$?" = "0" ];then
@@ -6299,8 +6387,8 @@ function compile_smarty()
     /bin/rm -rf smarty-$SMARTY_VERSION
 }
 # }}}
-# {{{ function compile_htmlpurifier()
-function compile_htmlpurifier()
+# {{{ compile_htmlpurifier()
+compile_htmlpurifier()
 {
 #    is_installed htmlpurifier $HTMLPURIFIER_BASE
 #    if [ "$?" = "0" ];then
@@ -6314,8 +6402,8 @@ function compile_htmlpurifier()
     /bin/rm -rf htmlpurifier-$HTMLPURIFIER_VERSION
 }
 # }}}
-# {{{ function compile_composer()
-function compile_composer()
+# {{{ compile_composer()
+compile_composer()
 {
     is_installed composer $COMPOSER_BASE
 
@@ -6331,8 +6419,8 @@ function compile_composer()
     /bin/rm -rf composer-$COMPOSER_VERSION
 }
 # }}}
-# {{{ function compile_ckeditor()
-function compile_ckeditor()
+# {{{ compile_ckeditor()
+compile_ckeditor()
 {
 #    is_installed ckeditor $CKEDITOR_BASE
 #    if [ "$?" = "0" ];then
@@ -6360,8 +6448,8 @@ function compile_ckeditor()
     /bin/rm -rf ckeditor
 }
 # }}}
-# {{{ function compile_jquery()
-function compile_jquery()
+# {{{ compile_jquery()
+compile_jquery()
 {
 #    is_installed jquery $JQUERY_BASE
 #    if [ "$?" = "0" ];then
@@ -6376,8 +6464,8 @@ function compile_jquery()
     cp $JQUERY3_FILE_NAME $JQUERY_BASE/
 }
 # }}}
-# {{{ function compile_d3()
-function compile_d3()
+# {{{ compile_d3()
+compile_d3()
 {
 #    is_installed d3 $D3_BASE
 #    if [ "$?" = "0" ];then
@@ -6398,8 +6486,8 @@ function compile_d3()
     rm -rf d3-${D3_VERSION}
 }
 # }}}
-# {{{ function compile_famous()
-function compile_famous()
+# {{{ compile_famous()
+compile_famous()
 {
     echo_build_start famous
     mkdir -p $FAMOUS_BASE
@@ -6416,8 +6504,8 @@ function compile_famous()
     rm -rf famous-${FAMOUS_VERSION}
 }
 # }}}
-# {{{ function compile_chartjs()
-function compile_chartjs()
+# {{{ compile_chartjs()
+compile_chartjs()
 {
 
     echo_build_start chartjs
@@ -6433,8 +6521,8 @@ function compile_chartjs()
     rm -rf Chart.js-${CHARTJS_VERSION}
 }
 # }}}
-# {{{ function compile_famous_angular()
-function compile_famous_angular()
+# {{{ compile_famous_angular()
+compile_famous_angular()
 {
     echo_build_start famous-angular
     mkdir -p $FAMOUS_BASE
@@ -6452,8 +6540,8 @@ function compile_famous_angular()
 }
 # }}}
 # {{{ configure command functions
-# {{{ function configure_libjpeg_command()
-function configure_libjpeg_command()
+# {{{ configure_libjpeg_command()
+configure_libjpeg_command()
 {
     if  is_new_version $LIBJPEG_VERSION 2.0.0 ; then
         cmake ./ -DCMAKE_INSTALL_PREFIX=$LIBJPEG_BASE \
@@ -6496,8 +6584,8 @@ configure_xunsearch_command()
     #--datadir=$BASE_DIR/data/xunsearch \
 }
 # }}}
-# {{{ function after_xunsearch_make_install()
-function after_xunsearch_make_install()
+# {{{ after_xunsearch_make_install()
+after_xunsearch_make_install()
 {
     mkdir -p $BASE_DIR/inc && \
         ln -s $XUNSEARCH_BASE/sdk/php/lib $BASE_DIR/inc/xunsearch
@@ -6594,8 +6682,8 @@ configure_xapian_bindings_php_command()
                 XAPIAN_CONFIG="$XAPIAN_BASE/bin/xapian-config"
 }
 # }}}
-# {{{ function after_xapian_bindings_php_make_install()
-function after_xapian_bindings_php_make_install()
+# {{{ after_xapian_bindings_php_make_install()
+after_xapian_bindings_php_make_install()
 {
     write_extension_info_to_php_ini "xapian.so"
 }
@@ -7188,8 +7276,8 @@ configure_libmaxminddb_command()
 }
 # }}}
 # }}}
-# {{{ function compile_rabbitmq()
-function compile_rabbitmq()
+# {{{ compile_rabbitmq()
+compile_rabbitmq()
 {
     compile_libiconv
 
@@ -7208,8 +7296,8 @@ function compile_rabbitmq()
     compile "rabbitmq" "$RABBITMQ_FILE_NAME" "rabbitmq-$RABBITMQ_VERSION" "$RABBITMQ_BASE" "RABBITMQ_CONFIGURE"
 }
 # }}}
-# {{{ function compile_phantomjs()
-function compile_phantomjs()
+# {{{ compile_phantomjs()
+compile_phantomjs()
 {
     #这个编译太慢，不编译了
     is_installed phantomjs ${PHANTOMJS_BASE}
@@ -7235,8 +7323,8 @@ function compile_phantomjs()
     [ "$OS_NAME" = "linux" ] && repair_elf_file_rpath ${PHANTOMJS_BASE}/bin/phantomjs
 }
 # }}}
-# {{{ function compile_nodejs()
-function compile_nodejs()
+# {{{ compile_nodejs()
+compile_nodejs()
 {
     #这个编译太慢，不编译了
     is_installed nodejs ${NODEJS_BASE}
@@ -7264,8 +7352,8 @@ function compile_nodejs()
     #ping_usable registry.npm.org 100 || npm config set registry http://registry.npm.taobao.org
 }
 # }}}
-# {{{ function compile_calibre()
-function compile_calibre()
+# {{{ compile_calibre()
+compile_calibre()
 {
     is_installed calibre ${CALIBRE_BASE}
     if [ "$?" = "0" ];then
@@ -7296,8 +7384,8 @@ function compile_calibre()
     [ "$OS_NAME" != "linux" ] || repair_dir_elf_rpath $CALIBRE_BASE
 }
 # }}}
-# {{{ function compile_gitbook_cli()
-function compile_gitbook_cli()
+# {{{ compile_gitbook_cli()
+compile_gitbook_cli()
 {
     compile_nodejs
 
@@ -7331,8 +7419,8 @@ function compile_gitbook_cli()
     compile_gitbook_pdf
 }
 # }}}
-# {{{ function compile_gitbook()
-function compile_gitbook()
+# {{{ compile_gitbook()
+compile_gitbook()
 {
     compile_nodejs
 
@@ -7362,8 +7450,8 @@ function compile_gitbook()
     fi
 }
 # }}}
-# {{{ function compile_gitbook_pdf()
-function compile_gitbook_pdf()
+# {{{ compile_gitbook_pdf()
+compile_gitbook_pdf()
 {
     compile_nodejs
     compile_phantomjs
@@ -7398,8 +7486,8 @@ function compile_gitbook_pdf()
     fi
 }
 # }}}
-# {{{ function compile_php_extension_rabbitmq()
-function compile_php_extension_rabbitmq()
+# {{{ compile_php_extension_rabbitmq()
+compile_php_extension_rabbitmq()
 {
     compile_rabbitmq
 
@@ -7425,8 +7513,8 @@ function compile_php_extension_rabbitmq()
 
 }
 # }}}
-# {{{ function check_soft_updates()
-function check_soft_updates()
+# {{{ check_soft_updates()
+check_soft_updates()
 {
     #yum update -y curl nss
     #which curl
@@ -7444,6 +7532,7 @@ function check_soft_updates()
 #check_version swfupload
 #    exit;
     local array=(
+            clamav
             python
             xunsearch_sdk_php
             xunsearch
@@ -7604,8 +7693,8 @@ function check_soft_updates()
 }
 # }}}
 # {{{ check all soft version
-# {{{ function check_version()
-function check_version()
+# {{{ check_version()
+check_version()
 {
     local func_name="check_${1}_version";
     function_exists "$func_name";
@@ -7618,8 +7707,8 @@ function check_version()
     $func_name
 }
 # }}}
-# {{{ function check_openssl_version()
-function check_openssl_version()
+# {{{ check_openssl_version()
+check_openssl_version()
 {
     local tmp=""
     if [ "$#" = "0" ]; then
@@ -7648,8 +7737,8 @@ function check_openssl_version()
     echo -e "openssl current version: \033[0;33m${OPENSSL_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
-# {{{ function check_redis_version()
-function check_redis_version()
+# {{{ check_redis_version()
+check_redis_version()
 {
     local versions=`curl -Lk https://redis.io/ 2>/dev/null|sed -n 's/^.\{1,\}redis-\([0-9a-zA-Z.]\{2,\}\).tar.gz.\{1,\}/\1/p'|sort -rV`
     local new_version=`echo "$versions"|head -1`;
@@ -7677,8 +7766,8 @@ function check_redis_version()
     echo -e "redis current version: \033[0;33m${REDIS_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
-# {{{ function check_icu_version()
-function check_icu_version()
+# {{{ check_icu_version()
+check_icu_version()
 {
     # http://site.icu-project.org/download
     local new_version=`curl -Lk https://fossies.org/linux/misc/ 2>/dev/null|sed -n 's/^.\{1,\}>icu4c-\([0-9a-zA-Z._]\{2,\}\)-src.tgz<.\{1,\}/\1/p'|sort -rV|head -1`
@@ -7697,8 +7786,8 @@ function check_icu_version()
     echo -e "icu current version: \033[0;33m${ICU_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
-# {{{ function check_curl_version()
-function check_curl_version()
+# {{{ check_curl_version()
+check_curl_version()
 {
     local new_version=`curl -Lk https://curl.haxx.se/download/ 2>/dev/null|sed -n 's/^.\{1,\}>curl-\([0-9a-zA-Z._]\{2,\}\).tar.gz<.\{1,\}/\1/p'|sort -rV|head -1`
     if [ -z "$new_version" ];then
@@ -7716,8 +7805,8 @@ function check_curl_version()
     echo -e "curl current version: \033[0;33m${CURL_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
-# {{{ function check_zlib_version()
-function check_zlib_version()
+# {{{ check_zlib_version()
+check_zlib_version()
 {
     local new_version=`curl -Lk http://zlib.net 2>/dev/null|sed -n 's/^.\{0,\}"zlib-\([0-9a-zA-Z._]\{2,\}\).tar.gz".\{0,\}/\1/p'|sort -rV|head -1`
     if [ -z "$new_version" ];then
@@ -7735,8 +7824,8 @@ function check_zlib_version()
     echo -e "zlib current version: \033[0;33m${ZLIB_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
-# {{{ function check_libunwind_version()
-function check_libunwind_version()
+# {{{ check_libunwind_version()
+check_libunwind_version()
 {
     local new_version=`curl -Lk http://download.savannah.gnu.org/releases/libunwind/ 2>/dev/null|sed -n 's/^.\{0,\}"libunwind-\([0-9a-zA-Z._]\{2,\}\).tar.gz".\{0,\}/\1/p'|sort -rV|head -1`
     if [ -z "$new_version" ];then
@@ -7754,8 +7843,8 @@ function check_libunwind_version()
     echo -e "libunwind current version: \033[0;33m${LIBUNWIND_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
-# {{{ function check_freetype_version()
-function check_freetype_version()
+# {{{ check_freetype_version()
+check_freetype_version()
 {
     local new_version=`curl -Lk https://www.freetype.org/ 2>/dev/null|sed -n 's/^.\{0,\}<h4>FreeType \([0-9.]\{3,\}\)<\/h4>.\{0,\}$/\1/p'|sort -rV|head -1`
     if [ -z "$new_version" ];then
@@ -7773,8 +7862,8 @@ function check_freetype_version()
     echo -e "freetype current version: \033[0;33m${FREETYPE_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
-# {{{ function check_browscap_version()
-function check_browscap_version()
+# {{{ check_browscap_version()
+check_browscap_version()
 {
     local new_version=`curl -Lk https://browscap.org/version-number 2>/dev/null`
     if [ -z "$new_version" ];then
@@ -7792,38 +7881,38 @@ function check_browscap_version()
     echo -e "browscap.ini current version: \033[0;33m${BROWSCAP_INI_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
-# {{{ function check_harfbuzz_version()
-function check_harfbuzz_version()
+# {{{ check_harfbuzz_version()
+check_harfbuzz_version()
 {
     check_ftp_version harfbuzz ${HARFBUZZ_VERSION} https://www.freedesktop.org/software/harfbuzz/release/ 's/^.\{1,\}>harfbuzz-\([0-9.]\{1,\}\)\.tar\.bz2<.\{0,\}$/\1/p'
 }
 # }}}
-# {{{ function check_xapian_core_version()
-function check_xapian_core_version()
+# {{{ check_xapian_core_version()
+check_xapian_core_version()
 {
     check_ftp_version xapian-core ${XAPIAN_CORE_VERSION} https://xapian.org/download 's/^.\{1,\}xapian-core-\([0-9.]\{1,\}\)\.tar\..\{0,\}$/\1/p'
 }
 # }}}
-# {{{ function check_xapian_omega_version()
-function check_xapian_omega_version()
+# {{{ check_xapian_omega_version()
+check_xapian_omega_version()
 {
     check_ftp_version xapian-omega ${XAPIAN_OMEGA_VERSION} https://xapian.org/download 's/^.\{1,\}xapian-omega-\([0-9.]\{1,\}\)\.tar\..\{0,\}$/\1/p'
 }
 # }}}
-# {{{ function check_xapian_bindings_version()
-function check_xapian_bindings_version()
+# {{{ check_xapian_bindings_version()
+check_xapian_bindings_version()
 {
     check_ftp_version xapian-bindings ${XAPIAN_BINDINGS_VERSION} https://xapian.org/download 's/^.\{1,\}xapian-bindings-\([0-9.]\{1,\}\)\.tar\..\{0,\}$/\1/p'
 }
 # }}}
-# {{{ function check_libzip_version()
-function check_libzip_version()
+# {{{ check_libzip_version()
+check_libzip_version()
 {
     check_ftp_version libzip ${LIBZIP_VERSION} https://nih.at/libzip/ 's/^.\{0,\}libzip-\([0-9a-zA-Z._]\{2,\}\).tar.gz.\{0,\}$/\1/p'
 }
 # }}}
-# {{{ function check_python_version()
-function check_python_version()
+# {{{ check_python_version()
+check_python_version()
 {
     local tmp=""
     if [ "$#" = "0" ]; then
@@ -7861,8 +7950,8 @@ function check_python_version()
     echo -e "python current version: \033[0;33m${PYTHON_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
-# {{{ function check_php_version()
-function check_php_version()
+# {{{ check_php_version()
+check_php_version()
 {
     local tmp=""
     if [ "$#" = "0" ]; then
@@ -7900,8 +7989,8 @@ function check_php_version()
     echo -e "php current version: \033[0;33m${PHP_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
-# {{{ function check_gmp_version()
-function check_gmp_version()
+# {{{ check_gmp_version()
+check_gmp_version()
 {
     local new_version=`curl -Lk https://gmplib.org/ 2>/dev/null|sed -n 's/^.\{1,\}gmp-\([0-9.]\{1,\}\)\.tar\.xz.\{1,\}$/\1/p'|sort -rV|head -1`
     if [ -z "$new_version" ];then
@@ -7919,8 +8008,8 @@ function check_gmp_version()
     echo -e "gmp current version: \033[0;33m${GMP_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
-# {{{ function check_mysql_version()
-function check_mysql_version()
+# {{{ check_mysql_version()
+check_mysql_version()
 {
     local new_version=`curl -Lk https://dev.mysql.com/downloads/mysql/ 2>/dev/null |sed -n 's/<h1> \{0,\}MySQL \{1,\}Community \{1,\}Server \{0,\}\(.\{1,\}\) \{0,\}<\/h1>/\1/p'|sort -rV|head -1`;
     new_version=${new_version// /}
@@ -7939,8 +8028,8 @@ function check_mysql_version()
     echo -e "mysql current version: \033[0;33m${MYSQL_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
-# {{{ function check_nginx_version()
-function check_nginx_version()
+# {{{ check_nginx_version()
+check_nginx_version()
 {
     # Mainline version
     # Stable version
@@ -7964,107 +8053,107 @@ function check_nginx_version()
 
 }
 # }}}
-# {{{ function check_nodejs_version()
-function check_nodejs_version()
+# {{{ check_nodejs_version()
+check_nodejs_version()
 {
     #https://nodejs.org/en/download/
     check_ftp_version nodejs ${NODEJS_VERSION} https://nodejs.org/en/download/ 's/^.\{1,\}[> ]node-v\([0-9.]\{1,\}\)\.tar\.gz[< ]*.\{0,\}$/\1/p'
     check_ftp_version nodejs ${NODEJS_VERSION} https://nodejs.org/en/download/current/ 's/^.\{1,\}[> ]node-v\([0-9.]\{1,\}\)\.tar\.gz[< ]*.\{0,\}$/\1/p'
 }
 # }}}
-# {{{ function check_jquery_version()
-function check_jquery_version()
+# {{{ check_jquery_version()
+check_jquery_version()
 {
     check_ftp_version jquery ${JQUERY_VERSION%%.min} https://code.jquery.com/jquery/ 's/^.\{1,\}jquery-\(1.[0-9.]\{1,\}\)\.js.\{1,\}$/\1/p'
     #check_ftp_version jquery ${JQUERY_VERSION%%.min} https://code.jquery.com/jquery/ 's/^.\{1,\}jquery-\([0-9.]\{1,\}\)\.js.\{1,\}$/\1/p'
 }
 # }}}
-# {{{ function check_jquery3_version()
-function check_jquery3_version()
+# {{{ check_jquery3_version()
+check_jquery3_version()
 {
     check_ftp_version jquery3 ${JQUERY3_VERSION%%.min} https://code.jquery.com/jquery/ 's/^.\{1,\}jquery-\([0-9.]\{1,\}\)\.js.\{1,\}$/\1/p'
 }
 # }}}
-# {{{ function check_d3_version()
-function check_d3_version()
+# {{{ check_d3_version()
+check_d3_version()
 {
     check_github_soft_version d3 ${D3_VERSION} https://github.com/d3/d3/releases
 }
 # }}}
-# {{{ function check_chartjs_version()
-function check_chartjs_version()
+# {{{ check_chartjs_version()
+check_chartjs_version()
 {
     check_github_soft_version Chart.js ${CHARTJS_VERSION} https://github.com/chartjs/Chart.js/releases
 }
 # }}}
-# {{{ function check_calibre_version()
-function check_calibre_version()
+# {{{ check_calibre_version()
+check_calibre_version()
 {
     check_github_soft_version calibre ${CALIBRE_VERSION} https://github.com/kovidgoyal/calibre/releases
 }
 # }}}
-# {{{ function check_gitbook_version()
-function check_gitbook_version()
+# {{{ check_gitbook_version()
+check_gitbook_version()
 {
     check_github_soft_version gitbook $GITBOOK_VERSION "https://github.com/GitbookIO/gitbook/releases"
 }
 # }}}
-# {{{ function check_gitbook_cli_version()
-function check_gitbook_cli_version()
+# {{{ check_gitbook_cli_version()
+check_gitbook_cli_version()
 {
     check_github_soft_version gitbook-cli $GITBOOK_CLI_VERSION "https://github.com/GitbookIO/gitbook-cli/releases"
 }
 # }}}
-# {{{ function check_nginx_upload_progress_module_version()
-function check_nginx_upload_progress_module_version()
+# {{{ check_nginx_upload_progress_module_version()
+check_nginx_upload_progress_module_version()
 {
     check_github_soft_version nginx-upload-progress-module $NGINX_UPLOAD_PROGRESS_MODULE_VERSION "https://github.com/masterzen/nginx-upload-progress-module/releases"
 }
 # }}}
-# {{{ function check_nginx_upload_module_version()
-function check_nginx_upload_module_version()
+# {{{ check_nginx_upload_module_version()
+check_nginx_upload_module_version()
 {
     check_github_soft_version nginx-upload-module $NGINX_UPLOAD_MODULE_VERSION "https://github.com/vkholodkov/nginx-upload-module/releases"
 }
 # }}}
-# {{{ function check_nginx_push_stream_module_version()
-function check_nginx_push_stream_module_version()
+# {{{ check_nginx_push_stream_module_version()
+check_nginx_push_stream_module_version()
 {
     check_github_soft_version nginx-push-stream-module $NGINX_PUSH_STREAM_MODULE_VERSION "https://github.com/wandenberg/nginx-push-stream-module/releases"
 }
 # }}}
-# {{{ function check_nginx_http_geoip2_module_version()
-function check_nginx_http_geoip2_module_version()
+# {{{ check_nginx_http_geoip2_module_version()
+check_nginx_http_geoip2_module_version()
 {
     check_github_soft_version ngx_http_geoip2_module $NGINX_HTTP_GEOIP2_MODULE_VERSION "https://github.com/leev/ngx_http_geoip2_module/releases"
 }
 # }}}
-# {{{ function check_nginx_sticky_module_version()
-function check_nginx_sticky_module_version()
+# {{{ check_nginx_sticky_module_version()
+check_nginx_sticky_module_version()
 {
     check_ftp_version nginx-sticky-module ${NGINX_STICKY_MODULE_VERSION} "https://bitbucket.org/nginx-goodies/nginx-sticky-module-ng/downloads/?tab=tags" 's/^.\{1,\}="[^"]\{1,\}\/get\/v\([0-9.]\{1,\}\)\.tar\.bz2">.\{0,\}$/\1/p'
 }
 # }}}
-# {{{ function check_json_c_version()
-function check_json_c_version()
+# {{{ check_json_c_version()
+check_json_c_version()
 {
     check_github_soft_version json-c $JSON_VERSION "https://github.com/json-c/json-c/releases" "json-c-\([0-9.]\{1,\}\)-[0-9.]\{1,\}.tar.gz" 1
 }
 # }}}
-# {{{ function check_nghttp2_version()
-function check_nghttp2_version()
+# {{{ check_nghttp2_version()
+check_nghttp2_version()
 {
     check_github_soft_version nghttp2 $NGHTTP2_VERSION "https://github.com/nghttp2/nghttp2/releases"
 }
 # }}}
-# {{{ function check_libfastjson_version()
-function check_libfastjson_version()
+# {{{ check_libfastjson_version()
+check_libfastjson_version()
 {
     check_github_soft_version libfastjson $LIBFASTJSON_VERSION "https://github.com/rsyslog/libfastjson/releases"
 }
 # }}}
-# {{{ function check_imagemagick_version()
-function check_imagemagick_version()
+# {{{ check_imagemagick_version()
+check_imagemagick_version()
 {
     local versions=`curl http://www.imagemagick.org/download/releases/ 2>/dev/null|sed -n 's/^.\{1,\} href="ImageMagick-\([0-9.-]\{1,\}\).tar.[a-z0-9A-Z]\{1,\}">.\{1,\}$/\1/p'|sort -rV`
     local new_version=`echo "$versions"|head -1`;
@@ -8092,8 +8181,8 @@ function check_imagemagick_version()
     echo -e "imagemagick current version: \033[0;33m${IMAGEMAGICK_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
-# {{{ function check_pkgconfig_version()
-function check_pkgconfig_version()
+# {{{ check_pkgconfig_version()
+check_pkgconfig_version()
 {
     local new_version=`curl -Lk https://pkg-config.freedesktop.org/releases/ 2>/dev/null |sed -n 's/^.\{1,\} href="pkg-config-\([0-9.]\{1,\}\).tar.gz">.\{1,\}$/\1/p'|sort -rV|head -1`
     if [ -z "$new_version" ];then
@@ -8111,62 +8200,68 @@ function check_pkgconfig_version()
     echo -e "pkgconfig current version: \033[0;33m${PKGCONFIG_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
-# {{{ function check_re2c_version()
-function check_re2c_version()
+# {{{ check_re2c_version()
+check_re2c_version()
 {
     check_github_soft_version re2c $RE2C_VERSION "https://github.com/skvadrik/re2c/releases"
 }
 # }}}
-# {{{ function check_openjpeg_version()
-function check_openjpeg_version()
+# {{{ check_openjpeg_version()
+check_openjpeg_version()
 {
     check_github_soft_version openjpeg $OPENJPEG_VERSION "https://github.com/uclouvain/openjpeg/releases"
 }
 # }}}
-# {{{ function check_libgd_version()
-function check_libgd_version()
+# {{{ check_libgd_version()
+check_libgd_version()
 {
     check_github_soft_version libgd $LIBGD_VERSION "https://github.com/libgd/libgd/releases" "gd-\([0-9.]\{1,\}\).tar.gz" 1
 }
 # }}}
-# {{{ function check_fontforge_version()
-function check_fontforge_version()
+# {{{ check_fontforge_version()
+check_fontforge_version()
 {
     check_github_soft_version fontforge $FONTFORGE_VERSION "https://github.com/fontforge/fontforge/releases"
 }
 # }}}
-# {{{ function check_composer_version()
-function check_composer_version()
+# {{{ check_composer_version()
+check_composer_version()
 {
     check_github_soft_version composer $COMPOSER_VERSION "https://github.com/composer/composer/releases"
 }
 # }}}
-# {{{ function check_gearmand_version()
-function check_gearmand_version()
+# {{{ check_gearmand_version()
+check_gearmand_version()
 {
     check_github_soft_version gearmand $GEARMAND_VERSION "https://github.com/gearman/gearmand/releases"
 }
 # }}}
-# {{{ function check_gearman_version()
-function check_gearman_version()
+# {{{ check_gearman_version()
+check_gearman_version()
 {
     check_github_soft_version gearman $PHP_GEARMAN_VERSION "https://github.com/wcgallego/pecl-gearman/releases" "gearman-\([0-9.]\{1,\}\).tar.gz" 1
 }
 # }}}
-# {{{ function check_pdf2htmlEX_version()
-function check_pdf2htmlEX_version()
+# {{{ check_clamav_version()
+check_clamav_version()
+{
+    check_http_version "clamav" ${CLAMAV_VERSION} https://www.clamav.net/downloads
+}
+# }}}
+# {{{ check_pdf2htmlEX_version()
+check_pdf2htmlEX_version()
 {
     check_github_soft_version pdf2htmlEX $PDF2HTMLEX_VERSION "https://github.com/coolwanglu/pdf2htmlEX/releases"
 }
 # }}}
-# {{{ function check_dehydrated_version()
-function check_dehydrated_version()
+# {{{ check_dehydrated_version()
+check_dehydrated_version()
 {
     check_github_soft_version dehydrated $DEHYDRATED_VERSION "https://github.com/lukas2511/dehydrated/releases"
 }
 # }}}
-# {{{ function check_nasm_version()
-function check_nasm_version()
+# {{{ check_nasm_version()
+check_nasm_version()
 {
     check_ftp_version nasm $NASM_VERSION "https://www.nasm.us/pub/nasm/releasebuilds/" 's/^.\{1,\}[>]\([0-9.]\{1,\}\)\/[<]*.\{0,\}$/\1/p'
     return
@@ -8189,191 +8284,191 @@ function check_nasm_version()
 
 }
 # }}}
-# {{{ function check_tidy_version()
-function check_tidy_version()
+# {{{ check_tidy_version()
+check_tidy_version()
 {
     check_github_soft_version tidy $TIDY_VERSION "https://github.com/htacg/tidy-html5/releases"
 }
 # }}}
-# {{{ function check_smarty_version()
-function check_smarty_version()
+# {{{ check_smarty_version()
+check_smarty_version()
 {
     check_github_soft_version smarty $SMARTY_VERSION "https://github.com/smarty-php/smarty/releases"
 }
 # }}}
-# {{{ function check_htmlpurifier_version()
-function check_htmlpurifier_version()
+# {{{ check_htmlpurifier_version()
+check_htmlpurifier_version()
 {
     check_github_soft_version htmlpurifier $HTMLPURIFIER_VERSION "https://github.com/ezyang/htmlpurifier/releases"
 }
 # }}}
-# {{{ function check_ckeditor_version()
-function check_ckeditor_version()
+# {{{ check_ckeditor_version()
+check_ckeditor_version()
 {
     check_github_soft_version ckeditor $CKEDITOR_VERSION "https://github.com/ckeditor/ckeditor-dev/releases"
 }
 # }}}
-# {{{ function check_rabbitmq_version()
-function check_rabbitmq_version()
+# {{{ check_rabbitmq_version()
+check_rabbitmq_version()
 {
     check_github_soft_version rabbitmq-c $RABBITMQ_C_VERSION "https://github.com/alanxz/rabbitmq-c/releases"
 }
 # }}}
-# {{{ function check_libmaxminddb_version()
-function check_libmaxminddb_version()
+# {{{ check_libmaxminddb_version()
+check_libmaxminddb_version()
 {
     check_github_soft_version libmaxminddb $LIBMAXMINDDB_VERSION "https://github.com/maxmind/libmaxminddb/releases"
 }
 # }}}
-# {{{ function check_maxmind_db_reader_php_version()
-function check_maxmind_db_reader_php_version()
+# {{{ check_maxmind_db_reader_php_version()
+check_maxmind_db_reader_php_version()
 {
     check_github_soft_version MaxMind-DB-Reader-php $MAXMIND_DB_READER_PHP_VERSION "https://github.com/maxmind/MaxMind-DB-Reader-php/releases"
 }
 # }}}
-# {{{ function check_web_service_common_php_version()
-function check_web_service_common_php_version()
+# {{{ check_web_service_common_php_version()
+check_web_service_common_php_version()
 {
     check_github_soft_version web-service-common-php $WEB_SERVICE_COMMON_PHP_VERSION "https://github.com/maxmind/web-service-common-php/releases"
 }
 # }}}
-# {{{ function check_geoip2_php_version()
-function check_geoip2_php_version()
+# {{{ check_geoip2_php_version()
+check_geoip2_php_version()
 {
     check_github_soft_version GeoIP2-php $GEOIP2_PHP_VERSION "https://github.com/maxmind/GeoIP2-php/releases"
 }
 # }}}
-# {{{ function check_geoipupdate_version()
-function check_geoipupdate_version()
+# {{{ check_geoipupdate_version()
+check_geoipupdate_version()
 {
     check_github_soft_version geoipupdate $GEOIPUPDATE_VERSION "https://github.com/maxmind/geoipupdate/releases"
 }
 # }}}
-# {{{ function check_electron_version()
-function check_electron_version()
+# {{{ check_electron_version()
+check_electron_version()
 {
     check_github_soft_version electron $ELECTRON_VERSION "https://github.com/electron/electron/releases"
 }
 # }}}
-# {{{ function check_phantomjs_version()
-function check_phantomjs_version()
+# {{{ check_phantomjs_version()
+check_phantomjs_version()
 {
     #check_github_soft_version phantomjs $PHANTOMJS_VERSION "https://github.com/ariya/phantomjs/releases"
     check_ftp_version phantomjs $PHANTOMJS_VERSION "https://bitbucket.org/ariya/phantomjs/downloads/" 's/^.\{1,\}[> ]phantomjs-\([0-9.]\{1,\}\)-windows\{1,\}\.zip[< ]*.\{0,\}$/\1/p'
 }
 # }}}
-# {{{ function check_laravel_version()
-function check_laravel_version()
+# {{{ check_laravel_version()
+check_laravel_version()
 {
     check_github_soft_version laravel $LARAVEL_VERSION "https://github.com/laravel/laravel/releases"
 }
 # }}}
-# {{{ function check_laravel_framework_version()
-function check_laravel_framework_version()
+# {{{ check_laravel_framework_version()
+check_laravel_framework_version()
 {
     check_github_soft_version 'laravel\/framework' $LARAVEL_FRAMEWORK_VERSION "https://github.com/laravel/framework/releases"
 }
 # }}}
-# {{{ function check_zeromq_version()
-function check_zeromq_version()
+# {{{ check_zeromq_version()
+check_zeromq_version()
 {
     check_github_soft_version zeromq $ZEROMQ_VERSION "https://github.com/zeromq/libzmq/releases"
 }
 # }}}
-# {{{ function check_hiredis_version()
-function check_hiredis_version()
+# {{{ check_hiredis_version()
+check_hiredis_version()
 {
     check_github_soft_version hiredis $HIREDIS_VERSION "https://github.com/redis/hiredis/releases"
 }
 # }}}
-# {{{ function check_pecl_pthreads_version()
-function check_pecl_pthreads_version()
+# {{{ check_pecl_pthreads_version()
+check_pecl_pthreads_version()
 {
     check_github_soft_version pthreads $PTHREADS_VERSION "https://github.com/krakjoe/pthreads/releases"
     #check_php_pecl_version pthreads $PTHREADS_VERSION
 }
 # }}}
-# {{{ function check_pecl_zip_version()
-function check_pecl_zip_version()
+# {{{ check_pecl_zip_version()
+check_pecl_zip_version()
 {
     check_php_pecl_version zip $ZIP_VERSION
 }
 # }}}
-# {{{ function check_pecl_solr_version()
-function check_pecl_solr_version()
+# {{{ check_pecl_solr_version()
+check_pecl_solr_version()
 {
     check_php_pecl_version solr $SOLR_VERSION
 }
 # }}}
-# {{{ function check_pecl_mailparse_version()
-function check_pecl_mailparse_version()
+# {{{ check_pecl_mailparse_version()
+check_pecl_mailparse_version()
 {
     check_php_pecl_version mailparse $MAILPARSE_VERSION
 }
 # }}}
-# {{{ function check_pecl_amqp_version()
-function check_pecl_amqp_version()
+# {{{ check_pecl_amqp_version()
+check_pecl_amqp_version()
 {
     check_php_pecl_version amqp $AMQP_VERSION
 }
 # }}}
-# {{{ function check_pecl_http_version()
-function check_pecl_http_version()
+# {{{ check_pecl_http_version()
+check_pecl_http_version()
 {
     check_php_pecl_version pecl_http $PECL_HTTP_VERSION
 }
 # }}}
-# {{{ function check_pecl_propro_version()
-function check_pecl_propro_version()
+# {{{ check_pecl_propro_version()
+check_pecl_propro_version()
 {
     check_php_pecl_version propro $PROPRO_VERSION
 }
 # }}}
-# {{{ function check_pecl_raphf_version()
-function check_pecl_raphf_version()
+# {{{ check_pecl_raphf_version()
+check_pecl_raphf_version()
 {
     check_php_pecl_version raphf $RAPHF_VERSION
 }
 # }}}
-# {{{ function check_pecl_apcu_version()
-function check_pecl_apcu_version()
+# {{{ check_pecl_apcu_version()
+check_pecl_apcu_version()
 {
     check_php_pecl_version apcu $APCU_VERSION
 }
 # }}}
-# {{{ function check_pecl_apcu_bc_version()
-function check_pecl_apcu_bc_version()
+# {{{ check_pecl_apcu_bc_version()
+check_pecl_apcu_bc_version()
 {
     check_php_pecl_version apcu_bc $APCU_BC_VERSION
 }
 # }}}
-# {{{ function check_pecl_event_version()
-function check_pecl_event_version()
+# {{{ check_pecl_event_version()
+check_pecl_event_version()
 {
     check_php_pecl_version event $EVENT_VERSION
 }
 # }}}
-# {{{ function check_pecl_libevent_version()
-function check_pecl_libevent_version()
+# {{{ check_pecl_libevent_version()
+check_pecl_libevent_version()
 {
     check_php_pecl_version libevent $PHP_LIBEVENT_VERSION
 }
 # }}}
-# {{{ function check_pecl_dio_version()
-function check_pecl_dio_version()
+# {{{ check_pecl_dio_version()
+check_pecl_dio_version()
 {
     #check_github_soft_version pecl-system-dio $DIO_VERSION "https://github.com/php/pecl-system-dio/releases"
     check_php_pecl_version dio $DIO_VERSION
 }
 # }}}
-# {{{ function check_pecl_xdebug_version()
-function check_pecl_xdebug_version()
+# {{{ check_pecl_xdebug_version()
+check_pecl_xdebug_version()
 {
     check_php_pecl_version xdebug $XDEBUG_VERSION
 }
 # }}}
-# {{{ function check_pecl_libsodium_version()
-function check_pecl_libsodium_version()
+# {{{ check_pecl_libsodium_version()
+check_pecl_libsodium_version()
 {
     #if [ `echo "${PHP_VERSION}" "7.1.99"|tr " " "\n"|sort -rV|head -1` != "7.1.99" ]; then
         #return;
@@ -8385,156 +8480,156 @@ function check_pecl_libsodium_version()
     fi
 }
 # }}}
-# {{{ function check_pecl_memcached_version()
-function check_pecl_memcached_version()
+# {{{ check_pecl_memcached_version()
+check_pecl_memcached_version()
 {
     #check_github_soft_version php-memcached $PHP_MEMCACHED_VERSION "https://github.com/php-memcached-dev/php-memcached/releases"
     check_php_pecl_version memcached $PHP_MEMCACHED_VERSION
 }
 # }}}
-# {{{ function check_pecl_imagick_version()
-function check_pecl_imagick_version()
+# {{{ check_pecl_imagick_version()
+check_pecl_imagick_version()
 {
     #check_github_soft_version php-imagick $IMAGICK_VERSION "https://github.com/mkoppanen/imagick/releases" "\([0-9.]\{5,\}\(RC\)\{0,1\}[0-9]\{1,\}\)\.tar\.gz" 1
     check_php_pecl_version imagick $IMAGICK_VERSION
 }
 # }}}
-# {{{ function check_pecl_redis_version()
-function check_pecl_redis_version()
+# {{{ check_pecl_redis_version()
+check_pecl_redis_version()
 {
     #check_github_soft_version phpredis $PHP_REDIS_VERSION "https://github.com/phpredis/phpredis/releases" "\([0-9.]\{5,\}\(RC\)\{0,1\}[0-9]\{1,\}\)\.tar\.gz" 1
     check_php_pecl_version redis $PHP_REDIS_VERSION
 }
 # }}}
-# {{{ function check_pecl_qrencode_version()
-function check_pecl_qrencode_version()
+# {{{ check_pecl_qrencode_version()
+check_pecl_qrencode_version()
 {
     check_github_soft_version qrencode $PHP_QRENCODE_VERSION "https://github.com/chg365/qrencode/releases"
 }
 # }}}
-# {{{ function check_pecl_yaf_version()
-function check_pecl_yaf_version()
+# {{{ check_pecl_yaf_version()
+check_pecl_yaf_version()
 {
     check_github_soft_version yaf $YAF_VERSION "https://github.com/laruence/yaf/releases" "yaf-\([0-9.]\{5,\}\)\.tar\.gz" 1
     #check_php_pecl_version yaf $YAF_VERSION
 }
 # }}}
-# {{{ function check_pecl_mongodb_version()
-function check_pecl_mongodb_version()
+# {{{ check_pecl_mongodb_version()
+check_pecl_mongodb_version()
 {
     check_php_pecl_version mongodb $PHP_MONGODB_VERSION
 }
 # }}}
-# {{{ function check_pecl_zmq_version()
-function check_pecl_zmq_version()
+# {{{ check_pecl_zmq_version()
+check_pecl_zmq_version()
 {
     check_github_soft_version php-zmq $PHP_ZMQ_VERSION "https://github.com/alexat/php-zmq/releases"
 }
 # }}}
-# {{{ function check_pecl_phalcon_version()
-function check_pecl_phalcon_version()
+# {{{ check_pecl_phalcon_version()
+check_pecl_phalcon_version()
 {
     check_github_soft_version phalcon $PHALCON_VERSION "https://github.com/phalcon/cphalcon/releases"
 }
 # }}}
-# {{{ function check_sphinx_version()
-function check_sphinx_version()
+# {{{ check_sphinx_version()
+check_sphinx_version()
 {
     check_github_soft_version sphinx $SPHINX_VERSION "https://github.com/sphinxsearch/sphinx/releases"
 }
 # }}}
-# {{{ function check_swoole_version()
-function check_swoole_version()
+# {{{ check_swoole_version()
+check_swoole_version()
 {
     check_github_soft_version swoole $SWOOLE_VERSION "https://github.com/swoole/swoole-src/releases" "v\([0-9.]\{5,\}\)\(-stable\)\{0,1\}\.tar\.gz" 1
 }
 # }}}
-# {{{ function check_pecl_protobuf_version()
-function check_pecl_protobuf_version()
+# {{{ check_pecl_protobuf_version()
+check_pecl_protobuf_version()
 {
     check_php_pecl_version protobuf $PHP_PROTOBUF_VERSION
 }
 # }}}
-# {{{ function check_pecl_grpc_version()
-function check_pecl_grpc_version()
+# {{{ check_pecl_grpc_version()
+check_pecl_grpc_version()
 {
     check_php_pecl_version grpc $PHP_GRPC_VERSION
 }
 # }}}
-# {{{ function check_libevent_version()
-function check_libevent_version()
+# {{{ check_libevent_version()
+check_libevent_version()
 {
     check_github_soft_version libevent $LIBEVENT_VERSION "https://github.com/libevent/libevent/releases" "release-\([0-9.]\{5,\}\)\(-stable\)\{0,1\}\.tar\.gz" 1
 }
 # }}}
-# {{{ function check_patchelf_version()
-function check_patchelf_version()
+# {{{ check_patchelf_version()
+check_patchelf_version()
 {
     check_github_soft_version patchelf $PATCHELF_VERSION "https://github.com/NixOS/patchelf/releases"
 }
 # }}}
-# {{{ function check_tesseract_version()
-function check_tesseract_version()
+# {{{ check_tesseract_version()
+check_tesseract_version()
 {
     check_github_soft_version tesseract $TESSERACT_VERSION "https://github.com/tesseract-ocr/tesseract/releases"
 }
 # }}}
-# {{{ function check_rsyslog_version()
-function check_rsyslog_version()
+# {{{ check_rsyslog_version()
+check_rsyslog_version()
 {
     check_github_soft_version rsyslog $RSYSLOG_VERSION "https://github.com/rsyslog/rsyslog/releases" "v\([0-9.]\{5,\}\)\(-stable\)\{0,1\}\.tar\.gz" 1
 }
 # }}}
-# {{{ function check_logrotate_version()
-function check_logrotate_version()
+# {{{ check_logrotate_version()
+check_logrotate_version()
 {
     check_github_soft_version logrotate $LOGROTATE_VERSION "https://github.com/logrotate/logrotate/releases"
 }
 # }}}
-# {{{ function check_libuuid_version()
-function check_libuuid_version()
+# {{{ check_libuuid_version()
+check_libuuid_version()
 {
     check_sourceforge_soft_version libuuid ${LIBUUID_VERSION//_/.} 's/^.\{0,\}<tr title="libuuid-\([0-9.]\{1,\}\).tar.gz" class="file \{0,\}[^"]\{1,\}"> \{0,\}$/\1/p' "0"
 }
 # }}}
-# {{{ function check_liblogging_version()
-function check_liblogging_version()
+# {{{ check_liblogging_version()
+check_liblogging_version()
 {
     check_github_soft_version liblogging $LIBLOGGING_VERSION "https://github.com/rsyslog/liblogging/releases" "v\([0-9.]\{5,\}\)\(-stable\)\{0,1\}\.tar\.gz" 1
 }
 # }}}
-# {{{ function check_libgcrypt_version()
-function check_libgcrypt_version()
+# {{{ check_libgcrypt_version()
+check_libgcrypt_version()
 {
     check_http_version "libgcrypt" ${LIBGCRYPT_VERSION} https://gnupg.org/ftp/gcrypt/libgcrypt/
 }
 # }}}
-# {{{ function check_libgpg_error_version()
-function check_libgpg_error_version()
+# {{{ check_libgpg_error_version()
+check_libgpg_error_version()
 {
     check_http_version "libgpg-error" ${LIBGPG_ERROR_VERSION} https://gnupg.org/ftp/gcrypt/libgpg-error/
 }
 # }}}
-# {{{ function check_readline_version()
-function check_readline_version()
+# {{{ check_readline_version()
+check_readline_version()
 {
     check_ftp_gnu_org_version readline $READLINE_VERSION
 }
 # }}}
-# {{{ function check_gettext_version()
-function check_gettext_version()
+# {{{ check_gettext_version()
+check_gettext_version()
 {
     check_ftp_gnu_org_version gettext $GETTEXT_VERSION
 }
 # }}}
-# {{{ function check_libiconv_version()
-function check_libiconv_version()
+# {{{ check_libiconv_version()
+check_libiconv_version()
 {
     check_ftp_gnu_org_version libiconv $LIBICONV_VERSION
 }
 # }}}
-# {{{ function check_glib_version()
-function check_glib_version()
+# {{{ check_glib_version()
+check_glib_version()
 {
     local new_version=`curl -Lk https://developer.gnome.org/glib/ 2>/dev/null |sed -n 's/^.\{1,\}>\([0-9._-]\{1,\}\)<\/a><\/li>.\{0,\}$/\1/p'|sort -rV|head -1`
     if [ -z "$new_version" ];then
@@ -8554,26 +8649,26 @@ function check_glib_version()
     #check_github_soft_version glib $GLIB_VERSION "https://github.com/GNOME/glib/releases"
 }
 # }}}
-# {{{ function check_util_linux_version()
-function check_util_linux_version()
+# {{{ check_util_linux_version()
+check_util_linux_version()
 {
     check_github_soft_version util-linux $UTIL_LINUX_VERSION "https://github.com/karelzak/util-linux/releases"
 }
 # }}}
-# {{{ function check_libffi_version()
-function check_libffi_version()
+# {{{ check_libffi_version()
+check_libffi_version()
 {
     check_github_soft_version libffi $LIBFFI_VERSION "https://github.com/libffi/libffi/releases"
 }
 # }}}
-# {{{ function check_libestr_version()
-function check_libestr_version()
+# {{{ check_libestr_version()
+check_libestr_version()
 {
     check_github_soft_version libestr $LIBESTR_VERSION "https://github.com/rsyslog/libestr/releases" "v\([0-9.]\{5,\}\)\(-stable\)\{0,1\}\.tar\.gz" 1
 }
 # }}}
-# {{{ function check_libpng_version()
-function check_libpng_version()
+# {{{ check_libpng_version()
+check_libpng_version()
 {
     local tmp_str=`echo ${LIBPNG_VERSION%.*}|tr -d .`;
     local tmp_str2=`check_sourceforge_soft_version libpng $tmp_str 's/^ \{0,\}<tr \{1,\}title="libpng\([0-9]\{1,\}\)" \{1,\}class=" \{0,\}folder \{0,\}" \{0,\}> \{0,\}$/\1/p' 0`
@@ -8585,8 +8680,8 @@ function check_libpng_version()
     check_sourceforge_soft_version libpng ${LIBPNG_VERSION} 's/^.\{0,\}<tr title="\([0-9.]\{1,\}\)" class="folder \{0,\}"> \{0,\}$/\1/p' libpng${tmp_str}
 }
 # }}}
-# {{{ function check_kerberos_version()
-function check_kerberos_version()
+# {{{ check_kerberos_version()
+check_kerberos_version()
 {
     local new_version=`curl -Lk http://web.mit.edu/kerberos/dist/ 2>/dev/null |sed -n 's/.\{1,\}>krb5-\([0-9.-]\{1,\}\).tar.gz<.\{1,\}$/\1/p'|tr - .|sort -rV|head -1`
     if [ -z "$new_version" ];then
@@ -8604,8 +8699,8 @@ function check_kerberos_version()
     echo -e "kerberos current version: \033[0;33m${KERBEROS_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
-# {{{ function check_sqlite_version()
-function check_sqlite_version()
+# {{{ check_sqlite_version()
+check_sqlite_version()
 {
     # check_github_soft_version sqlite $SQLITE_VERSION "https://github.com/mackyle/sqlite/releases" "version-\([0-9.]\{5,\}\)\.tar\.gz" 1
     local new_version=`curl -Lk https://www.sqlite.org/download.html 2>/dev/null |sed -n 's/^.\{1,\}\/sqlite-autoconf-\([0-9.]\{1,\}\).tar.gz.\{1,\}$/\1/p'|sort -rV|head -1`
@@ -8624,8 +8719,8 @@ function check_sqlite_version()
     echo -e "sqlite current version: \033[0;33m${SQLITE_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
-# {{{ function check_imap_version()
-function check_imap_version()
+# {{{ check_imap_version()
+check_imap_version()
 {
     local new_version=`curl -Lk https://www.mirrorservice.org/sites/ftp.cac.washington.edu/imap/ 2>/dev/null |sed -n 's/^.\{1,\}>imap-\([0-9a-zA-Z.-]\{1,\}\).tar.gz<.\{1,\}$/\1/p'|sort -rV|head -1`
     if [ -z "$new_version" ];then
@@ -8643,8 +8738,8 @@ function check_imap_version()
     echo -e "imap current version: \033[0;33m${IMAP_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
-# {{{ function check_libmemcached_version()
-function check_libmemcached_version()
+# {{{ check_libmemcached_version()
+check_libmemcached_version()
 {
     local new_version=`curl -Lk "https://launchpad.net/libmemcached/+download" 2>/dev/null |sed -n 's/^.*>libmemcached-\([0-9.-]\{1,\}\).tar.gz<.*$/\1/p'|sort -rV|head -1`
     if [ -z "$new_version" ];then
@@ -8662,8 +8757,8 @@ function check_libmemcached_version()
     echo -e "libmemcached current version: \033[0;33m${LIBMEMCACHED_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
-# {{{ function check_qrencode_version()
-function check_qrencode_version()
+# {{{ check_qrencode_version()
+check_qrencode_version()
 {
     local new_version=`curl -Lk https://fukuchi.org/works/qrencode/ 2>/dev/null |sed -n 's/^.*>qrencode-\([0-9.-]\{1,\}\).tar.gz<.*$/\1/p'|sort -rV|head -1`
     if [ -z "$new_version" ];then
@@ -8681,8 +8776,8 @@ function check_qrencode_version()
     echo -e "qrencode current version: \033[0;33m${QRENCODE_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
-# {{{ function check_jpeg_version()
-function check_jpeg_version()
+# {{{ check_jpeg_version()
+check_jpeg_version()
 {
     local new_version=`curl -Lk http://www.ijg.org/files/ 2>/dev/null |sed -n 's/^.*>jpegsrc\.v\([0-9a-zA-Z.]\{1,\}\).tar.gz<.*$/\1/p'|sort -rV|head -1`
     if [ -z "$new_version" ];then
@@ -8700,39 +8795,39 @@ function check_jpeg_version()
     echo -e "jpeg current version: \033[0;33m${JPEG_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
-# {{{ function check_pecl_sphinx_version()
-function check_pecl_sphinx_version()
+# {{{ check_pecl_sphinx_version()
+check_pecl_sphinx_version()
 {
     # check_github_soft_version "pecl-search_engine-sphinx" $PHP_SPHINX_VERSION "https://github.com/php/pecl-search_engine-sphinx/releases"
     check_php_pecl_version sphinx $PHP_SPHINX_VERSION
 }
 # }}}
-# {{{ function check_libxml2_version()
-function check_libxml2_version()
+# {{{ check_libxml2_version()
+check_libxml2_version()
 {
     check_ftp_xmlsoft_org_version libxml2 ${LIBXML2_VERSION}
 }
 # }}}
-# {{{ function check_libwebp_version()
-function check_libwebp_version()
+# {{{ check_libwebp_version()
+check_libwebp_version()
 {
     check_github_soft_version libwebp $LIBWEBP_VERSION "https://github.com/webmproject/libwebp/releases"
 }
 # }}}
-# {{{ function check_fribidi_version()
-function check_fribidi_version()
+# {{{ check_fribidi_version()
+check_fribidi_version()
 {
     check_github_soft_version fribidi $FRIBIDI_VERSION "https://github.com/fribidi/fribidi/releases"
 }
 # }}}
-# {{{ function check_libxslt_version()
-function check_libxslt_version()
+# {{{ check_libxslt_version()
+check_libxslt_version()
 {
     check_ftp_xmlsoft_org_version libxslt ${LIBXSLT_VERSION}
 }
 # }}}
-# {{{ function check_boost_version()
-function check_boost_version()
+# {{{ check_boost_version()
+check_boost_version()
 {
     #check_sourceforge_soft_version boost ${BOOST_VERSION//_/.} 's/^.\{0,\}<tr title="\([0-9.]\{1,\}\)" class="folder \{0,\}"> \{0,\}$/\1/p'
     local new_version=`curl -Lk http://www.boost.org/ 2>/dev/null |sed -n 's/^.\{1,\}Version \([0-9._-]\{1,\}\).\{1,\}>Download<.\{1,\}/\1/p'|sort -rV|head -1`
@@ -8751,147 +8846,147 @@ function check_boost_version()
     echo -e "boost current version: \033[0;33m${BOOST_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
-# {{{ function check_libmcrypt_version()
-function check_libmcrypt_version()
+# {{{ check_libmcrypt_version()
+check_libmcrypt_version()
 {
     check_sourceforge_soft_version mcrypt ${LIBMCRYPT_VERSION//_/.} 's/^.\{0,\}<tr title="\([0-9.]\{1,\}\)" class="folder \{0,\}"> \{0,\}$/\1/p' Libmcrypt
 }
 # }}}
-# {{{ function check_libwbxml_version()
-function check_libwbxml_version()
+# {{{ check_libwbxml_version()
+check_libwbxml_version()
 {
     check_sourceforge_soft_version libwbxml ${LIBWBXML_VERSION//_/.} 's/^.\{0,\}<tr title="\([0-9.]\{1,\}\)" class="folder \{0,\}"> \{0,\}$/\1/p'
 }
 # }}}
-# {{{ function check_libjpeg_version()
-function check_libjpeg_version()
+# {{{ check_libjpeg_version()
+check_libjpeg_version()
 {
     check_sourceforge_soft_version libjpeg-turbo ${LIBJPEG_VERSION} 's/^.\{0,\}<tr title="\([0-9.]\{1,\}\)" class="folder \{0,\}"> \{0,\}$/\1/p' "0"
 }
 # }}}
-# {{{ function check_pcre_version()
-function check_pcre_version()
+# {{{ check_pcre_version()
+check_pcre_version()
 {
     check_sourceforge_soft_version pcre ${PCRE_VERSION//_/.} 's/^.\{0,\}<tr title="\([0-9.]\{1,\}\)" class="folder \{0,\}"> \{0,\}$/\1/p'
     check_sourceforge_soft_version pcre ${PCRE_VERSION//_/.} 's/^.\{0,\}<tr title="\([0-9.]\{1,\}\)" class="folder \{0,\}"> \{0,\}$/\1/p' pcre2
 }
 # }}}
-# {{{ function check_expat_version()
-function check_expat_version()
+# {{{ check_expat_version()
+check_expat_version()
 {
     check_sourceforge_soft_version expat ${EXPAT_VERSION} 's/^.\{0,\}<tr title="\([0-9.]\{1,\}\)" class="folder \{0,\}"> \{0,\}$/\1/p'
 }
 # }}}
-# {{{ function check_libXpm_version()
-function check_libXpm_version()
+# {{{ check_libXpm_version()
+check_libXpm_version()
 {
     check_http_version libXpm ${LIBXPM_VERSION} https://www.x.org/releases/individual/lib/
 }
 # }}}
-# {{{ function check_libXext_version()
-function check_libXext_version()
+# {{{ check_libXext_version()
+check_libXext_version()
 {
     check_http_version libXext ${LIBXEXT_VERSION} https://www.x.org/releases/individual/lib/
 }
 # }}}
-# {{{ function check_kbproto_version()
-function check_kbproto_version()
+# {{{ check_kbproto_version()
+check_kbproto_version()
 {
     check_http_version kbproto ${KBPROTO_VERSION} https://www.x.org/archive/individual/proto/
 }
 # }}}
-# {{{ function check_inputproto_version()
-function check_inputproto_version()
+# {{{ check_inputproto_version()
+check_inputproto_version()
 {
     check_http_version inputproto ${INPUTPROTO_VERSION} https://www.x.org/archive/individual/proto/
 }
 # }}}
-# {{{ function check_xextproto_version()
-function check_xextproto_version()
+# {{{ check_xextproto_version()
+check_xextproto_version()
 {
     check_http_version xextproto ${XEXTPROTO_VERSION} https://www.x.org/archive/individual/proto/
 }
 # }}}
-# {{{ function check_xproto_version()
-function check_xproto_version()
+# {{{ check_xproto_version()
+check_xproto_version()
 {
     check_http_version xproto ${XPROTO_VERSION} https://www.x.org/archive/individual/proto/
 }
 # }}}
-# {{{ function check_xtrans_version()
-function check_xtrans_version()
+# {{{ check_xtrans_version()
+check_xtrans_version()
 {
     check_http_version xtrans ${XTRANS_VERSION} https://www.x.org/archive/individual/lib/
 }
 # }}}
-# {{{ function check_libXau_version()
-function check_libXau_version()
+# {{{ check_libXau_version()
+check_libXau_version()
 {
     check_http_version libXau ${LIBXAU_VERSION} https://www.x.org/archive/individual/lib/
 }
 # }}}
-# {{{ function check_libX11_version()
-function check_libX11_version()
+# {{{ check_libX11_version()
+check_libX11_version()
 {
     check_http_version libX11 ${LIBX11_VERSION} https://www.x.org/archive/individual/lib/
 }
 # }}}
-# {{{ function check_libpthread_stubs_version()
-function check_libpthread_stubs_version()
+# {{{ check_libpthread_stubs_version()
+check_libpthread_stubs_version()
 {
     check_http_version libpthread-stubs ${LIBPTHREAD_STUBS_VERSION} https://www.x.org/archive/individual/xcb/
 }
 # }}}
-# {{{ function check_libxcb_version()
-function check_libxcb_version()
+# {{{ check_libxcb_version()
+check_libxcb_version()
 {
     check_http_version libxcb ${LIBXCB_VERSION} https://www.x.org/archive/individual/xcb/
 }
 # }}}
-# {{{ function check_xcb_proto_version()
-function check_xcb_proto_version()
+# {{{ check_xcb_proto_version()
+check_xcb_proto_version()
 {
     check_http_version xcb-proto ${XCB_PROTO_VERSION} https://www.x.org/archive/individual/xcb/
 }
 # }}}
-# {{{ function check_macros_version()
-function check_macros_version()
+# {{{ check_macros_version()
+check_macros_version()
 {
     check_http_version util-macros ${MACROS_VERSION} https://www.x.org/archive/individual/util/
 }
 # }}}
-# {{{ function check_xf86bigfontproto_version()
-function check_xf86bigfontproto_version()
+# {{{ check_xf86bigfontproto_version()
+check_xf86bigfontproto_version()
 {
     check_http_version xf86bigfontproto ${XF86BIGFONTPROTO_VERSION} https://www.x.org/archive/individual/proto/
 }
 # }}}
-# {{{ function check_cairo_version()
-function check_cairo_version()
+# {{{ check_cairo_version()
+check_cairo_version()
 {
     check_ftp_version cairo ${CAIRO_VERSION} http://cairographics.org/releases/
 }
 # }}}
-# {{{ function check_pixman_version()
-function check_pixman_version()
+# {{{ check_pixman_version()
+check_pixman_version()
 {
     check_ftp_version pixman ${PIXMAN_VERSION} http://cairographics.org/releases/
 }
 # }}}
-# {{{ function check_fontconfig_version()
-function check_fontconfig_version()
+# {{{ check_fontconfig_version()
+check_fontconfig_version()
 {
     check_ftp_version fontconfig ${FONTCONFIG_VERSION} https://www.freedesktop.org/software/fontconfig/release/
 }
 # }}}
-# {{{ function check_poppler_version()
-function check_poppler_version()
+# {{{ check_poppler_version()
+check_poppler_version()
 {
     check_ftp_version poppler ${POPPLER_VERSION} https://poppler.freedesktop.org/ 's/^.\{1,\}>poppler-\([0-9.]\{1,\}\)\.tar\.xz<.\{0,\}$/\1/p'
 }
 # }}}
-# {{{ function check_pango_version()
-function check_pango_version()
+# {{{ check_pango_version()
+check_pango_version()
 {
     local tmpdir=`curl -Lk http://ftp.gnome.org/pub/GNOME/sources/pango/ 2>/dev/null|sed -n 's/^.*>\([0-9.-]\{1,\}\)\/<.*$/\1/p'|sort -rV | head -1`;
     if [ -z "$tmpdir" ];then
@@ -8901,39 +8996,39 @@ function check_pango_version()
     check_ftp_version pango ${PANGO_VERSION} http://ftp.gnome.org/pub/GNOME/sources/pango/${tmpdir}/ 's/^.\{1,\}>pango-\([0-9.]\{1,\}\)\.tar\.xz<.\{0,\}$/\1/p'
 }
 # }}}
-# {{{ function check_libsodium_version()
-function check_libsodium_version()
+# {{{ check_libsodium_version()
+check_libsodium_version()
 {
     check_ftp_version libsodium ${LIBSODIUM_VERSION} https://download.libsodium.org/libsodium/releases/
 }
 # }}}
-# {{{ function check_memcached_version()
-function check_memcached_version()
+# {{{ check_memcached_version()
+check_memcached_version()
 {
     check_github_soft_version memcached $MEMCACHED_VERSION "https://github.com/memcached/memcached/releases"
     #check_ftp_version memcached ${MEMCACHED_VERSION} http://memcached.org/files/
 }
 # }}}
-# {{{ function check_apache_version()
-function check_apache_version()
+# {{{ check_apache_version()
+check_apache_version()
 {
     check_ftp_version httpd ${APACHE_VERSION} http://archive.apache.org/dist/httpd/
 }
 # }}}
-# {{{ function check_apr_version()
-function check_apr_version()
+# {{{ check_apr_version()
+check_apr_version()
 {
     check_ftp_version apr ${APR_VERSION} http://apr.apache.org/download.cgi
 }
 # }}}
-# {{{ function check_apr_util_version()
-function check_apr_util_version()
+# {{{ check_apr_util_version()
+check_apr_util_version()
 {
     check_ftp_version apr-util ${APR_UTIL_VERSION} http://apr.apache.org/download.cgi
 }
 # }}}
-# {{{ function check_postgresql_version()
-function check_postgresql_version()
+# {{{ check_postgresql_version()
+check_postgresql_version()
 {
     local tmpdir=`curl -Lk https://ftp.postgresql.org/pub/source/ 2>/dev/null|sed -n 's/^.*>v\([0-9.-]\{1,\}\)<.*$/\1/p'|sort -rV | head -1`;
     if [ -z "$tmpdir" ];then
@@ -8943,32 +9038,32 @@ function check_postgresql_version()
     check_ftp_version postgresql ${POSTGRESQL_VERSION} https://ftp.postgresql.org/pub/source/v${tmpdir}/
 }
 # }}}
-# {{{ function check_pgbouncer_version()
-function check_pgbouncer_version()
+# {{{ check_pgbouncer_version()
+check_pgbouncer_version()
 {
     check_ftp_version pgbouncer ${PGBOUNCER_VERSION} https://pgbouncer.github.io/
 }
 # }}}
-# {{{ function check_scws_version()
-function check_scws_version()
+# {{{ check_scws_version()
+check_scws_version()
 {
     check_github_soft_version scws $SCWS_VERSION "https://github.com/hightman/scws/releases"
 }
 # }}}
-# {{{ function check_xunsearch_version()
-function check_xunsearch_version()
+# {{{ check_xunsearch_version()
+check_xunsearch_version()
 {
     check_github_soft_version xunsearch $XUNSEARCH_VERSION "https://github.com/hightman/xunsearch/releases"
 }
 # }}}
-# {{{ function check_xunsearch_sdk_php_version()
-function check_xunsearch_sdk_php_version()
+# {{{ check_xunsearch_sdk_php_version()
+check_xunsearch_sdk_php_version()
 {
     check_github_soft_version xs-sdk-php $XUNSEARCH_SDK_VERSION "https://github.com/hightman/xs-sdk-php/releases"
 }
 # }}}
-# {{{ function check_ftp_gnu_org_version()
-function check_ftp_gnu_org_version()
+# {{{ check_ftp_gnu_org_version()
+check_ftp_gnu_org_version()
 {
     local soft=$1
     local current_version=$2
@@ -8978,8 +9073,8 @@ function check_ftp_gnu_org_version()
     check_ftp_version $soft $current_version $url $pattern
 }
 # }}}
-# {{{ function check_ftp_xmlsoft_org_version()
-function check_ftp_xmlsoft_org_version()
+# {{{ check_ftp_xmlsoft_org_version()
+check_ftp_xmlsoft_org_version()
 {
     local soft=$1
     local current_version=$2
@@ -8989,8 +9084,8 @@ function check_ftp_xmlsoft_org_version()
     check_ftp_version $soft $current_version $url $pattern
 }
 # }}}
-# {{{ function check_ftp_version()
-function check_ftp_version()
+# {{{ check_ftp_version()
+check_ftp_version()
 {
     local soft=$1
     local current_version=$2
@@ -9034,8 +9129,8 @@ function check_ftp_version()
     echo -e "${soft} current version: \033[0;33m${current_version}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
-# {{{ function check_github_soft_version()
-function check_github_soft_version()
+# {{{ check_github_soft_version()
+check_github_soft_version()
 {
     local soft=$1;
     local current_version=$2;
@@ -9118,8 +9213,8 @@ function check_github_soft_version()
     echo -e "${soft} current version: \033[0;33m${current_version}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
-# {{{ function check_php_pecl_version()
-function check_php_pecl_version()
+# {{{ check_php_pecl_version()
+check_php_pecl_version()
 {
     local ext=$1;
     local current_version=$2;
@@ -9178,8 +9273,8 @@ function check_php_pecl_version()
     echo -e "PHP extension ${ext} current version: \033[0;33m${current_version}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
-# {{{ function check_sourceforge_soft_version()
-function check_sourceforge_soft_version()
+# {{{ check_sourceforge_soft_version()
+check_sourceforge_soft_version()
 {
     local soft=$1
     local current_version=$2
@@ -9214,8 +9309,8 @@ function check_sourceforge_soft_version()
     echo -e "${soft} current version: \033[0;33m${current_version}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
-# {{{ function check_http_version()
-function check_http_version()
+# {{{ check_http_version()
+check_http_version()
 {
     local soft=$1
     local current_version=$2
@@ -9244,8 +9339,8 @@ function check_http_version()
 }
 # }}}
 #}}}
-# {{{ function version_compare() 11出错误 0 相同 1 前高于后 2 前低于后
-function version_compare()
+# {{{ version_compare() 11出错误 0 相同 1 前高于后 2 前低于后
+version_compare()
 {
     local first_version=$1;
     local second_version=$2;
@@ -9276,8 +9371,8 @@ function version_compare()
     return 2;
 }
 # }}}
-# {{{ function is_new_version() 返回值0，为是新版本, 11 出错
-function is_new_version()
+# {{{ is_new_version() 返回值0，为是新版本, 11 出错
+is_new_version()
 {
     local new_version=$1;
     local old_version=$2;
@@ -9361,9 +9456,9 @@ function is_new_version()
 #    return 1;
 }
 # }}}
-# {{{ function pkg_config_path_init()
+# {{{ pkg_config_path_init()
 
-function pkg_config_path_init()
+pkg_config_path_init()
 {
     ld_library_path_init
     path_init
@@ -9389,8 +9484,8 @@ function pkg_config_path_init()
     #PKG_CONFIG_PATH="$CONTRIB_BASE/lib/pkgconfig:$CONTRIB_BASE/share/pkgconfig:$PKG_CONFIG_PATH"
 }
 # }}}
-# {{{ function deal_pkg_config_path()
-function deal_pkg_config_path()
+# {{{ deal_pkg_config_path()
+deal_pkg_config_path()
 {
     local i="";
     local j="";
@@ -9416,9 +9511,9 @@ function deal_pkg_config_path()
     fi
 }
 # }}}
-# {{{ function ld_library_path_init()
+# {{{ ld_library_path_init()
 
-function ld_library_path_init()
+ld_library_path_init()
 {
     local tmp_arr=( "/usr/lib" "/usr/lib64" "/usr/local/lib" "/usr/local/lib64" );
     local i=""
@@ -9433,8 +9528,8 @@ function ld_library_path_init()
     LD_LIBRARY_PATH=${LD_LIBRARY_PATH%:}
 }
 # }}}
-# {{{ function deal_ld_library_path()
-function deal_ld_library_path()
+# {{{ deal_ld_library_path()
+deal_ld_library_path()
 {
     local i="";
     local j="";
@@ -9460,9 +9555,9 @@ function deal_ld_library_path()
     fi
 }
 # }}}
-# {{{ function path_init()
+# {{{ path_init()
 
-function path_init()
+path_init()
 {
     PATH=""
     local tmp_arr=( "/bin"
@@ -9487,8 +9582,8 @@ function path_init()
     export PATH
 }
 # }}}
-# {{{ function deal_path()
-function deal_path()
+# {{{ deal_path()
+deal_path()
 {
     local i="";
     local j="";
@@ -9516,14 +9611,14 @@ function deal_path()
     fi
 }
 # }}}
-# {{{ function export_path()
-function export_path()
+# {{{ export_path()
+export_path()
 {
     export PATH="$COMPILE_BASE/bin:$CONTRIB_BASE/bin:$PATH"
 }
 # }}}
-# {{{ function repair_dynamic_shared_library() mac下解决Library not loaded 问题
-function repair_dynamic_shared_library()
+# {{{ repair_dynamic_shared_library() mac下解决Library not loaded 问题
+repair_dynamic_shared_library()
 {
     if [ "$OS_NAME" != "darwin" ];then
         echo "this funtion[repair_dynamic_shared_library] not support  current OS[$OS_NAME]." >&2
@@ -9594,8 +9689,8 @@ function repair_dynamic_shared_library()
 }
 # }}}
 # {{{ repair elf file Linux下解决Library not loaded 问题
-# {{{ function repair_dir_elf_rpath
-function repair_dir_elf_rpath() {
+# {{{ repair_dir_elf_rpath
+repair_dir_elf_rpath() {
     local path="$1"
     local i=""
     local j=""
@@ -9631,8 +9726,8 @@ function repair_dir_elf_rpath() {
     IFS=$IFS_old
 }
 # }}}
-# {{{ function is_elf_file
-function is_elf_file() {
+# {{{ is_elf_file
+is_elf_file() {
     local filename="$1"
     if [ -z "$filename" -o ! -e "$filename" ];then
         echo "is_elf_file function: 文件[${filename}]不存在" >&2
@@ -9648,8 +9743,8 @@ function is_elf_file() {
     file -b $filename|grep dynamically |grep -q "$signatures"
 }
 # }}}
-# {{{ function repair_elf_file_rpath
-function repair_elf_file_rpath() {
+# {{{ repair_elf_file_rpath
+repair_elf_file_rpath() {
     local filename=$1
     if [ -z "$filename" -o ! -e "$filename" ];then
         echo "要修复的文件不存在" >&2
@@ -9697,8 +9792,8 @@ function repair_elf_file_rpath() {
     fi
 }
 # }}}
-# {{{ function find_not_found_so_rpath
-function find_not_found_so_rpath() {
+# {{{ find_not_found_so_rpath
+find_not_found_so_rpath() {
     local filedir=`echo $1 |xargs dirname`
     shift
     local j=""
@@ -9720,15 +9815,15 @@ function find_not_found_so_rpath() {
     done | sort -u | tr "\n" ":"
 }
 # }}}
-# {{{ function find_found_so_rpath
-function find_found_so_rpath() {
+# {{{ find_found_so_rpath
+find_found_so_rpath() {
     local tmp_str=$1
     # 能找到的so的目录
     echo "$tmp_str"|grep '=>' | grep '/' |grep -v 'not found'|awk '{print $3;}'|xargs dirname | sort -u | tr "\n" ":"
 }
 # }}}
-# {{{ function get_LCS_file 获取和指定目录最近的目录
-function get_LCS_file()
+# {{{ get_LCS_file 获取和指定目录最近的目录
+get_LCS_file()
 {
     local filedir="$1"
     shift
@@ -9767,8 +9862,8 @@ function get_LCS_file()
 }
 # }}}
 # }}}
-# {{{ function multi_process() 多进程实现
-function multi_process() {
+# {{{ multi_process() 多进程实现
+multi_process() {
     local task_name=$1
     local func_name=$2
     local thread_num=$3 # 最大可同时执行线程数量
@@ -9800,8 +9895,8 @@ function multi_process() {
     exec 6>&- # 关闭fd6
 }
 # }}}
-# {{{ function ping_usable() # 测试当前网络下是否可以连接到某域名
-function ping_usable()
+# {{{ ping_usable() # 测试当前网络下是否可以连接到某域名
+ping_usable()
 {
     local domain_name=$1
     local threshold=$2
@@ -9812,8 +9907,8 @@ function ping_usable()
     return $status
 }
 # }}}
-# {{{ function init_setup() #
-function init_setup()
+# {{{ init_setup() #
+init_setup()
 {
     mkdir -p $BASE_DIR/setup
     cp $curr_dir/base_define.sh $BASE_DIR/setup/
@@ -9827,25 +9922,9 @@ function init_setup()
     chmod u+x $BASE_DIR/setup/*.sh
 }
 # }}}
-#wget --content-disposition --no-check-certificate https://github.com/vrtadmin/clamav-devel/archive/clamav-0.99.2.tar.gz
-#tar zxf clamav-devel-clamav-0.99.2.tar.gz
-#cd clamav-devel-clamav-0.99.2
-#./configure --prefix=$OPT_BASE/clamav --with-openssl=$OPENSSL_BASE --with-pcre=$PCRE_BASE --with-zlib=$ZLIB_BASE --with-libbz2-prefix=$LIBBZ2_BASE --with-iconv --with-libcurl=$CURL_BASE
-#./configure --prefix=$OPT_BASE/clamav --with-openssl=$OPENSSL_BASE --with-pcre=$PCRE_BASE --with-zlib=$ZLIB_BASE --with-libbz2-prefix=$LIBBZ2_BASE --with-iconv --with-libcurl=$CURL_BASE --with-xml=$LIBXML2_BASE
-#make
-#make install
-#cd ..
-#rm -rf clamav-devel-clamav-0.99.2
 
-#http://www.clamav.net/documents/installing-clamav
-
-#https://linux.cn/article-5156-1.html
-#https://github.com/argos66/php-clamav
-#http://php-clamav.sourceforge.net/
-#https://github.com/FileZ/php-clamd
-
+#clamav
 #https://github.com/jonjomckay/quahog
-#https://github.com/sunspikes/clamav-validator/blob/master/src/ClamavValidator/ClamavValidatorServiceProvider.php
 
 # wget --content-disposition --no-check-certificate https://github.com/hprose/hprose-php/archive/v2.0.26.tar.gz
 # wget --content-disposition --no-check-certificate https://github.com/hprose/hprose-swoole/archive/v2.0.11.tar.gz
