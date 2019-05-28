@@ -1167,6 +1167,7 @@ is_installed_gearmand()
     if [ ! -f "$FILENAME" ];then
         return 1;
     fi
+    #$GEARMAND_BASE/sbin/gearmand -V 2>/dev/null|grep gearmand |awk '{ print $2;}'
     local version=`pkg-config --modversion $FILENAME`
     if [ "$version" != "$GEARMAND_VERSION" ];then
         return 1;
@@ -3631,9 +3632,13 @@ compile_gearmand()
     compile_libevent
     compile_curl
     compile_boost
+    compile_libmemcached
+    compile_hiredis
+    #compile_sqlite
     #compile_libuuid
     #yum install boost boost-devel
     #yum install gperf
+    #yum install mariadb-libs mariadb-devel.x86_64
 
     is_installed gearmand "$GEARMAND_BASE"
     if [ "$?" = "0" ];then
@@ -3701,22 +3706,36 @@ configure_gearmand_command()
         fi
     fi
 
+    local mysql_include=""
+    local mysql_lib=""
+    if [ -d "$MYSQL_BASE/include" ]; then
+        # mysql 8.0 没有 my_bool
+        if ! grep -rq '\<my_bool\>' $MYSQL_BASE/include/ ; then
+            sed -i 's/\<my_bool\>/bool/g' ./libgearman-server/plugins/queue/mysql/queue.cc
+        fi
+        mysql_include="$MYSQL_BASE/include"
+        mysql_lib="$MYSQL_BASE/lib"
+    elif [ -d "/usr/include/mysql" -a -d "/usr/lib64/mysql" ]; then
+        mysql_include="/usr/include/mysql"
+        mysql_lib="/usr/lib64/mysql"
+    fi
+    # libdrizzle 不支持mysql5.6
     # $CURL_BASE/include
     CURL_CONFIG=$CURL_BASE/bin/curl-config \
-    CPPFLAGS="$(get_cppflags $LIBEVENT_BASE/include $BOOST_BASE/include)" \
-    LDFLAGS="$(get_ldflags $LIBEVENT_BASE/lib $BOOST_BASE/lib)" \
+    CPPFLAGS="$(get_cppflags $LIBEVENT_BASE/include $BOOST_BASE/include $mysql_include )" \
+    LDFLAGS="$(get_ldflags $LIBEVENT_BASE/lib $BOOST_BASE/lib $mysql_lib )" \
     ./configure --prefix=$GEARMAND_BASE \
                 --sysconfdir=$BASE_DIR/etc \
                 --with-sqlite3=$SQLITE_BASE \
                 --enable-ssl \
-                --without-mysql \
                 --with-memcached=$MEMCACHED_BASE/bin/memcached \
                 --with-boost=$( is_installed_boost && echo ${BOOST_BASE} || echo yes ) \
                 --with-postgresql=$( is_installed_postgresql && echo ${POSTGRESQL_BASE}/bin/pg_config || echo yes ) \
+                --with-mysql=$( is_installed_mysql && echo ${MYSQL_BASE}/bin/mysql_config || echo yes ) \
                 --with-openssl=$OPENSSL_BASE
 
 
-                #--with-mysql=$( is_installed_mysql && echo ${MYSQL_BASE}/bin/mysql_config || echo yes ) \
+                #--without-mysql \
                 #--enable-cyassl \
                 #--with-curl-exec-prefix=$CURL_BASE \
                 #--with-curl-prefix=$CURL_BASE # 加上后make时报错 Makefile:2138: *** missing separator. Stop.
@@ -10003,4 +10022,3 @@ init_setup()
 #make install
 #cd ..
 #rm -rf swig-rel-3.0.12
-
