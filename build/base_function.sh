@@ -447,39 +447,39 @@ wget_base_library()
 {
     wget_fail=0;
     wget_lib $CLAMAV_FILE_NAME        "https://www.clamav.net/downloads/production/$CLAMAV_FILE_NAME"
-    wget_lib $OPENSSL_FILE_NAME       "http://www.openssl.org/source/$OPENSSL_FILE_NAME"
+    wget_lib $OPENSSL_FILE_NAME       "https://www.openssl.org/source/$OPENSSL_FILE_NAME"
     wget_lib $ICU_FILE_NAME           "http://download.icu-project.org/files/icu4c/$ICU_VERSION/$ICU_FILE_NAME"
     #wget_lib $ICU_FILE_NAME           "https://fossies.org/linux/misc/$ICU_FILE_NAME"
-    # http://cdnetworks-kr-2.dl.sourceforge.net/project/libpng/zlib/$ZLIB_VERSION/$ZLIB_FILE_NAME
-    wget_lib $ZLIB_FILE_NAME          "http://zlib.net/$ZLIB_FILE_NAME"
+    # https://cdnetworks-kr-2.dl.sourceforge.net/project/libpng/zlib/$ZLIB_VERSION/$ZLIB_FILE_NAME
+    wget_lib $ZLIB_FILE_NAME          "https://zlib.net/$ZLIB_FILE_NAME"
     wget_lib $LIBZIP_FILE_NAME        "https://libzip.org/download/$LIBZIP_FILE_NAME"
-    wget_lib $READLINE_FILE_NAME      "http://ftp.gnu.org/gnu/readline/$READLINE_FILE_NAME"
-    wget_lib $GETTEXT_FILE_NAME       "http://ftp.gnu.org/gnu/gettext/$GETTEXT_FILE_NAME"
-    wget_lib $LIBICONV_FILE_NAME      "http://ftp.gnu.org/gnu/libiconv/$LIBICONV_FILE_NAME"
+    wget_lib $READLINE_FILE_NAME      "https://ftp.gnu.org/gnu/readline/$READLINE_FILE_NAME"
+    wget_lib $GETTEXT_FILE_NAME       "https://ftp.gnu.org/gnu/gettext/$GETTEXT_FILE_NAME"
+    wget_lib $LIBICONV_FILE_NAME      "https://ftp.gnu.org/gnu/libiconv/$LIBICONV_FILE_NAME"
     wget_lib $LIBXML2_FILE_NAME       "ftp://xmlsoft.org/libxml2/$LIBXML2_FILE_NAME"
     wget_lib $LIBWEBP_FILE_NAME       "https://github.com/webmproject/libwebp/archive/v${LIBWEBP_FILE_NAME##*-}"
     wget_lib $FRIBIDI_FILE_NAME       "https://github.com/fribidi/fribidi/archive/v${FRIBIDI_FILE_NAME##*-}"
     wget_lib $JSON_FILE_NAME          "https://s3.amazonaws.com/json-c_releases/releases/$JSON_FILE_NAME"
-    # http://sourceforge.net/projects/mcrypt/files/MCrypt/2.6.8/mcrypt-2.6.8.tar.gz/download
-    wget_lib $LIBMCRYPT_FILE_NAME     "http://sourceforge.net/projects/mcrypt/files/Libmcrypt/$LIBMCRYPT_VERSION/$LIBMCRYPT_FILE_NAME/download"
+    # https://sourceforge.net/projects/mcrypt/files/MCrypt/2.6.8/mcrypt-2.6.8.tar.gz/download
+    wget_lib $LIBMCRYPT_FILE_NAME     "https://sourceforge.net/projects/mcrypt/files/Libmcrypt/$LIBMCRYPT_VERSION/$LIBMCRYPT_FILE_NAME/download"
     wget_lib $LIBWBXML_FILE_NAME      "https://sourceforge.net/projects/libwbxml/files/libwbxml/${LIBWBXML_VERSION}/${LIBWBXML_FILE_NAME}/download"
     wget_lib $LIBUUID_FILE_NAME       "https://sourceforge.net/projects/libuuid/files/$LIBUUID_FILE_NAME/download"
-    wget_lib $CURL_FILE_NAME          "http://curl.haxx.se/download/$CURL_FILE_NAME"
+    wget_lib $CURL_FILE_NAME          "https://curl.haxx.se/download/$CURL_FILE_NAME"
     # http://downloads.mysql.com/archives/mysql-${MYSQL_VERSION%.*}/$MYSQL_FILE_NAME
     # http://mysql.oss.eznetsols.org/Downloads/MySQL-${MYSQL_VERSION%.*}/$MYSQL_FILE_NAME
-    wget_lib $MYSQL_FILE_NAME         "http://cdn.mysql.com/Downloads/MySQL-${MYSQL_VERSION%.*}/$MYSQL_FILE_NAME"
+    wget_lib $MYSQL_FILE_NAME         "https://cdn.mysql.com/Downloads/MySQL-${MYSQL_VERSION%.*}/$MYSQL_FILE_NAME"
     wget_lib_sqlite
     wget_lib_boost
     wget_lib_xunsearch
-    wget_lib $PCRE_FILE_NAME          "http://sourceforge.net/projects/pcre/files/pcre/$PCRE_VERSION/$PCRE_FILE_NAME/download"
-    wget_lib $NGINX_FILE_NAME         "http://nginx.org/download/$NGINX_FILE_NAME"
+    wget_lib $PCRE_FILE_NAME          "https://sourceforge.net/projects/pcre/files/pcre/$PCRE_VERSION/$PCRE_FILE_NAME/download"
+    wget_lib $NGINX_FILE_NAME         "https://nginx.org/download/$NGINX_FILE_NAME"
     wget_lib $NODEJS_FILE_NAME        "https://nodejs.org/dist/v${NODEJS_VERSION}/${NODEJS_FILE_NAME}"
     #wget_lib $CALIBRE_FILE_NAME       "https://github.com/kovidgoyal/calibre/releases/download/v${CALIBRE_VERSION}/${CALIBRE_FILE_NAME}"
     wget_lib $CALIBRE_FILE_NAME       "https://download.calibre-ebook.com/${CALIBRE_VERSION}/${CALIBRE_FILE_NAME}"
     wget_lib $GITBOOK_FILE_NAME       "https://github.com/GitbookIO/gitbook/archive/${GITBOOK_FILE_NAME##*-}"
     wget_lib $GITBOOK_CLI_FILE_NAME   "https://github.com/GitbookIO/gitbook-cli/archive/${GITBOOK_CLI_FILE_NAME##*-}"
     wget_lib $NGHTTP2_FILE_NAME       "https://github.com/nghttp2/nghttp2/releases/download/v${NGHTTP2_VERSION}/${NGHTTP2_FILE_NAME}"
-    wget_lib $PHP_FILE_NAME           "http://cn2.php.net/distributions/$PHP_FILE_NAME"
+    wget_lib $PHP_FILE_NAME           "https://cn2.php.net/distributions/$PHP_FILE_NAME"
     wget_lib $PTHREADS_FILE_NAME      "https://github.com/krakjoe/pthreads/archive/v${PTHREADS_FILE_NAME##*-}"
     #wget_lib $PTHREADS_FILE_NAME      "https://pecl.php.net/get/$PTHREADS_FILE_NAME"
     wget_lib $ZIP_FILE_NAME           "https://pecl.php.net/get/$ZIP_FILE_NAME"
@@ -490,15 +490,15 @@ wget_base_library()
     wget_lib $TIDY_FILE_NAME          "https://github.com/htacg/tidy-html5/archive/${TIDY_FILE_NAME##*-}"
     wget_lib $SPHINX_FILE_NAME        "https://github.com/sphinxsearch/sphinx/archive/${SPHINX_FILE_NAME#*-}"
     wget_lib $PHP_SPHINX_FILE_NAME    "https://github.com/php/pecl-search_engine-sphinx/archive/${PHP_SPHINX_FILE_NAME##*-}"
-    wget_lib $RSYSLOG_FILE_NAME       "http://www.rsyslog.com/files/download/rsyslog/${RSYSLOG_FILE_NAME}"
+    wget_lib $RSYSLOG_FILE_NAME       "https://www.rsyslog.com/files/download/rsyslog/${RSYSLOG_FILE_NAME}"
     wget_lib $LOGROTATE_FILE_NAME     "https://github.com/logrotate/logrotate/releases/download/$LOGROTATE_VERSION/$LOGROTATE_FILE_NAME"
     #wget_lib $LIBFASTJSON_FILE_NAME   "https://github.com/rsyslog/libfastjson/archive/v${LIBFASTJSON_FILE_NAME##*-}"
-    wget_lib $LIBFASTJSON_FILE_NAME   "http://download.rsyslog.com/libfastjson/${LIBFASTJSON_FILE_NAME}"
+    wget_lib $LIBFASTJSON_FILE_NAME   "https://download.rsyslog.com/libfastjson/${LIBFASTJSON_FILE_NAME}"
     #wget_lib $LIBLOGGING_FILE_NAME    "https://github.com/rsyslog/liblogging/archive/v${LIBLOGGING_FILE_NAME##*-}"
-    wget_lib $LIBLOGGING_FILE_NAME    "http://download.rsyslog.com/liblogging/${LIBLOGGING_FILE_NAME}"
+    wget_lib $LIBLOGGING_FILE_NAME    "https://download.rsyslog.com/liblogging/${LIBLOGGING_FILE_NAME}"
     wget_lib $LIBGCRYPT_FILE_NAME     "ftp://ftp.gnupg.org/gcrypt/libgcrypt/${LIBGCRYPT_FILE_NAME}"
     wget_lib $LIBGPG_ERROR_FILE_NAME  "ftp://ftp.gnupg.org/gcrypt/libgpg-error//${LIBGPG_ERROR_FILE_NAME}"
-    wget_lib $LIBESTR_FILE_NAME       "http://libestr.adiscon.com/files/download/${LIBESTR_FILE_NAME}"
+    wget_lib $LIBESTR_FILE_NAME       "https://libestr.adiscon.com/files/download/${LIBESTR_FILE_NAME}"
 
     wget_lib $XAPIAN_CORE_FILE_NAME     "https://oligarchy.co.uk/xapian/${XAPIAN_CORE_VERSION}/${XAPIAN_CORE_FILE_NAME}"
     wget_lib $XAPIAN_OMEGA_FILE_NAME    "https://oligarchy.co.uk/xapian/${XAPIAN_OMEGA_VERSION}/${XAPIAN_OMEGA_FILE_NAME}"
@@ -509,11 +509,11 @@ wget_base_library()
     wget_lib $LIBPNG_FILE_NAME        "https://sourceforge.net/projects/libpng/files/libpng${version/./}/$LIBPNG_VERSION/$LIBPNG_FILE_NAME/download"
 
     #wget_lib $GLIB_FILE_NAME          "https://github.com/GNOME/glib/archive/${GLIB_FILE_NAME##*-}"
-    wget_lib $GLIB_FILE_NAME          "http://ftp.acc.umu.se/pub/gnome/sources/glib/${GLIB_VERSION%.*}/${GLIB_FILE_NAME}"
+    wget_lib $GLIB_FILE_NAME          "https://ftp.acc.umu.se/pub/gnome/sources/glib/${GLIB_VERSION%.*}/${GLIB_FILE_NAME}"
     #wget_lib $LIBFFI_FILE_NAME        "https://github.com/libffi/libffi/archive/v${LIBFFI_FILE_NAME##*-}"
     wget_lib $LIBFFI_FILE_NAME        "ftp://sourceware.org/pub/libffi/${LIBFFI_FILE_NAME}"
-    wget_lib $PIXMAN_FILE_NAME        "http://cairographics.org/releases/$PIXMAN_FILE_NAME"
-    wget_lib $CAIRO_FILE_NAME         "http://cairographics.org/releases/$CAIRO_FILE_NAME"
+    wget_lib $PIXMAN_FILE_NAME        "https://cairographics.org/releases/$PIXMAN_FILE_NAME"
+    wget_lib $CAIRO_FILE_NAME         "https://cairographics.org/releases/$CAIRO_FILE_NAME"
 
     local version=${UTIL_LINUX_VERSION%.*};
     if [ "${version%.*}" = "${version}" ] ;then
@@ -521,8 +521,8 @@ wget_base_library()
     fi
     wget_lib $UTIL_LINUX_FILE_NAME    "https://www.kernel.org/pub/linux/utils/util-linux/v${version}/${UTIL_LINUX_FILE_NAME}"
 
-    wget_lib $NASM_FILE_NAME          "http://www.nasm.us/pub/nasm/releasebuilds/$NASM_VERSION/$NASM_FILE_NAME"
-    wget_lib $JPEG_FILE_NAME          "http://www.ijg.org/files/$JPEG_FILE_NAME"
+    wget_lib $NASM_FILE_NAME          "https://www.nasm.us/pub/nasm/releasebuilds/$NASM_VERSION/$NASM_FILE_NAME"
+    wget_lib $JPEG_FILE_NAME          "https://www.ijg.org/files/$JPEG_FILE_NAME"
     wget_lib $LIBJPEG_FILE_NAME       "https://sourceforge.net/projects/libjpeg-turbo/files/$LIBJPEG_VERSION/$LIBJPEG_FILE_NAME/download"
 
     local tmp="v";
@@ -532,7 +532,7 @@ wget_base_library()
     fi
     wget_lib $OPENJPEG_FILE_NAME      "https://github.com/uclouvain/openjpeg/archive/${tmp}${OPENJPEG_FILE_NAME#*-}"
     wget_lib $FREETYPE_FILE_NAME      "https://sourceforge.net/projects/freetype/files/freetype${FREETYPE_VERSION%%.*}/$FREETYPE_VERSION/$FREETYPE_FILE_NAME/download"
-    wget_lib $HARFBUZZ_FILE_NAME      "http://www.freedesktop.org/software/harfbuzz/release/$HARFBUZZ_FILE_NAME"
+    wget_lib $HARFBUZZ_FILE_NAME      "https://www.freedesktop.org/software/harfbuzz/release/$HARFBUZZ_FILE_NAME"
     wget_lib $EXPAT_FILE_NAME         "https://sourceforge.net/projects/expat/files/expat/$EXPAT_VERSION/$EXPAT_FILE_NAME/download"
     wget_lib $FONTCONFIG_FILE_NAME    "https://www.freedesktop.org/software/fontconfig/release/$FONTCONFIG_FILE_NAME"
     wget_lib $POPPLER_FILE_NAME       "https://poppler.freedesktop.org/$POPPLER_FILE_NAME"
@@ -540,12 +540,12 @@ wget_base_library()
     #wget_lib $FONTFORGE_FILE_NAME     "https://github.com/fontforge/fontforge/archive/${FONTFORGE_FILE_NAME#*-}"
     wget_lib $PDF2HTMLEX_FILE_NAME    "https://github.com/coolwanglu/pdf2htmlEX/archive/v${PDF2HTMLEX_FILE_NAME#*-}"
     wget_lib $DEHYDRATED_FILE_NAME    "https://github.com/lukas2511/dehydrated/archive/v${DEHYDRATED_FILE_NAME#*-}"
-    wget_lib $PANGO_FILE_NAME         "http://ftp.gnome.org/pub/GNOME/sources/pango/${PANGO_VERSION%.*}/$PANGO_FILE_NAME"
+    wget_lib $PANGO_FILE_NAME         "https://ftp.gnome.org/pub/GNOME/sources/pango/${PANGO_VERSION%.*}/$PANGO_FILE_NAME"
     wget_lib $LIBXPM_FILE_NAME        "https://www.x.org/releases/individual/lib/$LIBXPM_FILE_NAME"
     wget_lib $LIBXEXT_FILE_NAME       "https://www.x.org/releases/individual/lib/$LIBXEXT_FILE_NAME"
     # wget_lib $LIBGD_FILE_NAME       "https://bitbucket.org/libgd/gd-libgd/downloads/$LIBGD_FILE_NAME"
-    wget_lib $LIBGD_FILE_NAME         "http://fossies.org/linux/www/$LIBGD_FILE_NAME"
-    wget_lib $IMAGEMAGICK_FILE_NAME  "http://www.imagemagick.org/download/releases/${IMAGEMAGICK_FILE_NAME}"
+    wget_lib $LIBGD_FILE_NAME         "https://fossies.org/linux/www/$LIBGD_FILE_NAME"
+    wget_lib $IMAGEMAGICK_FILE_NAME  "https://www.imagemagick.org/download/releases/${IMAGEMAGICK_FILE_NAME}"
     if [ "$?" = "1" ]; then
     wget_lib $IMAGEMAGICK_FILE_NAME  "https://github.com/ImageMagick/ImageMagick/archive/${IMAGEMAGICK_FILE_NAME#*-}"
     fi
@@ -556,24 +556,23 @@ wget_base_library()
     if [ "${version%.*}" = "${version}" ] ;then
         local version=${KERBEROS_VERSION}
     fi
-    wget_lib $KERBEROS_FILE_NAME      "http://web.mit.edu/kerberos/dist/krb5/${version}/$KERBEROS_FILE_NAME"
+    wget_lib $KERBEROS_FILE_NAME      "https://web.mit.edu/kerberos/dist/krb5/${version}/$KERBEROS_FILE_NAME"
     wget_lib $LIBMEMCACHED_FILE_NAME  "https://launchpad.net/libmemcached/${LIBMEMCACHED_VERSION%.*}/$LIBMEMCACHED_VERSION/+download/$LIBMEMCACHED_FILE_NAME"
     #wget_lib $MEMCACHED_FILE_NAME     "https://github.com/memcached/memcached/archive/${MEMCACHED_FILE_NAME##*-}"
-    wget_lib $MEMCACHED_FILE_NAME     "http://memcached.org/files/${MEMCACHED_FILE_NAME}"
+    wget_lib $MEMCACHED_FILE_NAME     "https://memcached.org/files/${MEMCACHED_FILE_NAME}"
     wget_lib $REDIS_FILE_NAME         "http://download.redis.io/releases/${REDIS_FILE_NAME}"
     # wget_lib $LIBEVENT_FILE_NAME      "https://sourceforge.net/projects/levent/files//libevent-${LIBEVENT_VERSION%.*}/$LIBEVENT_FILE_NAME"
     # wget_lib $LIBEVENT_FILE_NAME      "https://sourceforge.net/projects/levent/files/release-${LIBEVENT_VERSION}-stable/$LIBEVENT_FILE_NAME/download"
     wget_lib $LIBEVENT_FILE_NAME      "https://github.com/libevent/libevent/archive/${LIBEVENT_FILE_NAME#*-}"
-    wget_lib $GEARMAND_FILE_NAME       "https://github.com/gearman/gearmand/releases/download/${GEARMAND_VERSION}/${GEARMAND_FILE_NAME}"
+    wget_lib $GEARMAND_FILE_NAME      "https://github.com/gearman/gearmand/releases/download/${GEARMAND_VERSION}/${GEARMAND_FILE_NAME}"
     #wget_lib $GEARMAND_FILE_NAME      "https://github.com/gearman/gearmand/archive/${GEARMAND_FILE_NAME#*-}"
     wget_lib $PHP_GEARMAN_FILE_NAME   "https://github.com/wcgallego/pecl-gearman/archive/gearman-${PHP_GEARMAN_VERSION}.tar.gz"
-    wget_lib $QRENCODE_FILE_NAME   "http://fukuchi.org/works/qrencode/$QRENCODE_FILE_NAME"
+    wget_lib $QRENCODE_FILE_NAME      "https://fukuchi.org/works/qrencode/$QRENCODE_FILE_NAME"
     wget_lib $POSTGRESQL_FILE_NAME    "https://ftp.postgresql.org/pub/source/v$POSTGRESQL_VERSION/$POSTGRESQL_FILE_NAME"
     wget_lib $PGBOUNCER_FILE_NAME     "https://pgbouncer.github.io/downloads/files/${PGBOUNCER_VERSION}/$PGBOUNCER_FILE_NAME"
-    wget_lib $APR_FILE_NAME           "http://mirror.bit.edu.cn/apache/apr/$APR_FILE_NAME"
-    wget_lib $APR_UTIL_FILE_NAME      "http://mirror.bit.edu.cn/apache/apr/$APR_UTIL_FILE_NAME"
-    # http://mirror.bjtu.edu.cn/apache/httpd/$APACHE_FILE_NAME
-    wget_lib $APACHE_FILE_NAME        "http://archive.apache.org/dist/httpd/$APACHE_FILE_NAME"
+    wget_lib $APR_FILE_NAME           "https://mirror.bit.edu.cn/apache/apr/$APR_FILE_NAME"
+    wget_lib $APR_UTIL_FILE_NAME      "https://mirror.bit.edu.cn/apache/apr/$APR_UTIL_FILE_NAME"
+    wget_lib $APACHE_FILE_NAME        "https://www.apache.org/dist/httpd/$APACHE_FILE_NAME"
     wget_lib $APCU_FILE_NAME          "https://pecl.php.net/get/$APCU_FILE_NAME"
     wget_lib $APCU_BC_FILE_NAME       "https://pecl.php.net/get/$APCU_BC_FILE_NAME"
     wget_lib $YAF_FILE_NAME           "https://github.com/laruence/yaf/archive/$YAF_FILE_NAME"
@@ -592,6 +591,7 @@ wget_base_library()
     wget_lib $PHP_MEMCACHED_FILE_NAME "https://pecl.php.net/get/$PHP_MEMCACHED_FILE_NAME"
     wget_lib $EVENT_FILE_NAME         "https://pecl.php.net/get/$EVENT_FILE_NAME"
     wget_lib $DIO_FILE_NAME           "https://pecl.php.net/get/$DIO_FILE_NAME"
+    wget_lib $TRADER_FILE_NAME        "https://pecl.php.net/get/$TRADER_FILE_NAME"
     wget_lib $PHP_LIBEVENT_FILE_NAME  "https://pecl.php.net/get/$PHP_LIBEVENT_FILE_NAME"
     wget_lib $IMAGICK_FILE_NAME       "https://pecl.php.net/get/$IMAGICK_FILE_NAME"
     #if [ `echo "${PHP_VERSION}" "7.1.99"|tr " " "\n"|sort -rV|head -1` = "7.1.99" ]; then
@@ -609,9 +609,9 @@ wget_base_library()
     wget_lib $ZEND_FILE_NAME          "https://packages.zendframework.com/releases/ZendFramework-$ZEND_VERSION/$ZEND_FILE_NAME"
     wget_lib $SMARTY_FILE_NAME        "https://github.com/smarty-php/smarty/archive/v${SMARTY_FILE_NAME#*-}"
     wget_lib $HTMLPURIFIER_FILE_NAME  "https://github.com/ezyang/htmlpurifier/archive/v${HTMLPURIFIER_FILE_NAME#*-}"
-    wget_lib $CKEDITOR_FILE_NAME      "http://download.cksource.com/CKEditor/CKEditor/CKEditor%20$CKEDITOR_VERSION/$CKEDITOR_FILE_NAME"
-    wget_lib $JQUERY_FILE_NAME        "http://code.jquery.com/$JQUERY_FILE_NAME"
-    wget_lib $JQUERY3_FILE_NAME       "http://code.jquery.com/$JQUERY3_FILE_NAME"
+    wget_lib $CKEDITOR_FILE_NAME      "https://download.cksource.com/CKEditor/CKEditor/CKEditor%20$CKEDITOR_VERSION/$CKEDITOR_FILE_NAME"
+    wget_lib $JQUERY_FILE_NAME        "https://code.jquery.com/$JQUERY_FILE_NAME"
+    wget_lib $JQUERY3_FILE_NAME       "https://code.jquery.com/$JQUERY3_FILE_NAME"
     wget_lib $D3_FILE_NAME            "https://github.com/d3/d3/releases/download/v${D3_VERSION}/d3.${D3_FILE_NAME#*${D3_VERSION}.}"
     wget_lib $CHARTJS_FILE_NAME       "https://github.com/chartjs/Chart.js/archive/v${CHARTJS_FILE_NAME#*-}"
     wget_lib $RABBITMQ_C_FILE_NAME    "https://github.com/alanxz/rabbitmq-c/archive/v${RABBITMQ_C_FILE_NAME##*-}"
@@ -622,8 +622,8 @@ wget_base_library()
     wget_lib $LIBSODIUM_FILE_NAME     "https://download.libsodium.org/libsodium/releases/$LIBSODIUM_FILE_NAME"
     wget_lib $PHP_ZMQ_FILE_NAME       "https://github.com/alexat/php-zmq/archive/${PHP_ZMQ_FILE_NAME##*-}"
     # wget_lib $SWFUPLOAD_FILE_NAME    "http://swfupload.googlecode.com/files/SWFUpload%20v$SWFUPLOAD_VERSION%20Core.zip"
-    wget_lib $GEOLITE2_CITY_MMDB_FILE_NAME    "http://geolite.maxmind.com/download/geoip/database/$GEOLITE2_CITY_MMDB_FILE_NAME"
-    wget_lib $GEOLITE2_COUNTRY_MMDB_FILE_NAME "http://geolite.maxmind.com/download/geoip/database/$GEOLITE2_COUNTRY_MMDB_FILE_NAME"
+    wget_lib $GEOLITE2_CITY_MMDB_FILE_NAME    "https://geolite.maxmind.com/download/geoip/database/$GEOLITE2_CITY_MMDB_FILE_NAME"
+    wget_lib $GEOLITE2_COUNTRY_MMDB_FILE_NAME "https://geolite.maxmind.com/download/geoip/database/$GEOLITE2_COUNTRY_MMDB_FILE_NAME"
     wget_lib $LIBMAXMINDDB_FILE_NAME  "https://github.com/maxmind/libmaxminddb/releases/download/${LIBMAXMINDDB_VERSION}/${LIBMAXMINDDB_FILE_NAME}"
     wget_lib $MAXMIND_DB_READER_PHP_FILE_NAME "https://github.com/maxmind/MaxMind-DB-Reader-php/archive/v${MAXMIND_DB_READER_PHP_FILE_NAME##*-}"
     wget_lib $WEB_SERVICE_COMMON_PHP_FILE_NAME "https://github.com/maxmind/web-service-common-php/archive/v${WEB_SERVICE_COMMON_PHP_FILE_NAME##*-}"
@@ -674,36 +674,35 @@ wget_base_library()
 wget_env_library()
 {
     wget_fail="0"
-    # http://ftp.gnu.org/gnu/wget/wget-1.18.tar.xz
-    # http://ftp.gnu.org/gnu/tar/tar-1.29.tar.xz
-    # http://ftp.gnu.org/gnu/sed/sed-4.2.2.tar.bz2
-    # http://ftp.gnu.org/gnu/gzip/gzip-1.8.tar.xz
+    # https://ftp.gnu.org/gnu/wget/wget-1.18.tar.xz
+    # https://ftp.gnu.org/gnu/tar/tar-1.29.tar.xz
+    # https://ftp.gnu.org/gnu/sed/sed-4.2.2.tar.bz2
+    # https://ftp.gnu.org/gnu/gzip/gzip-1.8.tar.xz
 
 
-    wget_lib $BINUTILS_FILE_NAME "http://ftp.gnu.org/gnu/binutils/$BINUTILS_FILE_NAME"
+    wget_lib $BINUTILS_FILE_NAME "https://ftp.gnu.org/gnu/binutils/$BINUTILS_FILE_NAME"
     # https://github.com/antlr/antlr4/archive/4.5.3.tar.gz
     wget_lib $ISL_FILE_NAME "ftp://gcc.gnu.org/pub/gcc/infrastructure/$ISL_FILE_NAME"
-    wget_lib $GMP_FILE_NAME "http://ftp.gnu.org/gnu/gmp/$GMP_FILE_NAME"
-    wget_lib $MPC_FILE_NAME "http://ftp.gnu.org/gnu/mpc/$MPC_FILE_NAME"
-    wget_lib $MPFR_FILE_NAME "http://ftp.gnu.org/gnu/mpfr/$MPFR_FILE_NAME"
-    wget_lib $GCC_FILE_NAME "http://ftp.gnu.org/gnu/gcc/gcc-$GCC_VERSION/$GCC_FILE_NAME"
-    wget_lib $BISON_FILE_NAME "http://ftp.gnu.org/gnu/bison/$BISON_FILE_NAME"
-    wget_lib $AUTOMAKE_FILE_NAME "http://ftp.gnu.org/gnu/automake/$AUTOMAKE_FILE_NAME"
-    wget_lib $AUTOCONF_FILE_NAME "http://ftp.gnu.org/gnu/autoconf/$AUTOCONF_FILE_NAME"
-    wget_lib $LIBTOOL_FILE_NAME "http://ftp.gnu.org/gnu/libtool/$LIBTOOL_FILE_NAME"
-    wget_lib $M4_FILE_NAME "http://ftp.gnu.org/gnu/m4/$M4_FILE_NAME"
-    wget_lib $GLIBC_FILE_NAME "http://ftp.gnu.org/gnu/glibc/$GLIBC_FILE_NAME"
-    wget_lib $MAKE_FILE_NAME "http://ftp.gnu.org/gnu/make/$MAKE_FILE_NAME"
-    wget_lib $PATCH_FILE_NAME "http://ftp.gnu.org/gnu/patch/$PATCH_FILE_NAME"
+    wget_lib $GMP_FILE_NAME "https://ftp.gnu.org/gnu/gmp/$GMP_FILE_NAME"
+    wget_lib $MPC_FILE_NAME "https://ftp.gnu.org/gnu/mpc/$MPC_FILE_NAME"
+    wget_lib $MPFR_FILE_NAME "https://ftp.gnu.org/gnu/mpfr/$MPFR_FILE_NAME"
+    wget_lib $GCC_FILE_NAME "https://ftp.gnu.org/gnu/gcc/gcc-$GCC_VERSION/$GCC_FILE_NAME"
+    wget_lib $BISON_FILE_NAME "https://ftp.gnu.org/gnu/bison/$BISON_FILE_NAME"
+    wget_lib $AUTOMAKE_FILE_NAME "https://ftp.gnu.org/gnu/automake/$AUTOMAKE_FILE_NAME"
+    wget_lib $AUTOCONF_FILE_NAME "https://ftp.gnu.org/gnu/autoconf/$AUTOCONF_FILE_NAME"
+    wget_lib $LIBTOOL_FILE_NAME "https://ftp.gnu.org/gnu/libtool/$LIBTOOL_FILE_NAME"
+    wget_lib $M4_FILE_NAME "https://ftp.gnu.org/gnu/m4/$M4_FILE_NAME"
+    wget_lib $GLIBC_FILE_NAME "https://ftp.gnu.org/gnu/glibc/$GLIBC_FILE_NAME"
+    wget_lib $MAKE_FILE_NAME "https://ftp.gnu.org/gnu/make/$MAKE_FILE_NAME"
+    wget_lib $PATCH_FILE_NAME "https://ftp.gnu.org/gnu/patch/$PATCH_FILE_NAME"
 
     wget_lib $RE2C_FILE_NAME "https://sourceforge.net/projects/re2c/files/$RE2C_VERSION/$RE2C_FILE_NAME/download"
     wget_lib $FLEX_FILE_NAME "https://sourceforge.net/projects/flex/files/$FLEX_FILE_NAME/download"
     wget_lib $PKGCONFIG_FILE_NAME "https://pkg-config.freedesktop.org/releases/$PKGCONFIG_FILE_NAME"
-    # wget_lib $PKGCONFIG_FILE_NAME "http://pkgconfig.freedesktop.org/releases/$PKGCONFIG_FILE_NAME"
 
-    wget_lib $PPL_FILE_NAME "http://bugseng.com/products/ppl/download/ftp/releases/${PPL_VERSION}/$PPL_FILE_NAME"
-    wget_lib $CLOOG_FILE_NAME "http://www.bastoul.net/cloog/pages/download/$CLOOG_FILE_NAME"
-    # http://www.bastoul.net/cloog/pages/download/piplib-1.4.0.tar.gz
+    wget_lib $PPL_FILE_NAME "https://bugseng.com/products/ppl/download/ftp/releases/${PPL_VERSION}/$PPL_FILE_NAME"
+    wget_lib $CLOOG_FILE_NAME "https://www.bastoul.net/cloog/pages/download/$CLOOG_FILE_NAME"
+    # https://www.bastoul.net/cloog/pages/download/piplib-1.4.0.tar.gz
 
 
     wget_lib $PYTHON_FILE_NAME "https://www.python.org/ftp/python/$PYTHON_VERSION/$PYTHON_FILE_NAME"
@@ -1040,7 +1039,6 @@ init_redis_conf()
     # dir ./
     local pattern='^dir .\{0,\}$';
     change_redis_conf "$pattern" "dir $(sed_quote2 $BASE_DIR/data/redis)"
-    # http://www.linuxidc.com/Linux/2015-01/111364.htm
 
 #    list-max-ziplist-entries 512
 #    list-max-ziplist-value 64
@@ -5028,6 +5026,7 @@ compile_python()
 # {{{ after_python_make_install()
 after_python_make_install()
 {
+    return;
     $PYTHON_BASE/bin/pip3 install --upgrade pip
     #中文分词
     #$PYTHON_BASE/bin/pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple  -U pkuseg
@@ -5707,6 +5706,23 @@ compile_php_extension_dio()
     "
 
     compile "php_extension_dio" "$DIO_FILE_NAME" "dio-$DIO_VERSION" "dio.so" "PHP_EXTENSION_DIO_CONFIGURE"
+
+    /bin/rm -rf package.xml
+}
+# }}}
+# {{{ compile_php_extension_trader()
+compile_php_extension_trader()
+{
+    is_installed_php_extension trader $TRADER_VERSION
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    PHP_EXTENSION_TRADER_CONFIGURE="
+        ./configure --with-php-config=$PHP_BASE/bin/php-config
+    "
+
+    compile "php_extension_trader" "$TRADER_FILE_NAME" "trader-$TRADER_VERSION" "trader.so" "PHP_EXTENSION_TRADER_CONFIGURE"
 
     /bin/rm -rf package.xml
 }
@@ -7378,7 +7394,7 @@ compile_nodejs()
         exit 1;
     fi
     deal_path "$NODEJS_BASE"
-    #ping_usable registry.npm.org 100 || npm config set registry http://registry.npm.taobao.org
+    #ping_usable registry.npm.org 100 || npm config set registry https://registry.npm.taobao.org
 }
 # }}}
 # {{{ compile_calibre()
@@ -7494,14 +7510,14 @@ compile_gitbook_pdf()
 
     echo_build_start gitbook-pdf
 
-    #PHANTOMJS_CDNURL=http://npm.taobao.org/dist/phantomjs npm install phantomjs
-    #PHANTOMJS_CDNURL=http://cnpmjs.org/downloads npm install phantomjs
-    #npm config set registry http://registry.npm.taobao.org -g
+    #PHANTOMJS_CDNURL=https://npm.taobao.org/dist/phantomjs npm install phantomjs
+    #PHANTOMJS_CDNURL=https://cnpmjs.org/downloads npm install phantomjs
+    #npm config set registry https://registry.npm.taobao.org -g
 
-    #export PHANTOMJS_CDNURL="http://npm.taobao.org/dist/phantomjs"
+    #export PHANTOMJS_CDNURL="https://npm.taobao.org/dist/phantomjs"
     #ping_usable cdn.bitbucket.org || \
-    #npm config set phantomjs_cdnurl=http://npm.taobao.org/dist/phantomjs && \
-    #npm config set registry http://registry.npm.taobao.org
+    #npm config set phantomjs_cdnurl=https://npm.taobao.org/dist/phantomjs && \
+    #npm config set registry https://registry.npm.taobao.org
 
     #npm install phantomjs -g
 
@@ -7684,6 +7700,7 @@ check_soft_updates()
             pecl_event
             pecl_xdebug
             pecl_dio
+            pecl_trader
             pecl_memcached
             pecl_qrencode
             pecl_mongodb
@@ -7769,7 +7786,7 @@ check_openssl_version()
 # {{{ check_redis_version()
 check_redis_version()
 {
-    local versions=`curl -Lk https://redis.io/ 2>/dev/null|sed -n 's/^.\{1,\}redis-\([0-9a-zA-Z.]\{2,\}\).tar.gz.\{1,\}/\1/p'|sort -rV`
+    local versions=`curl -Lk http://redis.io/ 2>/dev/null|sed -n 's/^.\{1,\}redis-\([0-9a-zA-Z.]\{2,\}\).tar.gz.\{1,\}/\1/p'|sort -rV`
     local new_version=`echo "$versions"|head -1`;
     if [ -z "$new_version" ];then
         echo -e "探测redis新版本\033[0;31m失败\033[0m" >&2
@@ -7837,7 +7854,7 @@ check_curl_version()
 # {{{ check_zlib_version()
 check_zlib_version()
 {
-    local new_version=`curl -Lk http://zlib.net 2>/dev/null|sed -n 's/^.\{0,\}"zlib-\([0-9a-zA-Z._]\{2,\}\).tar.gz".\{0,\}/\1/p'|sort -rV|head -1`
+    local new_version=`curl -Lk https://zlib.net 2>/dev/null|sed -n 's/^.\{0,\}"zlib-\([0-9a-zA-Z._]\{2,\}\).tar.gz".\{0,\}/\1/p'|sort -rV|head -1`
     if [ -z "$new_version" ];then
         echo -e "探测zlib新版本\033[0;31m失败\033[0m" >&2
         return 1;
@@ -7856,7 +7873,7 @@ check_zlib_version()
 # {{{ check_libunwind_version()
 check_libunwind_version()
 {
-    local new_version=`curl -Lk http://download.savannah.gnu.org/releases/libunwind/ 2>/dev/null|sed -n 's/^.\{0,\}"libunwind-\([0-9a-zA-Z._]\{2,\}\).tar.gz".\{0,\}/\1/p'|sort -rV|head -1`
+    local new_version=`curl -Lk https://download.savannah.gnu.org/releases/libunwind/ 2>/dev/null|sed -n 's/^.\{0,\}"libunwind-\([0-9a-zA-Z._]\{2,\}\).tar.gz".\{0,\}/\1/p'|sort -rV|head -1`
     if [ -z "$new_version" ];then
         echo -e "探测libunwind新版本\033[0;31m失败\033[0m" >&2
         return 1;
@@ -8064,7 +8081,7 @@ check_nginx_version()
     # Stable version
     # Legacy versions
     # 难点是取到stable中的版本
-    local new_version=`curl -Lk http://nginx.org/en/download.html 2>/dev/null |sed -n 's/^.\{1,\}Stable version\(.\{1,\}\)Legacy versions.\{1,\}$/\1/p'|sed -n 's/^.\{1,\}nginx-\([0-9.]\{1,\}\)\.tar\.gz".\{1,\}$/\1/gp'|sort -rV|head -1`;
+    local new_version=`curl -Lk https://nginx.org/en/download.html 2>/dev/null |sed -n 's/^.\{1,\}Stable version\(.\{1,\}\)Legacy versions.\{1,\}$/\1/p'|sed -n 's/^.\{1,\}nginx-\([0-9.]\{1,\}\)\.tar\.gz".\{1,\}$/\1/gp'|sort -rV|head -1`;
     new_version=${new_version// /}
     if [ -z "$new_version" ];then
         echo -e "探测nginx新版本\033[0;31m失败\033[0m" >&2
@@ -8184,7 +8201,7 @@ check_libfastjson_version()
 # {{{ check_imagemagick_version()
 check_imagemagick_version()
 {
-    local versions=`curl http://www.imagemagick.org/download/releases/ 2>/dev/null|sed -n 's/^.\{1,\} href="ImageMagick-\([0-9.-]\{1,\}\).tar.[a-z0-9A-Z]\{1,\}">.\{1,\}$/\1/p'|sort -rV`
+    local versions=`curl https://www.imagemagick.org/download/releases/ 2>/dev/null|sed -n 's/^.\{1,\} href="ImageMagick-\([0-9.-]\{1,\}\).tar.[a-z0-9A-Z]\{1,\}">.\{1,\}$/\1/p'|sort -rV`
     local new_version=`echo "$versions"|head -1`;
     if [ -z "$new_version" ];then
         echo -e "探测imagemagick新版本\033[0;31m失败\033[0m" >&2
@@ -8295,7 +8312,7 @@ check_nasm_version()
     check_ftp_version nasm $NASM_VERSION "https://www.nasm.us/pub/nasm/releasebuilds/" 's/^.\{1,\}[>]\([0-9.]\{1,\}\)\/[<]*.\{0,\}$/\1/p'
     return
 
-    local new_version=`curl -Lk http://www.nasm.us/ 2>/dev/null |sed -n '/The latest stable version of NASM is/{n;s/^.\{1,\}>\([0-9].\{1,\}\)<.\{1,\}$/\1/p;}'`;
+    local new_version=`curl -Lk https://www.nasm.us/ 2>/dev/null |sed -n '/The latest stable version of NASM is/{n;s/^.\{1,\}>\([0-9].\{1,\}\)<.\{1,\}$/\1/p;}'`;
     new_version=${new_version// /}
     if [ -z "$new_version" ];then
         echo -e "探测nasm新版本\033[0;31m失败\033[0m" >&2
@@ -8488,6 +8505,12 @@ check_pecl_dio_version()
 {
     #check_github_soft_version pecl-system-dio $DIO_VERSION "https://github.com/php/pecl-system-dio/releases"
     check_php_pecl_version dio $DIO_VERSION
+}
+# }}}
+# {{{ check_pecl_trader_version()
+check_pecl_trader_version()
+{
+    check_php_pecl_version trader $TRADER_VERSION
 }
 # }}}
 # {{{ check_pecl_xdebug_version()
@@ -8712,7 +8735,7 @@ check_libpng_version()
 # {{{ check_kerberos_version()
 check_kerberos_version()
 {
-    local new_version=`curl -Lk http://web.mit.edu/kerberos/dist/ 2>/dev/null |sed -n 's/.\{1,\}>krb5-\([0-9.-]\{1,\}\).tar.gz<.\{1,\}$/\1/p'|tr - .|sort -rV|head -1`
+    local new_version=`curl -Lk https://web.mit.edu/kerberos/dist/ 2>/dev/null |sed -n 's/.\{1,\}>krb5-\([0-9.-]\{1,\}\).tar.gz<.\{1,\}$/\1/p'|tr - .|sort -rV|head -1`
     if [ -z "$new_version" ];then
         echo -e "探测kerberos新版本\033[0;31m失败\033[0m" >&2
         return 1;
@@ -8808,7 +8831,7 @@ check_qrencode_version()
 # {{{ check_jpeg_version()
 check_jpeg_version()
 {
-    local new_version=`curl -Lk http://www.ijg.org/files/ 2>/dev/null |sed -n 's/^.*>jpegsrc\.v\([0-9a-zA-Z.]\{1,\}\).tar.gz<.*$/\1/p'|sort -rV|head -1`
+    local new_version=`curl -Lk https://www.ijg.org/files/ 2>/dev/null |sed -n 's/^.*>jpegsrc\.v\([0-9a-zA-Z.]\{1,\}\).tar.gz<.*$/\1/p'|sort -rV|head -1`
     if [ -z "$new_version" ];then
         echo -e "探测jpeg新版本\033[0;31m失败\033[0m" >&2
         return 1;
@@ -8859,7 +8882,7 @@ check_libxslt_version()
 check_boost_version()
 {
     #check_sourceforge_soft_version boost ${BOOST_VERSION//_/.} 's/^.\{0,\}<tr title="\([0-9.]\{1,\}\)" class="folder \{0,\}"> \{0,\}$/\1/p'
-    local new_version=`curl -Lk http://www.boost.org/ 2>/dev/null |sed -n 's/^.\{1,\}Version \([0-9._-]\{1,\}\).\{1,\}>Download<.\{1,\}/\1/p'|sort -rV|head -1`
+    local new_version=`curl -Lk https://www.boost.org/ 2>/dev/null |sed -n 's/^.\{1,\}Version \([0-9._-]\{1,\}\).\{1,\}>Download<.\{1,\}/\1/p'|sort -rV|head -1`
     if [ -z "$new_version" ];then
         echo -e "探测boost新版本\033[0;31m失败\033[0m" >&2
         return 1;
@@ -8993,13 +9016,13 @@ check_xf86bigfontproto_version()
 # {{{ check_cairo_version()
 check_cairo_version()
 {
-    check_ftp_version cairo ${CAIRO_VERSION} http://cairographics.org/releases/
+    check_ftp_version cairo ${CAIRO_VERSION} https://cairographics.org/releases/
 }
 # }}}
 # {{{ check_pixman_version()
 check_pixman_version()
 {
-    check_ftp_version pixman ${PIXMAN_VERSION} http://cairographics.org/releases/
+    check_ftp_version pixman ${PIXMAN_VERSION} https://cairographics.org/releases/
 }
 # }}}
 # {{{ check_fontconfig_version()
@@ -9017,12 +9040,12 @@ check_poppler_version()
 # {{{ check_pango_version()
 check_pango_version()
 {
-    local tmpdir=`curl -Lk http://ftp.gnome.org/pub/GNOME/sources/pango/ 2>/dev/null|sed -n 's/^.*>\([0-9.-]\{1,\}\)\/<.*$/\1/p'|sort -rV | head -1`;
+    local tmpdir=`curl -Lk https://ftp.gnome.org/pub/GNOME/sources/pango/ 2>/dev/null|sed -n 's/^.*>\([0-9.-]\{1,\}\)\/<.*$/\1/p'|sort -rV | head -1`;
     if [ -z "$tmpdir" ];then
         echo -e "探测pango的新版本\033[0;31m失败\033[0m" >&2
         return 1;
     fi
-    check_ftp_version pango ${PANGO_VERSION} http://ftp.gnome.org/pub/GNOME/sources/pango/${tmpdir}/ 's/^.\{1,\}>pango-\([0-9.]\{1,\}\)\.tar\.xz<.\{0,\}$/\1/p'
+    check_ftp_version pango ${PANGO_VERSION} https://ftp.gnome.org/pub/GNOME/sources/pango/${tmpdir}/ 's/^.\{1,\}>pango-\([0-9.]\{1,\}\)\.tar\.xz<.\{0,\}$/\1/p'
 }
 # }}}
 # {{{ check_libsodium_version()
@@ -9035,25 +9058,25 @@ check_libsodium_version()
 check_memcached_version()
 {
     check_github_soft_version memcached $MEMCACHED_VERSION "https://github.com/memcached/memcached/releases"
-    #check_ftp_version memcached ${MEMCACHED_VERSION} http://memcached.org/files/
+    #check_ftp_version memcached ${MEMCACHED_VERSION} https://memcached.org/files/
 }
 # }}}
 # {{{ check_apache_version()
 check_apache_version()
 {
-    check_ftp_version httpd ${APACHE_VERSION} http://archive.apache.org/dist/httpd/
+    check_ftp_version httpd ${APACHE_VERSION} https://httpd.apache.org/download.cgi
 }
 # }}}
 # {{{ check_apr_version()
 check_apr_version()
 {
-    check_ftp_version apr ${APR_VERSION} http://apr.apache.org/download.cgi
+    check_ftp_version apr ${APR_VERSION} https://apr.apache.org/download.cgi
 }
 # }}}
 # {{{ check_apr_util_version()
 check_apr_util_version()
 {
-    check_ftp_version apr-util ${APR_UTIL_VERSION} http://apr.apache.org/download.cgi
+    check_ftp_version apr-util ${APR_UTIL_VERSION} https://apr.apache.org/download.cgi
 }
 # }}}
 # {{{ check_postgresql_version()
@@ -9096,7 +9119,7 @@ check_ftp_gnu_org_version()
 {
     local soft=$1
     local current_version=$2
-    local url="http://ftp.gnu.org/gnu/${soft}/"
+    local url="https://ftp.gnu.org/gnu/${soft}/"
     local pattern=$3
 
     check_ftp_version $soft $current_version $url $pattern
@@ -9990,7 +10013,7 @@ init_setup()
 # https://imququ.com/post/ecc-certificate.html
 #https://github.com/masterzen/nginx-upload-progress-module/releases
 # https://github.com/vkholodkov/nginx-upload-module/releases
-# http://nginx.org/en/docs/http/ngx_http_v2_module.html
+# https://nginx.org/en/docs/http/ngx_http_v2_module.html
 
 #https://imququ.com/post/letsencrypt-certificate.html
 #https://github.com/diafygi/acme-tiny

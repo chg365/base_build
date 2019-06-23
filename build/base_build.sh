@@ -263,6 +263,7 @@ fi
 compile_rsyslog
 #compile_php_extension_zip
 compile_php_extension_dio
+compile_php_extension_trader
 compile_php_extension_pthreads
 compile_php_extension_qrencode
 compile_php_extension_zeromq
@@ -345,6 +346,12 @@ rm -rf ${php_ini}.bak*
 cp $curr_dir/../src/web/index.php $WEB_BASE/
 # 容易出错，放这里
 compile_gitbook_cli
+$PYTHON_BASE/bin/pip3 install --upgrade pip
+#中文分词
+#$PYTHON_BASE/bin/pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple  -U pkuseg
+$PYTHON_BASE/bin/pip3 install -U pkuseg
+#tensorflow
+$PYTHON_BASE/bin/pip3 install --upgrade tensorflow
 exit;
 ################################################################################
 # Install SWFUpload
@@ -626,3 +633,6 @@ time abiword -t pdf -o /tmp/5.pdf ~/doc/index1.docx
 
 #系统监控
 wget --content-disposition --no-check-certificate https://sourceforge.net/projects/zabbix/files/ZABBIX%20Latest%20Stable/4.0.5/zabbix-4.0.5.tar.gz/download
+
+
+# https://www.linuxidc.com/Linux/2015-01/111364.htm
