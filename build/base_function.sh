@@ -545,10 +545,10 @@ wget_base_library()
     wget_lib $LIBXEXT_FILE_NAME       "https://www.x.org/releases/individual/lib/$LIBXEXT_FILE_NAME"
     # wget_lib $LIBGD_FILE_NAME       "https://bitbucket.org/libgd/gd-libgd/downloads/$LIBGD_FILE_NAME"
     wget_lib $LIBGD_FILE_NAME         "https://fossies.org/linux/www/$LIBGD_FILE_NAME"
-    wget_lib $IMAGEMAGICK_FILE_NAME  "https://www.imagemagick.org/download/releases/${IMAGEMAGICK_FILE_NAME}"
-    if [ "$?" = "1" ]; then
+    #wget_lib $IMAGEMAGICK_FILE_NAME  "http://www.imagemagick.org/download/releases/${IMAGEMAGICK_FILE_NAME}"
+    #if [ "$?" = "1" ]; then
     wget_lib $IMAGEMAGICK_FILE_NAME  "https://github.com/ImageMagick/ImageMagick/archive/${IMAGEMAGICK_FILE_NAME#*-}"
-    fi
+    #fi
     wget_lib $GMP_FILE_NAME           "ftp://ftp.gmplib.org/pub/gmp/$GMP_FILE_NAME"
     #wget_lib $IMAP_FILE_NAME          "ftp://ftp.cac.washington.edu/imap/$IMAP_FILE_NAME"
     wget_lib $IMAP_FILE_NAME          "https://www.mirrorservice.org/sites/ftp.cac.washington.edu/imap/$IMAP_FILE_NAME"
@@ -617,7 +617,6 @@ wget_base_library()
     wget_lib $RABBITMQ_C_FILE_NAME    "https://github.com/alanxz/rabbitmq-c/archive/v${RABBITMQ_C_FILE_NAME##*-}"
 
     wget_lib $ZEROMQ_FILE_NAME        "https://github.com/zeromq/libzmq/releases/download/v${ZEROMQ_VERSION}/$ZEROMQ_FILE_NAME"
-    #wget_lib $LIBUNWIND_FILE_NAME     "http://download.savannah.gnu.org/releases/libunwind/$LIBUNWIND_FILE_NAME"
     wget_lib $LIBUNWIND_FILE_NAME     "https://github.com/libunwind/libunwind/releases/download/v${LIBUNWIND_VERSION}/$LIBUNWIND_FILE_NAME"
     wget_lib $LIBSODIUM_FILE_NAME     "https://download.libsodium.org/libsodium/releases/$LIBSODIUM_FILE_NAME"
     wget_lib $PHP_ZMQ_FILE_NAME       "https://github.com/alexat/php-zmq/archive/${PHP_ZMQ_FILE_NAME##*-}"
@@ -699,11 +698,11 @@ wget_env_library()
     wget_lib $RE2C_FILE_NAME "https://sourceforge.net/projects/re2c/files/$RE2C_VERSION/$RE2C_FILE_NAME/download"
     wget_lib $FLEX_FILE_NAME "https://sourceforge.net/projects/flex/files/$FLEX_FILE_NAME/download"
     wget_lib $PKGCONFIG_FILE_NAME "https://pkg-config.freedesktop.org/releases/$PKGCONFIG_FILE_NAME"
+    # wget_lib $PKGCONFIG_FILE_NAME "https://pkgconfig.freedesktop.org/releases/$PKGCONFIG_FILE_NAME"
 
     wget_lib $PPL_FILE_NAME "https://bugseng.com/products/ppl/download/ftp/releases/${PPL_VERSION}/$PPL_FILE_NAME"
     wget_lib $CLOOG_FILE_NAME "https://www.bastoul.net/cloog/pages/download/$CLOOG_FILE_NAME"
     # https://www.bastoul.net/cloog/pages/download/piplib-1.4.0.tar.gz
-
 
     wget_lib $PYTHON_FILE_NAME "https://www.python.org/ftp/python/$PYTHON_VERSION/$PYTHON_FILE_NAME"
 
@@ -7049,6 +7048,8 @@ configure_nginx_command()
                 --build=${project_name%% *} \
                 --with-http_addition_module \
                 --with-http_random_index_module \
+                --with-stream \
+                --with-stream_ssl_module \
                 --with-mail \
                 --with-mail_ssl_module \
                 --add-dynamic-module=../nginx-upload-progress-module-${NGINX_UPLOAD_PROGRESS_MODULE_VERSION} \
@@ -7873,20 +7874,7 @@ check_zlib_version()
 # {{{ check_libunwind_version()
 check_libunwind_version()
 {
-    local new_version=`curl -Lk https://download.savannah.gnu.org/releases/libunwind/ 2>/dev/null|sed -n 's/^.\{0,\}"libunwind-\([0-9a-zA-Z._]\{2,\}\).tar.gz".\{0,\}/\1/p'|sort -rV|head -1`
-    if [ -z "$new_version" ];then
-        echo -e "探测libunwind新版本\033[0;31m失败\033[0m" >&2
-        return 1;
-    fi
-
-    is_new_version $LIBUNWIND_VERSION ${new_version//_/.}
-    if [ "$?" = "0" ];then
-        [ "$is_echo_latest" = "" -o "$is_echo_latest" != "0" ] && \
-        echo -e "libunwind version is \033[0;32mthe latest.\033[0m"
-        return 0;
-    fi
-
-    echo -e "libunwind current version: \033[0;33m${LIBUNWIND_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+    check_github_soft_version libunwind ${LIBUNWIND_VERSION} https://github.com/libunwind/libunwind/releases
 }
 # }}}
 # {{{ check_freetype_version()
@@ -8201,30 +8189,7 @@ check_libfastjson_version()
 # {{{ check_imagemagick_version()
 check_imagemagick_version()
 {
-    local versions=`curl https://www.imagemagick.org/download/releases/ 2>/dev/null|sed -n 's/^.\{1,\} href="ImageMagick-\([0-9.-]\{1,\}\).tar.[a-z0-9A-Z]\{1,\}">.\{1,\}$/\1/p'|sort -rV`
-    local new_version=`echo "$versions"|head -1`;
-    if [ -z "$new_version" ];then
-        echo -e "探测imagemagick新版本\033[0;31m失败\033[0m" >&2
-        return 1;
-    fi
-
-    echo "$new_version" |grep -iq 'RC'
-    if [ "$?" = "0" ]; then
-        local tmp_version1=`echo "$versions"|grep -iv 'RC' |head -1`;
-        local tmp_version2=`echo "$new_version"|sed -n 's/^\([0-9._-]\{1,\}\)\([Rr][Cc]\).\{1,\}$/\1/p'`;
-        if [ "$tmp_version1" = "$tmp_version2" ];then
-            new_version=$tmp_version2;
-        fi
-    fi
-
-    is_new_version ${IMAGEMAGICK_VERSION} ${new_version}
-    if [ "$?" = "0" ];then
-        [ "$is_echo_latest" = "" -o "$is_echo_latest" != "0" ] && \
-        echo -e "imagemagick version is \033[0;32mthe latest.\033[0m"
-        return 0;
-    fi
-
-    echo -e "imagemagick current version: \033[0;33m${IMAGEMAGICK_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+    check_github_soft_version ImageMagick $IMAGEMAGICK_VERSION "https://github.com/ImageMagick/ImageMagick/releases" '\([0-9._-]\{1,\}\).tar.gz' 1
 }
 # }}}
 # {{{ check_pkgconfig_version()

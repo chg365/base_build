@@ -636,3 +636,13 @@ wget --content-disposition --no-check-certificate https://sourceforge.net/projec
 
 
 # https://www.linuxidc.com/Linux/2015-01/111364.htm
+https://github.com/php-ai/php-ml
+
+
+#wget https://github.com/skvadrik/re2c/releases/download/1.1.1/re2c-1.1.1.tar.gz
+#tar zxf re2c-1.1.1.tar.gz
+#cd re2c-1.1.1
+#./autogen.sh
+#./configure --prefix=/usr/local/
+#version
+#http://re2c.org/install/install.html
