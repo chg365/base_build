@@ -28,13 +28,13 @@ fi
 # {{{ yum install OR brew install
 if [ ! -f $HOME/.chg_base_compile_env ]; then
     if [ "$OS_NAME" = "linux" ]; then
-        sudo yum install -y bison cmake gcc xz texinfo bzip2 xz-devel gcc-c++ ncurses-devel ncurses byacc file file-devel re2c libtool-ltdl-devel popt-devel re2c wget curl libtool coreutils nasm
-        sudo yum install -y curl nss cyrus-sasl cyrus-sasl-devel cyrus-sasl-lib libacl libacl-devel libattr libattr-devel gperf pam pam-devel krb5-devel krb5-libs uuid uuid-devel libmount libmount-devel libuuid-devel libuuid  zlib-devel readline-devel bzip2-devel gdbm-devel tk-devel tk libffi libffi-devel tcl-devel tcl expat expat-devel
+        sudo yum install -y bison cmake gcc xz texinfo bzip2 xz-devel gcc-c++ ncurses-devel ncurses byacc file file-devel re2c libtool-ltdl-devel popt-devel re2c wget curl libtool coreutils nasm make
+        sudo yum install -y curl nss cyrus-sasl cyrus-sasl-devel cyrus-sasl-lib libacl libacl-devel libattr libattr-devel gperf pam pam-devel krb5-devel krb5-libs uuid uuid-devel libmount libmount-devel libuuid-devel libuuid  zlib-devel readline-devel bzip2-devel gdbm-devel tk-devel tk libffi libffi-devel tcl-devel tcl expat expat-devel unzip
 
         sudo yum install -y itstool patch # fontconfig 2.12.91
 
         #wget http://dl.fedoraproject.org/pub/epel/7/x86_64/r/re2c-0.14.3-2.el7.x86_64.rpm
-        sudo yum install -y autoconf m4 automake pkg-config gettext-devel meson
+        sudo yum install -y autoconf m4 automake pkg-config gettext-devel meson mariadb-devel
 
         if uname -r|grep -q 'el7' ;then
             sudo yum -y install systemd-devel
@@ -61,7 +61,10 @@ if [ ! -f $HOME/.chg_base_compile_env ]; then
         brew link automake --overwrite && \
         brew install ossp-uuid && \
         brew link ossp-uuid --overwrite && \
+        brew install mariadb-devel && \
+        brew link mariadb-devel --overwrite && \
         brew install libmagic && \
+        brew install unzip && \
         brew install autoconf && \
         brew link autoconf --overwrite
     fi
@@ -112,8 +115,8 @@ if [ `echo "$autoconf_version 2.63"|tr " " "\n"|sort -rV|head -1` = "2.63" ] ; t
     echo "autoconf version 2.64 or higher is required" >&2
     exit 1;
 fi
-export LANG=C
-export LC_ALL=C
+export LANG=en_US.utf8
+#export LC_ALL=en_US.utf8
  
 echo `date "+%Y-%m-%d %H:%M:%S"` start
 start_time=`date +%s`
@@ -202,8 +205,8 @@ fi
 
 
 ################################################################################
-export LC_CTYPE=C 
-export LANG=C
+#export LC_CTYPE=C
+#export LANG=C
 pkg_config_path_init
 if [ "$OS_NAME" = 'darwin' ];then
     for i in `find /usr/local/Cellar/ -mindepth 0 -maxdepth 3 -a \( -name bin -o -name sbin \) -type d`;
@@ -220,6 +223,8 @@ fi
 # 下载开源软件新版本
 wget_base_library
 
+# make[1]: *** [pybuilddir.txt] Error 1
+#export LANG=zh_CN.utf8
 compile_python
 compile_xunsearch
 #compile_xapian_core
@@ -244,7 +249,7 @@ compile_pgbouncer
 compile_php
 compile_memcached
 compile_sphinx
-compile_mysql
+#compile_mysql
 compile_nginx
 compile_sqlite
 compile_gearmand

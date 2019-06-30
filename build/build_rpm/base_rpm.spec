@@ -183,7 +183,7 @@ echo "the old version '%{userpath}' backup to '$BACKUP_PATH'"
 # 本段是修改日志段，可以将每次的修改记录到发布的软件包中，用于查询。
 # 格式：
 #     * 星期 月 日 年 修改人电子信箱
-#       LANG=C; date "+%a %b %d %Y"
+#       LANG=en_US.utf8; date "+%a %b %d %Y"
 #     多行数据
 ###############################################################################
 %changelog

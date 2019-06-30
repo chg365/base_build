@@ -3187,6 +3187,9 @@ compile_sphinx()
     local WITH_MYSQL="--without-mysql"
     if [ -d "$MYSQL_BASE" -a -f "$MYSQL_BASE/bin/mysql" ];then
         WITH_MYSQL="--with-mysql=$MYSQL_BASE"
+    #elif which mysql_config >/dev/null 2>&1 ; then
+    elif [ -f "/usr/bin/mysql_config" ]  ; then
+        WITH_MYSQL="--with-mysql"
     fi
 
     local WITH_PGSQL=""
@@ -4678,12 +4681,6 @@ compile_rsyslog()
         return;
     fi
 
-    PATH="$LIBGCRYPT_BASE/bin:$PATH"
-    if test is_installed_mysql ; then
-        PATH="$MYSQL_BASE/bin:$PATH"
-    fi
-    export PATH
-
     RSYSLOG_CONFIGURE="
         configure_rsyslog_command
     "
@@ -4718,8 +4715,12 @@ configure_rsyslog_command()
                 --sysconfdir=$RSYSLOG_CONFIG_DIR \
                 $( has_systemd && echo "--with-systemdsystemunitdir=$RSYSLOG_BASE/systemd" ) \
                 --enable-elasticsearch \
-                $(is_installed_mysql && echo --enable-mysql ) \
+                --enable-mysql \
+                $(is_installed_postgresql && echo --enable-pgsql ) \
                 --enable-mail
+
+        #$(is_installed_mysql && echo --enable-mysql ) \
+        # --enable-openssl \
 
         # No package 'systemd' found
 
@@ -5992,6 +5993,14 @@ compile_mysql()
             exit 1;
         fi
 
+        for i in `find $MYSQL_BASE/lib/pkgconfig/ -name "*.pc"`;
+        do
+            sed -i "s/^prefix=.\{1,\}$/prefix=$(sed_quote2 $MYSQL_BASE)/" $i
+        done
+        deal_pkg_config_path "$MYSQL_BASE"
+        deal_ld_library_path "$MYSQL_BASE"
+        deal_path "$MYSQL_BASE"
+
         init_mysql_cnf
 
         return;
@@ -7151,7 +7160,8 @@ configure_libmemcached_command()
         fi
     fi
 
-    ./configure --prefix=$LIBMEMCACHED_BASE
+    ./configure --prefix=$LIBMEMCACHED_BASE \
+                --with-mysql
                 # --enable-libmemcachedprotocol
                 # --enable-hsieh_hash
                 # --enable-memaslap
