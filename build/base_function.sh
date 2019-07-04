@@ -484,6 +484,7 @@ wget_base_library()
     #wget_lib $PTHREADS_FILE_NAME      "https://pecl.php.net/get/$PTHREADS_FILE_NAME"
     wget_lib $ZIP_FILE_NAME           "https://pecl.php.net/get/$ZIP_FILE_NAME"
     wget_lib $SWOOLE_FILE_NAME        "https://pecl.php.net/get/$SWOOLE_FILE_NAME"
+    wget_lib $PSR_FILE_NAME           "https://pecl.php.net/get/$PSR_FILE_NAME"
     wget_lib $PHP_PROTOBUF_FILE_NAME  "https://pecl.php.net/get/$PHP_PROTOBUF_FILE_NAME"
     wget_lib $PHP_GRPC_FILE_NAME      "https://pecl.php.net/get/$PHP_GRPC_FILE_NAME"
     wget_lib $LIBXSLT_FILE_NAME       "ftp://xmlsoft.org/libxslt/$LIBXSLT_FILE_NAME"
@@ -5261,6 +5262,7 @@ compile_php_extension_yaf()
 compile_php_extension_phalcon()
 {
     compile_php
+    compile_php_extension_psr
 
     is_installed_php_extension phalcon $PHALCON_VERSION
     if [ "$?" = "0" ];then
@@ -5628,6 +5630,22 @@ compile_php_extension_swoole()
             return 1;
         fi
     fi
+}
+# }}}
+# {{{ compile_php_extension_psr()
+compile_php_extension_psr()
+{
+    is_installed_php_extension psr $PSR_VERSION
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    PHP_EXTENSION_PSR_CONFIGURE="
+        ./configure --with-php-config=$PHP_BASE/bin/php-config \
+                    --enable-psr
+    "
+
+    compile "php_extension_psr" "$PSR_FILE_NAME" "psr-$PSR_VERSION" "psr.so" "PHP_EXTENSION_PSR_CONFIGURE"
 }
 # }}}
 # {{{ compile_php_extension_protobuf()
@@ -7679,6 +7697,7 @@ check_soft_updates()
             zeromq
             sqlite
             swoole
+            psr
             openssl
             icu
             zlib
@@ -8569,6 +8588,13 @@ check_sphinx_version()
 check_swoole_version()
 {
     check_github_soft_version swoole $SWOOLE_VERSION "https://github.com/swoole/swoole-src/releases" "v\([0-9.]\{5,\}\)\(-stable\)\{0,1\}\.tar\.gz" 1
+}
+# }}}
+# {{{ check_psr_version()
+check_psr_version()
+{
+    #check_github_soft_version psr $PSR_VERSION "https://github.com/jbboehr/php-psr/releases"
+    check_php_pecl_version psr $PSR_VERSION
 }
 # }}}
 # {{{ check_pecl_protobuf_version()

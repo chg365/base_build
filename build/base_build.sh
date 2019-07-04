@@ -279,6 +279,7 @@ compile_php_extension_event
 #compile_php_extension_libevent
 compile_php_extension_libsodium
 compile_php_extension_yaf
+compile_php_extension_psr
 compile_php_extension_phalcon
 compile_php_extension_xdebug
 compile_php_extension_raphf
