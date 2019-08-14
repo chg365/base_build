@@ -235,7 +235,7 @@ if [ "$OS_NAME" != 'darwin' ];then
 fi
 compile_nodejs
 compile_openssl
-compile_ImageMagick
+#compile_ImageMagick
 compile_redis
 #  error: Leptonica 1.74 or higher is required. Try to install libleptonica-dev package.
 #compile_tesseract # 图片文字识别 OCR （Optical Character Recognition，光学字符识别）
@@ -467,6 +467,10 @@ npm install gulp -D
 npm install --save-dev gulp-uglify gulp-jshint gulp-rename gulp-concat gulp-clean-css jshint
 npm config delete registry
 gulp
+# js 解压缩
+$PYTHON_BASE/bin/pip3 install jsbeautifier
+$PYTHON_BASE/bin/js-beautify ~/ckeditor-releases-full-4.12.1/ckeditor.js
+
 
 #php oauth
 #./configure --with-php-config=$PHP_BASE/bin/php-config --with-libdir=$CURL_BASE --enable-oauth

@@ -447,7 +447,9 @@ wget_base_library()
 {
     wget_fail=0;
     wget_lib $CLAMAV_FILE_NAME        "https://www.clamav.net/downloads/production/$CLAMAV_FILE_NAME"
+    wget_lib $FANN_FILE_NAME          "https://github.com/libfann/fann/archive/${FANN_FILE_NAME##*-}"
     wget_lib $OPENSSL_FILE_NAME       "https://www.openssl.org/source/$OPENSSL_FILE_NAME"
+    wget_lib $CACERT_FILE_NAME        "https://curl.haxx.se/ca/$CACERT_FILE_NAME"
     wget_lib $ICU_FILE_NAME           "http://download.icu-project.org/files/icu4c/$ICU_VERSION/$ICU_FILE_NAME"
     #wget_lib $ICU_FILE_NAME           "https://fossies.org/linux/misc/$ICU_FILE_NAME"
     # https://cdnetworks-kr-2.dl.sourceforge.net/project/libpng/zlib/$ZLIB_VERSION/$ZLIB_FILE_NAME
@@ -588,6 +590,7 @@ wget_base_library()
     wget_lib $PHP_REDIS_FILE_NAME     "https://pecl.php.net/get/$PHP_REDIS_FILE_NAME"
     wget_lib $PHP_MONGODB_FILE_NAME   "https://pecl.php.net/get/$PHP_MONGODB_FILE_NAME"
     wget_lib $SOLR_FILE_NAME          "https://pecl.php.net/get/$SOLR_FILE_NAME"
+    wget_lib $PHP_FANN_FILE_NAME      "https://pecl.php.net/get/$PHP_FANN_FILE_NAME"
 
     wget_lib $PHP_MEMCACHED_FILE_NAME "https://pecl.php.net/get/$PHP_MEMCACHED_FILE_NAME"
     wget_lib $EVENT_FILE_NAME         "https://pecl.php.net/get/$EVENT_FILE_NAME"
@@ -814,7 +817,7 @@ init_php_ini()
     change_php_ini "$pattern" "date.timezone = \\\"Asia\/Shanghai\\\""
     # ;openssl.cafile
     local pattern='^; \{0,\}openssl.cafile \{0,\}=.\{0,\}$';
-    change_php_ini "$pattern" "openssl.cafile = \\\"$(sed_quote2 "$SSL_CONFIG_DIR/certs/ca-bundle.crt" )\\\""
+    change_php_ini "$pattern" "openssl.cafile = \\\"$(sed_quote2 "$CACERT_BASE/ca-bundle.crt" )\\\""
     # ;openssl.capath
 
     # ;opcache.enable_cli=0
@@ -1658,6 +1661,22 @@ is_installed_clamav()
     #local version=`pkg-config --modversion $FILENAME`
     local version=`$FILENAME --version|awk '{ print $NF;}'|head -1`
     if [ "${version}" != "$CLAMAV_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
+# {{{ is_installed_fann()
+is_installed_fann()
+{
+    local FILENAME="$FANN_BASE/lib64/pkgconfig/libfann.pc"
+    #local FILENAME="$FANN_BASE/bin/fann"
+    if [ ! -f "$FILENAME" ];then
+        return 1;
+    fi
+    local version=`pkg-config --modversion $FILENAME`
+    #local version=`$FILENAME --version|awk '{ print $NF;}'|head -1`
+    if [ "${version}" != "$FANN_VERSION" ];then
         return 1;
     fi
     return;
@@ -2686,6 +2705,34 @@ compile_clamav()
     compile "clamav" "$CLAMAV_FILE_NAME" "clamav-$CLAMAV_VERSION/" "$CLAMAV_BASE" "CLAMAV_CONFIGURE" "init_clamav_conf"
 }
 # }}}
+# {{{ compile_fann()
+compile_fann()
+{
+    is_installed fann "$FANN_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    FANN_CONFIGURE="
+        ./configure --prefix=$FANN_BASE \
+                    --sysconfdir=$FANN_CONF_DIR \
+                    --with-dbdir=$DATA_DIR/clamav \
+                    --enable-libfreshclam \
+                    --with-included-ltdl \
+                    --with-xml=$LIBXML2_BASE \
+                    --with-openssl=$OPENSSL_BASE \
+                    --with-pcre=$PCRE_BASE \
+                    --with-zlib=$ZLIB_BASE \
+                    --with-libbz2-prefix \
+                    --with-iconv \
+                    --with-libncurses-prefix \
+                    --with-libpdcurses-prefix \
+                    --with-libcurl=$CURL_BASE \
+    "
+
+    compile "fann" "$FANN_FILE_NAME" "fann-$FANN_VERSION/" "$FANN_BASE" "FANN_CONFIGURE"
+}
+# }}}
 # {{{ compile_xapian_core()
 compile_xapian_core()
 {
@@ -2893,8 +2940,7 @@ compile_openssl()
 
     compile "openssl" "$OPENSSL_FILE_NAME" "openssl-$OPENSSL_VERSION" "$OPENSSL_BASE" "OPENSSL_CONFIGURE"
 
-    curl https://curl.haxx.se/ca/cacert.pem -o $SSL_CONFIG_DIR/certs/ca-bundle.crt 1>/dev/null 2>&1
-    $OPENSSL_BASE/bin/openssl dhparam -out $SSL_CONFIG_DIR/dhparams.pem 2048
+    install_cacert
 }
 # }}}
 # {{{ compile_icu()
@@ -5458,6 +5504,27 @@ compile_php_extension_gearman()
     /bin/rm -rf package.xml
 }
 # }}}
+# {{{ compile_php_extension_fann()
+compile_php_extension_fann()
+{
+    compile_fann
+
+    is_installed_php_extension fann $PHP_FANN_VERSION
+
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    PHP_EXTENSION_FANN_CONFIGURE="
+    ./configure --with-php-config=$PHP_BASE/bin/php-config \
+                --with-fann=$FANND_BASE
+    "
+
+    compile "php_extension_fann" "$PHP_FANN_FILE_NAME" "${PHP_FANN_FILE_NAME%-*}-${PHP_FANN_VERSION}" "fann.so" "PHP_EXTENSION_FANN_CONFIGURE"
+
+    /bin/rm -rf package.xml
+}
+# }}}
 # {{{ compile_php_extension_mongodb()
 compile_php_extension_mongodb()
 {
@@ -6321,6 +6388,19 @@ cp_GeoLite2_data()
         fi
     fi
     return 0;
+}
+# }}}
+# {{{ install_cacert()
+install_cacert()
+{
+    echo_build_start "install_cacert"
+
+    if [ !-f "$CACERT_FILE_NAME" ];then
+        echo "file[$CACERT_FILE_NAME] is not exists!" >&2
+        exit 1;
+    fi
+    mkdir -p $CACERT_BASE
+    cp $CACERT_FILE_NAME $CACERT_BASE/ca-bundle.crt
 }
 # }}}
 # {{{ install_dehydrated()
@@ -7606,6 +7686,7 @@ check_soft_updates()
 #check_version swfupload
 #    exit;
     local array=(
+            cacert
             clamav
             python
             xunsearch_sdk_php
@@ -7740,6 +7821,7 @@ check_soft_updates()
             pecl_phalcon
             pecl_yaf
             pecl_libsodium
+            pecl_fann
 
             smarty
             jquery
@@ -7811,6 +7893,26 @@ check_openssl_version()
     fi
 
     echo -e "openssl current version: \033[0;33m${OPENSSL_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+}
+# }}}
+# {{{ check_cacert_version()
+check_cacert_version()
+{
+    local versions=`curl -Lk https://curl.haxx.se/docs/caextract.html 2>/dev/null|sed -n 's#^.\{1,\}"/ca/cacert-\([0-9-]\{1,\}\).pem".\{1,\}#\1#p'|sort -rV`
+    local new_version=`echo "$versions"|head -1`
+    if [ -z "$new_version" ];then
+        echo -e "探测cacert新版本\033[0;31m失败\033[0m" >&2
+        return 1;
+    fi
+
+    is_new_version $CACERT_VERSION $new_version
+    if [ "$?" = "0" ];then
+        [ "$is_echo_latest" = "" -o "$is_echo_latest" != "0" ] && \
+        echo -e "cacert version is \033[0;32mthe latest.\033[0m"
+        return 0;
+    fi
+
+    echo -e "cacert current version: \033[0;33m${CACERT_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
 }
 # }}}
 # {{{ check_redis_version()
@@ -8280,6 +8382,13 @@ check_gearmand_version()
 check_gearman_version()
 {
     check_github_soft_version gearman $PHP_GEARMAN_VERSION "https://github.com/wcgallego/pecl-gearman/releases" "gearman-\([0-9.]\{1,\}\).tar.gz" 1
+}
+# }}}
+# {{{ check_pecl_fann_version()
+check_pecl_fann_version()
+{
+    check_php_pecl_version fann $PHP_FANN_VERSION
+    #check_github_soft_version fann $PHP_FANN_VERSION "https://github.com/bukka/php-fann/releases"
 }
 # }}}
 # {{{ check_clamav_version()
