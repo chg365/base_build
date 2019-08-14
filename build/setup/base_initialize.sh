@@ -506,14 +506,9 @@ function openssl_init()
     if [ "$init_dir_only" = "1" ];then
         return;
     fi
-    local ca_file="/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem"
-    if [ -f "$ca_file" ];then
-        cp $ca_file $SSL_CONFIG_DIR/certs/ca-bundle.crt
-    else
-        curl https://curl.haxx.se/ca/cacert.pem -o $SSL_CONFIG_DIR/certs/ca-bundle.crt 1>/dev/null 2>&1
-    fi
+    $OPENSSL_BASE/bin/openssl dhparam -out $SSL_CONFIG_DIR/dhparams.pem 2048 1>/dev/null 2>&1
     if [ "$?" != "0" ];then
-        echo "init openssl ca-bundle.crt file faild." >&2
+        echo "init openssl dhparams.pem file faild." >&2
         return 1;
     fi
 }
