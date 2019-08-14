@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # project_name不要有特殊字符
 project_name="chg_base"

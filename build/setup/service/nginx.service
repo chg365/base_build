@@ -2,21 +2,43 @@
 Description=nginx - high performance web server
 Documentation=http://nginx.org/en/docs/
 After=network-online.target remote-fs.target nss-lookup.target
+#Before=
+#Requires=
 # php-fpm.service
 Wants=network-online.target
+#Conflicts=
+
+#ConditionFileNotEmpty=|!/etc/xxx
+#ConditionPathExists=
+#PartOf=xxx.service xxx.socket
 
 [Service]
+# simple forking oneshot dbus idle
 Type=forking
+#EnvironmentFile=-/usr/xxx
 PIDFile=NGINX_RUN_DIR/nginx.pid
 ExecStartPre=NGINX_BASE/sbin/nginx -t
+#ExecStartPost=
 ExecStart=NGINX_BASE/sbin/nginx
 #stop, reopen
 ExecReload=NGINX_BASE/sbin/nginx -s reload
 ExecStop=NGINX_BASE/sbin/nginx -s quit
+# process control-group none
 #KillMode=process
 #KillSignal=SIGQUIT
 #TimeoutStopSec=5
+#TimeoutSec=60
 PrivateTmp=true
+#Restart=on-failure
+#RestartSec=42s
+#RemainAfterExit=yes
+#StandardInput=socket
+#UtmpIdentifier=
+#IgnoreSIGPIPE=yes
+#SendSIGKILL=yes
+#SendSIGHUP=no
 
 [Install]
 WantedBy=multi-user.target
+#Also=
+#Alias=

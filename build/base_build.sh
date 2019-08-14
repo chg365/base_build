@@ -28,16 +28,33 @@ fi
 # {{{ yum install OR brew install
 if [ ! -f $HOME/.chg_base_compile_env ]; then
     if [ "$OS_NAME" = "linux" ]; then
-        sudo yum install -y bison cmake gcc xz texinfo bzip2 xz-devel gcc-c++ ncurses-devel ncurses byacc file file-devel re2c libtool-ltdl-devel popt-devel re2c wget curl libtool coreutils nasm make
-        sudo yum install -y curl nss cyrus-sasl cyrus-sasl-devel cyrus-sasl-lib libacl libacl-devel libattr libattr-devel gperf pam pam-devel krb5-devel krb5-libs uuid uuid-devel libmount libmount-devel libuuid-devel libuuid  zlib-devel readline-devel bzip2-devel gdbm-devel tk-devel tk libffi libffi-devel tcl-devel tcl expat expat-devel unzip
+        sudo yum install -y cmake gcc texinfo xz-devel gcc-c++ bison ncurses-devel ncurses byacc file file-devel \
+                            libtool-ltdl-devel popt-devel re2c wget curl libtool coreutils nasm make
+        sudo yum install -y curl nss cyrus-sasl cyrus-sasl-devel cyrus-sasl-lib libacl libacl-devel \
+                            libattr libattr-devel gperf pam pam-devel krb5-devel krb5-libs uuid uuid-devel \
+                            libmount libmount-devel libuuid-devel libuuid  zlib-devel readline-devel bzip2-devel \
+                            gdbm-devel tk-devel tk libffi libffi-devel tcl-devel tcl unzip
 
         sudo yum install -y itstool patch # fontconfig 2.12.91
+
+        sudo yum install -y xz bzip2 tar
+
+        sudo yum install -y libacl       libattr       mariadb-libs  readline       ncurses \
+                            libuuid        cyrus-sasl cyrus-sasl-lib  pam       popt \
+                            libacl-devel libattr-devel mariadb-devel readline-devel ncurses-devel \
+                            libuuid-devel  cyrus-sasl-devel           pam-devel popt-devel
+        # Python
+        sudo yum install expat \
+                         expat-devel
 
         #wget http://dl.fedoraproject.org/pub/epel/7/x86_64/r/re2c-0.14.3-2.el7.x86_64.rpm
         sudo yum install -y autoconf m4 automake pkg-config gettext-devel meson mariadb-devel
 
-        if uname -r|grep -q 'el7' ;then
-            sudo yum -y install systemd-devel
+        tmp_str=`uname -r|awk -F. '{print $(NF-1);}'|sed -n 's/el//p'`; # 6 7 8
+        if echo $tmp_str |grep -q '^[0-9]\{1,\}$'  ;then
+            if [ "$tmp_str" -qt 6 ] ;then
+                sudo yum -y install systemd-devel
+            fi
         fi
     elif [ "$OS_NAME" = "darwin" ];then
         # curl: (56) SSLRead() return error -9841
@@ -284,12 +301,11 @@ compile_php_extension_phalcon
 compile_php_extension_xdebug
 compile_php_extension_raphf
 compile_php_extension_propro
-# 编译上这个后，pthreads 报 段错误  3.1.0
 compile_php_extension_pecl_http
 compile_php_extension_amqp
 compile_php_extension_mailparse
 compile_php_extension_redis
-#compile_php_extension_solr # 7.2.0以前的版本
+compile_php_extension_solr
 compile_php_extension_mongodb
 compile_php_extension_pdo_pgsql
 compile_php_extension_swoole
@@ -315,6 +331,9 @@ install_geoip2_php
 #compile_gitbook_cli
 compile_calibre
 compile_smarty
+compile_yii2
+compile_yii2_smarty
+compile_parseapp
 compile_htmlpurifier
 
 $PHP_BASE/bin/php --ini
@@ -649,6 +668,12 @@ wget --content-disposition --no-check-certificate https://sourceforge.net/projec
 https://github.com/php-ai/php-ml
 
 
+wget https://github.com/skvadrik/re2c/releases/download/1.2/re2c-1.2.tar.xz
+tar Jxf re2c-1.2.tar.xz
+cd re2c-1.2
+./configure --prefix=/opt/re2c
+make
+make install
 #wget https://github.com/skvadrik/re2c/releases/download/1.1.1/re2c-1.1.1.tar.gz
 #tar zxf re2c-1.1.1.tar.gz
 #cd re2c-1.1.1

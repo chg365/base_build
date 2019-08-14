@@ -203,7 +203,7 @@ wget_lib()
         return $?;
     fi
 
-    wget --content-disposition --no-check-certificate $FILE_URL -O $FILE_NAME
+    wget -4 --content-disposition --no-check-certificate $FILE_URL -O $FILE_NAME
     local wget_flag="$?"
     if [ "$wget_flag" = "8" ];then
         wget --no-check-certificate $FILE_URL -O $FILE_NAME
@@ -611,7 +611,12 @@ wget_base_library()
     wget_lib $HIREDIS_FILE_NAME       "https://github.com/redis/hiredis/archive/v${HIREDIS_FILE_NAME#*-}"
     wget_lib $LARAVEL_FRAMEWORK_FILE_NAME "https://github.com/laravel/framework/archive/v${LARAVEL_FRAMEWORK_FILE_NAME#*-}"
     wget_lib $ZEND_FILE_NAME          "https://packages.zendframework.com/releases/ZendFramework-$ZEND_VERSION/$ZEND_FILE_NAME"
+    wget_lib $YII2_FILE_NAME          "https://github.com/yiisoft/yii2/releases/download/${YII2_VERSION}/${YII2_FILE_NAME}"
     wget_lib $SMARTY_FILE_NAME        "https://github.com/smarty-php/smarty/archive/v${SMARTY_FILE_NAME#*-}"
+    wget_lib $YII2_SMARTY_FILE_NAME   "https://github.com/yiisoft/yii2-smarty/archive/${YII2_SMARTY_FILE_NAME##*-}"
+
+    wget_lib $PARSEAPP_FILE_NAME      "https://github.com/loncool/parse-app/archive/V${PARSEAPP_FILE_NAME##*-}"
+
     wget_lib $HTMLPURIFIER_FILE_NAME  "https://github.com/ezyang/htmlpurifier/archive/v${HTMLPURIFIER_FILE_NAME#*-}"
     wget_lib $CKEDITOR_FILE_NAME      "https://download.cksource.com/CKEditor/CKEditor/CKEditor%20$CKEDITOR_VERSION/$CKEDITOR_FILE_NAME"
     wget_lib $JQUERY_FILE_NAME        "https://code.jquery.com/$JQUERY_FILE_NAME"
@@ -644,10 +649,12 @@ wget_base_library()
     wget_lib $FAMOUS_ANGULAR_FILE_NAME "https://github.com/Famous/famous-angular/archive/${FAMOUS_ANGULAR_FILE_NAME##*-}"
 
     wget_lib $NGINX_UPLOAD_PROGRESS_MODULE_FILE_NAME "https://github.com/masterzen/nginx-upload-progress-module/archive/v${NGINX_UPLOAD_PROGRESS_MODULE_FILE_NAME##*-}"
-    wget_lib $NGINX_PUSH_STREAM_MODULE_FILE_NAME "https://github.com/wandenberg/nginx-push-stream-module/archive/${NGINX_PUSH_STREAM_MODULE_FILE_NAME##*-}"
-    wget_lib $NGINX_UPLOAD_MODULE_FILE_NAME "https://github.com/vkholodkov/nginx-upload-module/archive/${NGINX_UPLOAD_MODULE_FILE_NAME##*-}"
-    wget_lib $NGINX_STICKY_MODULE_FILE_NAME "https://bitbucket.org/nginx-goodies/nginx-sticky-module-ng/get/${NGINX_STICKY_MODULE_FILE_NAME##*-}"
-    wget_lib $NGINX_HTTP_GEOIP2_MODULE_FILE_NAME "https://github.com/leev/ngx_http_geoip2_module/archive/${NGINX_HTTP_GEOIP2_MODULE_FILE_NAME##*-}"
+    wget_lib $NGINX_PUSH_STREAM_MODULE_FILE_NAME     "https://github.com/wandenberg/nginx-push-stream-module/archive/${NGINX_PUSH_STREAM_MODULE_FILE_NAME##*-}"
+    wget_lib $NGINX_UPLOAD_MODULE_FILE_NAME          "https://github.com/vkholodkov/nginx-upload-module/archive/${NGINX_UPLOAD_MODULE_FILE_NAME##*-}"
+    wget_lib $NGINX_STICKY_MODULE_FILE_NAME          "https://bitbucket.org/nginx-goodies/nginx-sticky-module-ng/get/${NGINX_STICKY_MODULE_FILE_NAME##*-}"
+    wget_lib $NGINX_HTTP_GEOIP2_MODULE_FILE_NAME     "https://github.com/leev/ngx_http_geoip2_module/archive/${NGINX_HTTP_GEOIP2_MODULE_FILE_NAME##*-}"
+    wget_lib $NGINX_INCUBATOR_PAGESPEED_FILE_NAME    "https://github.com/apache/incubator-pagespeed-ngx/archive/v${NGINX_INCUBATOR_PAGESPEED_VERSION}${NGINX_INCUBATOR_PAGESPEED_FILE_NAME##*${NGINX_INCUBATOR_PAGESPEED_VERSION}}"
+    wget_lib $PSOL_FILE_NAME "https://dl.google.com/dl/page-speed/psol/${PSOL_FILE_NAME#*-}"
 
     wget_lib $PYTHON_FILE_NAME "https://www.python.org/ftp/python/${PYTHON_VERSION}/${PYTHON_FILE_NAME}"
 
@@ -980,17 +987,17 @@ init_dehydrated_conf()
 
     rm_bak_file $DEHYDRATED_CONFIG_DIR/config.bak.*
 
-    mkdir -p $SBIN_DIR/
-    cp $curr_dir/renew_cert.sh $SBIN_DIR/
+    #mkdir -p $SBIN_DIR/
+    #cp $curr_dir/renew_cert.sh $SBIN_DIR/
 
-    sed -i.bak.$$ "s/@project_abbreviation@/$(sed_quote2 $project_abbreviation )/g" $SBIN_DIR/renew_cert.sh
-    sed -i.bak.$$ "s/@DEHYDRATED_BASE@/$(sed_quote2 $DEHYDRATED_BASE)/g" $SBIN_DIR/renew_cert.sh
-    sed -i.bak.$$ "s/@DEHYDRATED_CONFIG_DIR@/$(sed_quote2 $DEHYDRATED_CONFIG_DIR)/g" $SBIN_DIR/renew_cert.sh
-    sed -i.bak.$$ "s/@NGINX_BASE@/$(sed_quote2 $NGINX_BASE)/g" $SBIN_DIR/renew_cert.sh
+    #sed -i.bak.$$ "s/@project_abbreviation@/$(sed_quote2 $project_abbreviation )/g" $SBIN_DIR/renew_cert.sh
+    #sed -i.bak.$$ "s/@DEHYDRATED_BASE@/$(sed_quote2 $DEHYDRATED_BASE)/g" $SBIN_DIR/renew_cert.sh
+    #sed -i.bak.$$ "s/@DEHYDRATED_CONFIG_DIR@/$(sed_quote2 $DEHYDRATED_CONFIG_DIR)/g" $SBIN_DIR/renew_cert.sh
+    #sed -i.bak.$$ "s/@NGINX_BASE@/$(sed_quote2 $NGINX_BASE)/g" $SBIN_DIR/renew_cert.sh
 
-    rm_bak_file $SBIN_DIR/renew_cert.sh.bak.*
+    #rm_bak_file $SBIN_DIR/renew_cert.sh.bak.*
 
-    cp -r $curr_dir/conf/dehydrated/certs $DEHYDRATED_CONFIG_DIR/
+    #cp -r $curr_dir/conf/dehydrated/certs $DEHYDRATED_CONFIG_DIR/
 }
 # }}}
 # change_redis_conf() {{{
@@ -1070,23 +1077,22 @@ init_clamav_conf()
     cp $CLAMAV_CONF_DIR/freshclam.conf.sample $CLAMAV_CONF_DIR/freshclam.conf
     #cp $CLAMAV_CONF_DIR/clamav-milter.conf.sample $CLAMAV_CONF_DIR/clamav-milter.conf
 
-    ll /usr/lib/systemd/system/
-    clamav-daemon.service     clamav-daemon.socket      clamav-freshclam.service
+    #ll /usr/lib/systemd/system/
+    #clamav-daemon.service     clamav-daemon.socket      clamav-freshclam.service
 
-    sudo vim $CLAMAV_BASE/etc/freshclam.conf
+    #sudo vim $CLAMAV_BASE/etc/freshclam.conf
 
-    sudo groupadd clamav
-    sudo useradd -r -M -g clamav -s /usr/sbin/nologin clamav
-    mkdir $CLAMAV_DATA_DIR
-    sudo chown -R clamav:clamav $CLAMAV_DATA_DIR
-    #升级病毒库，每4小时一次
-    sudo $CLAMAV_BASE/bin/freshclam
-    #启动服务
-    sudo systemctl start clamav-daemon.service
+    #sudo groupadd clamav
+    #sudo useradd -r -M -g clamav -s /usr/sbin/nologin clamav
+    #mkdir $CLAMAV_DATA_DIR
+    #sudo chown -R clamav:clamav $CLAMAV_DATA_DIR
+    ##升级病毒库，每4小时一次
+    #sudo $CLAMAV_BASE/bin/freshclam
+    ##启动服务
+    #sudo systemctl start clamav-daemon.service
 
-    CLAMAV_USER="clamav"
-    CLAMAV_GROUP="clamav"
-
+    #CLAMAV_USER="clamav"
+    #CLAMAV_GROUP="clamav"
 }
 # }}}
 # }}}
@@ -3948,7 +3954,7 @@ compile_freetype()
     # 强制安装时，传一个参数，不安装harfbuzz,
     local is_force="$1"
     if [ "$is_force" = "" ]; then
-    compile_harfbuzz
+        compile_harfbuzz
     fi
     compile_zlib
     compile_libpng
@@ -4267,13 +4273,24 @@ compile_libX11()
     fi
 
     LIBX11_CONFIGURE="
-    ./configure --prefix=$LIBX11_BASE --enable-ipv6 --enable-loadable-i18n
+        configure_libX11_command
     "
     # T_LC_ALL=$LC_ALL
     # LC_ALL=C ;
 
     compile "libX11" "$LIBX11_FILE_NAME" "libX11-$LIBX11_VERSION" "$LIBX11_BASE" "LIBX11_CONFIGURE"
     # LC_ALL=$T_LC_ALL
+}
+# }}}
+# {{{ configure_libX11_command()
+configure_libX11_command()
+{
+    #PKG_CONFIG_PATH="$PKG_CONFIG_PATH" \
+    #CPPFLAGS="$(get_cppflags $MACROS_BASE/include)" \
+    #LDFLAGS="$(get_ldflags $MACROS_BASE/lib)" \
+
+    CFLAGS="$(get_cppflags $MACROS_BASE/include)" \
+    ./configure --prefix=$LIBX11_BASE --enable-ipv6 --enable-loadable-i18n
 }
 # }}}
 # {{{ compile_libXpm()
@@ -4676,8 +4693,11 @@ compile_nginx()
     decompress $NGINX_UPLOAD_PROGRESS_MODULE_FILE_NAME && \
     decompress $NGINX_PUSH_STREAM_MODULE_FILE_NAME && \
     decompress $NGINX_HTTP_GEOIP2_MODULE_FILE_NAME && \
+    decompress $NGINX_INCUBATOR_PAGESPEED_FILE_NAME && \
+    decompress $PSOL_FILE_NAME ${NGINX_INCUBATOR_PAGESPEED_FILE_NAME%.tar.*}/ && \
     #decompress $NGINX_STICKY_MODULE_FILE_NAME && \
     #decompress $NGINX_UPLOAD_MODULE_FILE_NAME
+
     if [ "$?" != "0" ];then
         # return 1;
         exit 1;
@@ -4691,10 +4711,11 @@ compile_nginx()
     /bin/rm -rf nginx-upload-progress-module-${NGINX_UPLOAD_PROGRESS_MODULE_VERSION}
     /bin/rm -rf nginx-push-stream-module-${NGINX_PUSH_STREAM_MODULE_VERSION}
     /bin/rm -rf ngx_http_geoip2_module-${NGINX_HTTP_GEOIP2_MODULE_VERSION}
+    /bin/rm -rf ${NGINX_INCUBATOR_PAGESPEED_FILE_NAME%.tar.*}
     #/bin/rm -rf nginx-upload-module-${NGINX_UPLOAD_MODULE_VERSION}
     #/bin/rm -rf ${NGINX_STICKY_MODULE_FILE_NAME%%.*}
 
-    init_nginx_conf
+    #init_nginx_conf
 }
 # }}}
 # {{{ compile_libuuid()
@@ -5195,7 +5216,8 @@ compile_php_extension_intl()
 
     PHP_EXTENSION_INTL_CONFIGURE="
     ./configure --with-php-config=$PHP_BASE/bin/php-config \
-                --enable-intl --with-icu-dir=$ICU_BASE
+                --enable-intl \
+                --with-icu-dir=$ICU_BASE
     "
     compile "php_extension_intl" "$PHP_FILE_NAME" "php-$PHP_VERSION/ext/intl/" "intl.so" "PHP_EXTENSION_INTL_CONFIGURE"
     if [ "$OS_NAME" = "darwin" ];then
@@ -6523,6 +6545,17 @@ compile_zendFramework()
     /bin/rm -rf ZendFramework-$ZEND_VERSION
 }
 # }}}
+# {{{ compile_yii2()
+compile_yii2()
+{
+    echo_build_start yii2
+    decompress $YII2_FILE_NAME
+    mkdir -p $YII2_BASE
+    cp -r basic/vendor/* $YII2_BASE/
+
+    /bin/rm -rf basic
+}
+# }}}
 # {{{ compile_smarty()
 compile_smarty()
 {
@@ -6536,6 +6569,30 @@ compile_smarty()
     mkdir -p $SMARTY_BASE
     cp -r smarty-$SMARTY_VERSION/libs/* $SMARTY_BASE
     /bin/rm -rf smarty-$SMARTY_VERSION
+}
+# }}}
+# {{{ compile_yii2_smarty()
+compile_yii2_smarty()
+{
+    echo_build_start yii2-smarty
+    decompress $YII2_SMARTY_FILE_NAME
+    mkdir -p $YII2_SMARTY_BASE
+    cp -r yii2-smarty-$YII2_SMARTY_VERSION/src/* $YII2_SMARTY_BASE/
+    /bin/rm -rf yii2-smarty-$SMARTY_VERSION
+}
+# }}}
+# {{{ compile_parseapp()
+compile_parseapp()
+{
+#    if [ -d "$PARSEAPP_BASE"  ];then
+#        echo "dir is exists. dir: " . $PARSEAPP_BASE >&2
+#        return;
+#    fi
+
+    rm -rf $PARSEAPP_BASE
+    echo_build_start parse-app
+    decompress $PARSEAPP_FILE_NAME
+    mv ${PARSEAPP_FILE_NAME%%.tar.gz} $PARSEAPP_BASE
 }
 # }}}
 # {{{ compile_htmlpurifier()
@@ -7133,7 +7190,10 @@ configure_nginx_command()
         sed -i.bak.$$ "s/Server: nginx/Server: ${NGINX_CUSTOMIZE_NAME}\/${NGINX_CUSTOMIZE_VERSION}/" ./src/http/ngx_http_header_filter_module.c
         sed -i.bak.$$ "s/<hr><center>nginx<\/center>/<hr><center>${NGINX_CUSTOMIZE_NAME}\/${NGINX_CUSTOMIZE_VERSION}<\/center>/" ./src/http/ngx_http_special_response.c
         #local len=`echo ${NGINX_CUSTOMIZE_NAME_HUFFMAN}|awk -F'\\' '{print NF -1 ; }'`
-        local len=${#NGINX_CUSTOMIZE_NAME};
+        #local len=${#NGINX_CUSTOMIZE_NAME};
+        #local tmp_str=`printf "$NGINX_CUSTOMIZE_NAME_HUFFMAN"`;
+        local tmp_str=`echo -e "$NGINX_CUSTOMIZE_NAME_HUFFMAN"`;
+        local len=${#tmp_str};
         sed -i.bak.$$ "s/nginx\[5\] = \"$(sed_quote2 '\x84\xaa\x63\x55\xe7' )\"/nginx[${len}] = \"$(sed_quote2 ${NGINX_CUSTOMIZE_NAME_HUFFMAN})\"/" ./src/http/v2/ngx_http_v2_filter_module.c
     fi
 
@@ -7159,6 +7219,7 @@ configure_nginx_command()
                 --with-stream_ssl_module \
                 --with-mail \
                 --with-mail_ssl_module \
+                --add-dynamic-module=../${NGINX_INCUBATOR_PAGESPEED_FILE_NAME%.tar.*} \
                 --add-dynamic-module=../nginx-upload-progress-module-${NGINX_UPLOAD_PROGRESS_MODULE_VERSION} \
                 --add-dynamic-module=../nginx-push-stream-module-${NGINX_PUSH_STREAM_MODULE_VERSION} \
                 --with-http_gzip_static_module \
@@ -7824,6 +7885,8 @@ check_soft_updates()
             pecl_fann
 
             smarty
+            yii2_smarty
+            parse_app
             jquery
             jquery3
             d3
@@ -7838,6 +7901,7 @@ check_soft_updates()
             electron
             phantomjs
             laravel
+            yii2
             laravel_framework
 
             nginx_upload_module
@@ -7845,6 +7909,7 @@ check_soft_updates()
             nginx_push_stream_module
             nginx_http_geoip2_module
             nginx_sticky_module
+            nginx_incubator_pagespeed
 
             );
     multi_process check_version check_version 15 "${array[@]}"
@@ -8391,6 +8456,12 @@ check_pecl_fann_version()
     #check_github_soft_version fann $PHP_FANN_VERSION "https://github.com/bukka/php-fann/releases"
 }
 # }}}
+# {{{ check_yii2_version()
+check_yii2_version()
+{
+    check_github_soft_version yii2 $YII2_VERSION "https://github.com/yiisoft/yii2/releases/"
+}
+# }}}
 # {{{ check_clamav_version()
 check_clamav_version()
 {
@@ -8443,6 +8514,18 @@ check_tidy_version()
 check_smarty_version()
 {
     check_github_soft_version smarty $SMARTY_VERSION "https://github.com/smarty-php/smarty/releases"
+}
+# }}}
+# {{{ check_yii2_smarty_version()
+check_yii2_smarty_version()
+{
+    check_github_soft_version yii2-smarty $YII2_SMARTY_VERSION "https://github.com/yiisoft/yii2-smarty/releases"
+}
+# }}}
+# {{{ check_parse_app_version()
+check_parse_app_version()
+{
+    check_github_soft_version parse-app $PARSEAPP_VERSION "https://github.com/loncool/parse-app/releases" 'V\([0-9._-]\{1,\}\).tar.gz' 1
 }
 # }}}
 # {{{ check_htmlpurifier_version()
@@ -8722,6 +8805,12 @@ check_pecl_grpc_version()
 check_libevent_version()
 {
     check_github_soft_version libevent $LIBEVENT_VERSION "https://github.com/libevent/libevent/releases" "release-\([0-9.]\{5,\}\)\(-stable\)\{0,1\}\.tar\.gz" 1
+}
+# }}}
+# {{{ check_nginx_incubator_pagespeed_version()
+check_nginx_incubator_pagespeed_version()
+{
+    check_github_soft_version incubator-pagespeed-ngx $NGINX_INCUBATOR_PAGESPEED_VERSION "https://github.com/apache/incubator-pagespeed-ngx/releases" "v\([0-9.]\{5,\}\)\(-stable\)\{0,1\}\.tar\.gz" 1
 }
 # }}}
 # {{{ check_patchelf_version()
@@ -10080,8 +10169,8 @@ init_setup()
     sed -i.bak.$$ '/^# {{{ open source libray file name/,/^# }}}/d' $BASE_DIR/setup/base_define.sh
     rm -rf $BASE_DIR/setup/base_define.sh.bak.*
 
-    cp -r $curr_dir/setup/* $BASE_DIR/setup/
-    chmod u+x $BASE_DIR/setup/*.sh
+    #cp -r $curr_dir/setup/* $BASE_DIR/setup/
+    #chmod u+x $BASE_DIR/setup/*.sh
 }
 # }}}
 
@@ -10141,7 +10230,7 @@ init_setup()
 #tar zxf vim-8.0.0771.tar.gz
 #cd vim-8.0.0771
 
-#yum install perl python ruby perl-devel python-devel ruby-devel lua lua-devel perl-ExtUtils-Embed
+#yum install perl python ruby perl-devel python-devel ruby-devel lua lua-devel perl-ExtUtils-Embed perl-ExtUtils-ParseXS
 
 #./configure --prefix=/opt/vim810 --enable-luainterp=yes --enable-perlinterp=yes --enable-pythoninterp=yes --enable-rubyinterp=yes --enable-multibyte --enable-python3interp=yes
 #./configure --enable-gui=no --without-x
@@ -10155,3 +10244,7 @@ init_setup()
 #make install
 #cd ..
 #rm -rf swig-rel-3.0.12
+
+    icu
+    boost
+    harfbuzz
