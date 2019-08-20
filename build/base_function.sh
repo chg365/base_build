@@ -548,13 +548,14 @@ wget_base_library()
     wget_lib $LIBXEXT_FILE_NAME       "https://www.x.org/releases/individual/lib/$LIBXEXT_FILE_NAME"
     # wget_lib $LIBGD_FILE_NAME       "https://bitbucket.org/libgd/gd-libgd/downloads/$LIBGD_FILE_NAME"
     wget_lib $LIBGD_FILE_NAME         "https://fossies.org/linux/www/$LIBGD_FILE_NAME"
-    #wget_lib $IMAGEMAGICK_FILE_NAME  "http://www.imagemagick.org/download/releases/${IMAGEMAGICK_FILE_NAME}"
+    wget_lib $IMAGEMAGICK_FILE_NAME  "http://www.imagemagick.org/download/releases/${IMAGEMAGICK_FILE_NAME}"
     #if [ "$?" = "1" ]; then
-    wget_lib $IMAGEMAGICK_FILE_NAME  "https://github.com/ImageMagick/ImageMagick/archive/${IMAGEMAGICK_FILE_NAME#*-}"
+    #wget_lib $IMAGEMAGICK_FILE_NAME  "https://github.com/ImageMagick/ImageMagick/archive/${IMAGEMAGICK_FILE_NAME#*-}"
     #fi
     wget_lib $GMP_FILE_NAME           "ftp://ftp.gmplib.org/pub/gmp/$GMP_FILE_NAME"
     #wget_lib $IMAP_FILE_NAME          "ftp://ftp.cac.washington.edu/imap/$IMAP_FILE_NAME"
-    wget_lib $IMAP_FILE_NAME          "https://www.mirrorservice.org/sites/ftp.cac.washington.edu/imap/$IMAP_FILE_NAME"
+    wget_lib $IMAP_FILE_NAME          "https://github.com/uw-imap/imap/archive/${IMAP_FILE_NAME#*-}"
+    #wget_lib $IMAP_FILE_NAME          "https://www.mirrorservice.org/sites/ftp.cac.washington.edu/imap/$IMAP_FILE_NAME"
     local version=${KERBEROS_VERSION%.*};
     if [ "${version%.*}" = "${version}" ] ;then
         local version=${KERBEROS_VERSION}
@@ -4377,7 +4378,7 @@ compile_imap()
     # 不支持openssl-1.1.0 及以上版本
     local OPENSSL_BASE=$OPENSSL_BASE
     local tmp_64=""
-    if is_new_version $OPENSSL_VERSION "1.1.0" ; then
+    if [ $IMAP_VERSION = "2007f" ] && is_new_version $OPENSSL_VERSION "1.1.0" ; then
         if [ -f "/usr/lib64/pkgconfig/libssl.pc" ]; then
             local OPENSSL_BASE="/usr"
             local tmp_64="64"
@@ -4436,7 +4437,7 @@ compile_imap()
 # {{{ configure_imap_command()
 configure_imap_command()
 {
-    if is_new_version $OPENSSL_VERSION "1.1.0" ; then
+    if [ $IMAP_VERSION = "2007f" ] && is_new_version $OPENSSL_VERSION "1.1.0" ; then
         local OPENSSL_BASE=$IMAP_OPENSSL_BASE
         local tmp_64=$IMAP_TMP_64
     fi
@@ -6008,7 +6009,7 @@ compile_php_extension_imap()
 # {{{ configure_php_ext_imap_command()
 configure_php_ext_imap_command()
 {
-    if is_new_version $OPENSSL_VERSION "1.1.0" ; then
+    if [ $IMAP_VERSION = "2007f" ] && is_new_version $OPENSSL_VERSION "1.1.0" ; then
         local OPENSSL_BASE=$IMAP_OPENSSL_BASE
         local tmp_64=$IMAP_TMP_64
     fi
@@ -7052,6 +7053,8 @@ configure_php_command()
                 $( [ `echo "$PHP_VERSION 7.2.0"|tr " " "\n"|sort -rV|head -1` = "$PHP_VERSION" ] && echo "" || echo "--runstatedir=${BASE_DIR}/run" ) \
                 $(is_installed_apache && echo --with-apxs2=$APACHE_BASE/bin/apxs || echo "") \
                 --with-openssl=$OPENSSL_BASE \
+                --with-pcre-regex=$PCRE_BASE \
+                --with-pcre-dir=$PCRE_BASE \
                 --enable-mysqlnd  \
                 --with-zlib=$ZLIB_BASE \
                 --with-zlib-dir=$ZLIB_BASE \
