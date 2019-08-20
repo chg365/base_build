@@ -1,9 +1,17 @@
 #!/bin/bash
 
-dir="${HOME}/chg_base/pkgs/"
+curr_dir=$(cd "$(dirname "$0")"; pwd);
+project_name_file=${curr_dir}/project_name.sh
+
+if [ ! -f "$project_name_file" ];then
+    echo "$project_name_file is not file!" >&2
+    exit 1;
+fi
+
+. $project_name_file
 
 type="z"
-for FILE_NAME in `find $dir -mindepth 1 -maxdepth 1 -type f `;
+for FILE_NAME in `find $PKGS_DIR -mindepth 1 -maxdepth 1 -type f `;
 do
     if [ ! -s "$FILE_NAME" ];then
         echo "文件[${FILE_NAME}]为空, 删除" >&2;

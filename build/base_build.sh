@@ -201,8 +201,16 @@ fi
 # }}}
 ###################################################################################################
 
-mkdir -p $HOME/$project_abbreviation/pkgs
-cd $HOME/$project_abbreviation/pkgs
+if [ "$PKGS_DIR" = "" ] || echo "$PKGS_DIR" |grep -qv ^$HOME ;
+then
+    echo "使用或下载的软件目录未定义!" >&2
+    exit 1;
+fi
+if [ ! -d "$PKGS_DIR" ];
+then
+    mkdir -p $PKGS_DIR
+fi
+cd $PKGS_DIR
 
 ################################################################################
 # Check BASE DIR

@@ -3,8 +3,15 @@
 # https://github.com/pingcap/tidb
 # https://github.com/pingcap/docs-cn
 
-project_name="asdf base1"
-project_abbreviation="asdf_base1"
+curr_dir=$(cd "$(dirname "$0")"; pwd);
+project_name_file=${curr_dir}/project_name.sh
+
+if [ ! -f "$project_name_file" ];then
+    echo "$project_name_file is not file!" >&2
+    exit 1;
+fi
+
+. $project_name_file
 
 #HOSTTYPE=x86_64
 #OSTYPE=linux-gnu
@@ -371,7 +378,7 @@ LARAVEL_FRAMEWORK_VERSION="5.8.32"
 CKEDITOR_VERSION="4.12.1"
 JQUERY_VERSION="1.12.4.min"
 JQUERY3_VERSION="3.4.1.min"
-D3_VERSION="5.9.7"
+D3_VERSION="5.10.0"
 CHARTJS_VERSION="2.8.0"
 FAMOUS_VERSION="0.3.5"
 FAMOUS_FRAMEWORK_VERSION="0.13.1"
@@ -386,7 +393,7 @@ MAXMIND_DB_READER_PHP_VERSION="1.4.1"
 WEB_SERVICE_COMMON_PHP_VERSION="0.5.0"
 GEOIP2_PHP_VERSION="2.9.0"
 GEOIPUPDATE_VERSION="3.1.1" # 4以后改成golang了
-ELECTRON_VERSION="6.0.2"
+ELECTRON_VERSION="6.0.3"
 if [ "$OS_NAME" = 'darwin' ];then
     PHANTOMJS_VERSION="2.1.1"
 else
