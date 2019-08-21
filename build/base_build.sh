@@ -28,24 +28,33 @@ fi
 # {{{ yum install OR brew install
 if [ ! -f $HOME/.chg_base_compile_env ]; then
     if [ "$OS_NAME" = "linux" ]; then
-        sudo yum install -y cmake gcc texinfo xz-devel gcc-c++ bison ncurses-devel ncurses byacc file file-devel \
+        sudo yum install -y cmake gcc texinfo gcc-c++ bison ncurses-devel ncurses byacc \
                             libtool-ltdl-devel popt-devel re2c wget curl libtool coreutils nasm make
         sudo yum install -y curl nss cyrus-sasl cyrus-sasl-devel cyrus-sasl-lib libacl libacl-devel \
-                            libattr libattr-devel gperf pam pam-devel krb5-devel krb5-libs uuid uuid-devel \
+                            libattr libattr-devel gperf pam pam-devel krb5-devel krb5-libs \
                             libmount libmount-devel libuuid-devel libuuid  zlib-devel readline-devel bzip2-devel \
-                            gdbm-devel tk-devel tk libffi libffi-devel tcl-devel tcl unzip
+                            gdbm-devel unzip
 
         sudo yum install -y itstool patch # fontconfig 2.12.91
 
-        sudo yum install -y xz bzip2 tar
+        sudo yum install -y xz bzip2 tar \
+                            xz-devel
+
+        #postgresql
+        sudo yum install -y uuid \
+                            uuid-devel
 
         sudo yum install -y libacl       libattr       mariadb-libs  readline       ncurses \
                             libuuid        cyrus-sasl cyrus-sasl-lib  pam       popt \
                             libacl-devel libattr-devel mariadb-devel readline-devel ncurses-devel \
                             libuuid-devel  cyrus-sasl-devel           pam-devel popt-devel
+        # xapian-omega
+        sudo yum install -y file \
+                            file-devel
+
         # Python
-        sudo yum install expat \
-                         expat-devel
+        sudo yum install -y expat       libffi       tcl       tk \
+                            expat-devel libffi-devel tcl-devel tk-devel
 
         #wget http://dl.fedoraproject.org/pub/epel/7/x86_64/r/re2c-0.14.3-2.el7.x86_64.rpm
         sudo yum install -y autoconf m4 automake pkg-config gettext-devel meson mariadb-devel
