@@ -7001,8 +7001,6 @@ configure_harfbuzz_command()
 # {{{ configure_python_command()
 configure_python_command()
 {
-    #yum install tk tk-devel tcl-devel tcl libffi libffi-devel expat expat-devel
-
     # rpm -qf /usr/include/uuid/uuid.h
       #libuuid-devel-2.23.2-59.el7_6.1.x86_64
     # rpm -qf /usr/include/uuid.h
