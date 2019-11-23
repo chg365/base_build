@@ -698,3 +698,16 @@ make install
 #./configure --prefix=/usr/local/
 #version
 #http://re2c.org/install/install.html
+
+
+#wget https://swupdate.openvpn.org/community/releases/openvpn-2.4.8.tar.xz
+#tar Jxf openvpn-2.4.8.tar.xz
+#cd openvpn-2.4.8
+#yum install lzo lzo-devel
+#./configure --prefix=/usr/local/asdf/base1/opt/openvpn --enable-systemd
+#make
+#make install
+#vim ./distro/systemd/openvpn-server@.service
+#vim ./distro/systemd/openvpn-client@.service
+#/usr/local/asdf/base1/opt/openvpn/lib/systemd/system/
+

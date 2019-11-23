@@ -75,6 +75,13 @@ function system_user_init()
         fi
     fi
 
+#    /bin/bash
+#    /bin/false
+#    /bin/sync
+#    /usr/sbin/nologin
+
+
+#cat /etc/passwd|awk -F: '{print $NF;}'|sort -u
     grep -q "^${user}:" /etc/passwd
     if [ "$?" != 0 ]; then
         #local nologin=`grep 'nologin' /etc/shells|head -1`;

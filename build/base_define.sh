@@ -20,8 +20,13 @@ fi
 #declare -l HOST_TYPE
 # getconf LONG_BIT # 32 64
 OS_NAME=`uname -s|tr '[A-Z]' '[a-z]'`;   # Linux
-# uname -o # GNU/Linux
-HOST_TYPE=`uname -m|tr '[A-Z]' '[a-z]'`; # x86_64 # uname -p # uname -i
+# uname -s # Linux -
+# uname -o # GNU/Linux -
+# uname -i # x86_64 aarch64
+# uname -m # x86_64 aarch64
+# uname -p # x86_64 aarch64
+# uname -r # 3.10.0-957.21.3.el7.x86_64 4.4.13-20161128.kylin.5.server+
+HOST_TYPE=`uname -m|tr '[A-Z]' '[a-z]'`; # x86_64 # uname -p # uname -i # uname -m
 KERNEL_RELEASE=`uname -r` # 3.10.0-229.el7.x86_64
 KERNEL_RELEASE=${KERNEL_RELEASE%.*} # 3.10.0-229.el7
 
@@ -675,3 +680,11 @@ APACHE_LOG_DIR=$LOG_DIR/apache
 APACHE_RUN_DIR=$BASE_DIR/run/apache
 
 GEOIP2_DATA_DIR=$DATA_DIR/geoip2
+
+#https://github.com/squizlabs/PHP_CodeSniffer
+#https://cs.symfony.com/
+#https://github.com/FriendsOfPHP/PHP-CS-Fixer
+#https://github.com/jupeter/clean-code-php
+#http://code.z01.com/v4/docs/index.html
+# https://github.com/ColorlibHQ/AdminLTE
+# https://github.com/twbs/bootstrap/releases
