@@ -701,6 +701,7 @@ make install
 
 
 #wget https://swupdate.openvpn.org/community/releases/openvpn-2.4.8.tar.xz
+
 #tar Jxf openvpn-2.4.8.tar.xz
 #cd openvpn-2.4.8
 #yum install lzo lzo-devel
