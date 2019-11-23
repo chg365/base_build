@@ -705,6 +705,7 @@ make install
 #tar Jxf openvpn-2.4.8.tar.xz
 #cd openvpn-2.4.8
 #yum install lzo lzo-devel
+
 #./configure --prefix=/usr/local/asdf/base1/opt/openvpn --enable-systemd
 #make
 #make install
