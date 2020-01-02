@@ -1,13 +1,33 @@
 <?php
-class A {
-    function __construct () {
+class A
+{
+    protected $b = null;
+
+    public function __construct()
+    {
         $this->b = new B($this);
+    }
+
+    public function __destruct()
+    {
+        unset($this->b);
+        $this->b = null;
     }
 }
 
-class B {
-    function __construct ($parent = NULL) {
+class B
+{
+    protected $parent = null;
+
+    public function __construct($parent = NULL)
+    {
         $this->parent = $parent;
+    }
+
+    public function __destruct()
+    {
+        unset($this->parent);
+        $this->parent = null;
     }
 }
 $baseMemory = memory_get_usage();
@@ -19,9 +39,9 @@ $lock_num = 0;
 for ($i = 0 ; $i < 1000000 ; $i++) {
     $a = new A();
     unset($a);
-    if ( $i % 500 === 0 )
-    {
+    if ( $i % 500 === 0 ) {
         $mem = memory_get_usage();
+        //echo $mem . PHP_EOL;
         if ($lock === false || $lock_num < 3) {
             if ($mem >= $max) {
                 $max   = $mem;
@@ -42,8 +62,7 @@ for ($i = 0 ; $i < 1000000 ; $i++) {
             }
             $total = 0;
         } elseif ($mem > $max) {
-            $total++;
-            if ($total > 10) {
+            if (++$total > 10) {
                 /*
                 echo 'mem:    ' . $mem . PHP_EOL;
                 echo 'max:    ' . $max . PHP_EOL;

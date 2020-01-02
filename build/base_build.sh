@@ -285,6 +285,7 @@ compile_memcached
 compile_sphinx
 #compile_mysql
 compile_nginx
+compile_stunnel
 compile_sqlite
 compile_gearmand
 compile_phantomjs
@@ -303,7 +304,8 @@ compile_rsyslog
 #compile_php_extension_zip
 compile_php_extension_dio
 compile_php_extension_trader
-compile_php_extension_pthreads
+#compile_php_extension_pthreads
+compile_php_extension_parallel
 compile_php_extension_qrencode
 compile_php_extension_zeromq
 compile_php_extension_intl
@@ -379,7 +381,7 @@ compile_ckeditor
 compile_famous
 compile_famous_angular
 
-cp $php_ini $PHP_CONFIG_DIR/php-cli.ini
+#cp $php_ini $PHP_CONFIG_DIR/php-cli.ini
 
 sed -i.bak.$$ '/extension=pthreads.so/d' $php_ini
 rm -rf ${php_ini}.bak*
@@ -699,7 +701,6 @@ make install
 #version
 #http://re2c.org/install/install.html
 
-
 #wget https://swupdate.openvpn.org/community/releases/openvpn-2.4.8.tar.xz
 
 #tar Jxf openvpn-2.4.8.tar.xz
@@ -712,4 +713,20 @@ make install
 #vim ./distro/systemd/openvpn-server@.service
 #vim ./distro/systemd/openvpn-client@.service
 #/usr/local/asdf/base1/opt/openvpn/lib/systemd/system/
+
+wget --content-disposition --no-check-certificate https://github.com/facebookresearch/fastText/archive/v0.9.1.tar.gz
+tar zxf fastText-0.9.1.tar.gz
+cd fastText-0.9.1
+mkdir build
+cd build/
+cmake -DCMAKE_INSTALL_PREFIX=/opt/asdf/base1/opt/fasttext ../
+make
+make install
+
+wget --content-disposition --no-check-certificate https://github.com/YujiroTakahashi/fastText-php/archive/master.tar.gz
+tar zxf fastText-php-master.tar.gz
+cd fastText-php-master
+/opt/asdf/base1/opt/php/bin/phpize
+./configure --with-php-config=/opt/asdf/base1/opt/php/bin/php-config --enable-fasttext=/opt/asdf/base1/opt/fasttext
+make
 

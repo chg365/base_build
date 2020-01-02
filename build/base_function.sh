@@ -29,6 +29,22 @@ check_minimum_env_requirements()
 # yum install libtool-ltdl-devel
 # yum install texinfo
 }
+get_cpu_core_num()
+{
+    # cpu 每个物理CPU的核数
+    # cat /proc/cpuinfo|grep 'cpu cores'|uniq |awk '{print $NF;}'
+    local num=`cat /proc/cpuinfo| grep 'processor'| wc -l`;
+    if [ "$num" = "0" ];then
+        # 申威sw_64
+        num=`cat /proc/cpuinfo|grep 'cpus active'|awk '{print $NF;}'`
+    fi
+    if [ "$num" = "0" ];then
+        echo 'get cpu core num fail!' >&2;
+        return 1;
+    fi
+    CPU_CORE_NUM=$num;
+    return;
+}
 # {{{ sed_quote()
 sed_quote()
 {
@@ -160,11 +176,16 @@ make_run()
         return 1;
     fi
 
+    if [ "$MAKE_JOBS" = "0" ];then
+        MAKE_JOBS=1;
+    fi
+
+    # make -j 8
     if [ "${@#*/}" = "util-linux" ];then
-        make && sudo make install
+        make -s -j $MAKE_JOBS && sudo make -s install
         sudo chown -R `whoami` $UTIL_LINUX_BASE
     else
-        make && make install
+        make -s -j $MAKE_JOBS && make -s install
     fi
 
     if [ $? -ne 0 ];then
@@ -283,7 +304,14 @@ wget_lib_browscap()
 # rm_bak_file() {{{
 rm_bak_file()
 {
-    for i in `find $1 -type f | grep '\.bak\.'`;
+    local dest_dir=${1%/*}
+    if ! `echo $dest_dir|grep -q $BASE_DIR` ;
+    then
+        echo "目录[${1}]不在[$BASE_DIR]内" >&2
+        return 1;
+    fi
+    local file_name=${1##*/}
+    for i in `find $dest_dir -type f | grep '\.bak\.'`;
     do
         if [ -f "$i" ];then
             rm -rf "$i"
@@ -460,6 +488,7 @@ wget_base_library()
     wget_lib $LIBICONV_FILE_NAME      "https://ftp.gnu.org/gnu/libiconv/$LIBICONV_FILE_NAME"
     wget_lib $LIBXML2_FILE_NAME       "ftp://xmlsoft.org/libxml2/$LIBXML2_FILE_NAME"
     wget_lib $LIBWEBP_FILE_NAME       "https://github.com/webmproject/libwebp/archive/v${LIBWEBP_FILE_NAME##*-}"
+    wget_lib $ONIGURUMA_FILE_NAME     "https://github.com/kkos/oniguruma/archive/v${ONIGURUMA_FILE_NAME##*-}"
     wget_lib $FRIBIDI_FILE_NAME       "https://github.com/fribidi/fribidi/archive/v${FRIBIDI_FILE_NAME##*-}"
     wget_lib $JSON_FILE_NAME          "https://s3.amazonaws.com/json-c_releases/releases/$JSON_FILE_NAME"
     # https://sourceforge.net/projects/mcrypt/files/MCrypt/2.6.8/mcrypt-2.6.8.tar.gz/download
@@ -474,7 +503,9 @@ wget_base_library()
     wget_lib_boost
     wget_lib_xunsearch
     wget_lib $PCRE_FILE_NAME          "https://sourceforge.net/projects/pcre/files/pcre/$PCRE_VERSION/$PCRE_FILE_NAME/download"
+    wget_lib $PCRE2_FILE_NAME         "ftp://ftp.pcre.org/pub/pcre/$PCRE2_FILE_NAME"
     wget_lib $NGINX_FILE_NAME         "https://nginx.org/download/$NGINX_FILE_NAME"
+    wget_lib $STUNNEL_FILE_NAME       "https://www.stunnel.org/downloads/$STUNNEL_FILE_NAME"
     wget_lib $NODEJS_FILE_NAME        "https://nodejs.org/dist/v${NODEJS_VERSION}/${NODEJS_FILE_NAME}"
     #wget_lib $CALIBRE_FILE_NAME       "https://github.com/kovidgoyal/calibre/releases/download/v${CALIBRE_VERSION}/${CALIBRE_FILE_NAME}"
     wget_lib $CALIBRE_FILE_NAME       "https://download.calibre-ebook.com/${CALIBRE_VERSION}/${CALIBRE_FILE_NAME}"
@@ -484,6 +515,7 @@ wget_base_library()
     wget_lib $PHP_FILE_NAME           "https://cn2.php.net/distributions/$PHP_FILE_NAME"
     wget_lib $PTHREADS_FILE_NAME      "https://github.com/krakjoe/pthreads/archive/v${PTHREADS_FILE_NAME##*-}"
     #wget_lib $PTHREADS_FILE_NAME      "https://pecl.php.net/get/$PTHREADS_FILE_NAME"
+    wget_lib $PARALLEL_FILE_NAME      "https://pecl.php.net/get/$PARALLEL_FILE_NAME"
     wget_lib $ZIP_FILE_NAME           "https://pecl.php.net/get/$ZIP_FILE_NAME"
     wget_lib $SWOOLE_FILE_NAME        "https://pecl.php.net/get/$SWOOLE_FILE_NAME"
     wget_lib $PSR_FILE_NAME           "https://pecl.php.net/get/$PSR_FILE_NAME"
@@ -1193,6 +1225,20 @@ is_installed_readline()
     return;
 }
 # }}}
+# {{{ is_installed_oniguruma()
+is_installed_oniguruma()
+{
+    local FILENAME="$ONIGURUMA_BASE/lib/pkgconfig/oniguruma.pc"
+    if [ ! -f "$FILENAME" ];then
+        return 1;
+    fi
+    local version=`pkg-config --modversion $FILENAME`
+    if [ "$version" != "$ONIGURUMA_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
 # {{{ is_installed_phantomjs()
 is_installed_phantomjs()
 {
@@ -1350,7 +1396,6 @@ is_installed_libwbxml()
     fi
     local version=`pkg-config --modversion $FILENAME`
     if [ "$version" != "$LIBWBXML_VERSION" ];then
-        echo "bbb"
         return 1;
     fi
     return;
@@ -1392,6 +1437,22 @@ is_installed_pcre()
     # local version=`$PCRE_BASE/bin/pcre-config --version`
     local version=`pkg-config --modversion $FILENAME`
     if [ "$version" != "$PCRE_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
+# {{{ is_installed_pcre2()
+is_installed_pcre2()
+{
+    #local FILENAME="$PCRE2_BASE/lib/pkgconfig/libpcre2-8.pc"
+    local FILENAME="$PCRE2_BASE/bin/pcre2-config"
+    if [ ! -f "$FILENAME" ];then
+        return 1;
+    fi
+    local version=`$FILENAME --version`
+    #local version=`pkg-config --modversion $FILENAME`
+    if [ "$version" != "$PCRE2_VERSION" ];then
         return 1;
     fi
     return;
@@ -2151,6 +2212,19 @@ is_installed_nginx()
     return;
 }
 # }}}
+# {{{ is_installed_stunnel()
+is_installed_stunnel()
+{
+    if [ ! -f "$STUNNEL_BASE/bin/stunnel" ];then
+        return 1;
+    fi
+    local version=`$STUNNEL_BASE/bin/stunnel -v 2>&1|grep stunnel|awk -F'[ /]' '{ print $3; }'`
+    if [ "$version" != "$STUNNEL_VERSION" ];then
+        return 1;
+    fi
+    return;
+}
+# }}}
 # {{{ is_installed_rsyslog()
 is_installed_rsyslog()
 {
@@ -2702,6 +2776,7 @@ compile_clamav()
                     --with-libncurses-prefix \
                     --with-libpdcurses-prefix \
                     --with-libcurl=$CURL_BASE \
+                    --silent
     "
     #--with-libjson=$LIBJSON_BASE \
     #--with-libncurses-prefix=$LIBNCURSES_BASE \
@@ -2735,6 +2810,7 @@ compile_fann()
                     --with-libncurses-prefix \
                     --with-libpdcurses-prefix \
                     --with-libcurl=$CURL_BASE \
+                    --silent
     "
 
     compile "fann" "$FANN_FILE_NAME" "fann-$FANN_VERSION/" "$FANN_BASE" "FANN_CONFIGURE"
@@ -2752,6 +2828,7 @@ compile_xapian_core()
     XAPIAN_CORE_CONFIGURE="
         ./configure --prefix=$XAPIAN_CORE_BASE \
                     --enable-64bit-docid \
+                    --silent \
                     --enable-64bit-termcount
     "
 
@@ -2815,6 +2892,7 @@ compile_scws()
 
     SCWS_CONFIGURE="
         ./configure --prefix=$SCWS_BASE \
+                    --silent \
                     --sysconfdir=$SCWS_CONFIG_DIR
     "
 
@@ -2879,7 +2957,8 @@ compile_re2c()
 #    fi
 
     RE2C_CONFIGURE="
-    ./configure --prefix=$RE2C_BASE
+    ./configure --prefix=$RE2C_BASE \
+                --silent
     "
 
     compile "re2c" "$RE2C_FILE_NAME" "re2c-$RE2C_VERSION" "$RE2C_BASE" "RE2C_CONFIGURE"
@@ -2896,6 +2975,7 @@ compile_pkgconfig()
 
     PKGCONFIG_CONFIGURE="
     ./configure --prefix=$PKGCONFIG_BASE \
+                --silent \
                 --with-internal-glib
     "
     #--with-internal-glib
@@ -2916,11 +2996,31 @@ compile_pcre()
     PCRE_CONFIGURE="
     ./configure --prefix=$PCRE_BASE \
                 --enable-utf8 \
+                --silent \
                 --enable-unicode-properties
     "
     # --enable-pcre16 --enable-pcre32 --enable-unicode-properties --enable-utf
 
     compile "pcre" "$PCRE_FILE_NAME" "pcre-$PCRE_VERSION" "$PCRE_BASE" "PCRE_CONFIGURE"
+}
+# }}}
+# {{{ compile_pcre2()
+compile_pcre2()
+{
+    is_installed pcre2 $PCRE2_BASE
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    PCRE2_CONFIGURE="
+    ./configure --prefix=$PCRE2_BASE \
+                --enable-utf8 \
+                --silent \
+                --enable-unicode-properties
+    "
+    # --enable-pcre16 --enable-pcre32 --enable-unicode-properties --enable-utf
+
+    compile "pcre2" "$PCRE2_FILE_NAME" "pcre2-$PCRE2_VERSION" "$PCRE2_BASE" "PCRE2_CONFIGURE"
 }
 # }}}
 # {{{ compile_openssl()
@@ -3060,7 +3160,7 @@ compile_zlib()
 
     # CFLAGS="-O3 -fPIC" \
     ZLIB_CONFIGURE="
-    ./configure --prefix=$ZLIB_BASE
+        ./configure --prefix=$ZLIB_BASE
     "
     compile "zlib" "$ZLIB_FILE_NAME" "zlib-$ZLIB_VERSION" "$ZLIB_BASE" "ZLIB_CONFIGURE"
 }
@@ -3078,7 +3178,7 @@ compile_libzip()
     LIBZIP_CONFIGURE="
     $( is_new_version $LIBZIP_VERSION 1.3.99 && \
         echo cmake . -DCMAKE_INSTALL_PREFIX=$LIBZIP_BASE || \
-        echo ./configure --prefix=$LIBZIP_BASE --with-zlib=$ZLIB_BASE)
+        echo ./configure --prefix=$LIBZIP_BASE --with-zlib=$ZLIB_BASE --silent)
     "
     compile "libzip" "$LIBZIP_FILE_NAME" "libzip-$LIBZIP_VERSION" "$LIBZIP_BASE" "LIBZIP_CONFIGURE"
 }
@@ -3093,6 +3193,7 @@ compile_libiconv()
 
     LIBICONV_CONFIGURE="
     ./configure --prefix=$LIBICONV_BASE \
+                --silent
     "
     #  --with-iconv-prefix=$LIBICONV_BASE \
 
@@ -3112,6 +3213,7 @@ compile_gettext()
                 --enable-threads \
                 --disable-java \
                 --disable-native-java \
+                --silent \
                 --without-emacs
     "
 
@@ -3134,6 +3236,7 @@ compile_libxml2()
                 --with-iconv=$LIBICONV_BASE \
                 --with-zlib=$ZLIB_BASE \
                 $( [ "$OS_NAME" = "darwin" ] && echo "--without-lzma") \
+                --silent \
                 --without-python
     "
 # xmlIO.c:1450:52: error: use of undeclared identifier 'LZMA_OK' mac上2.9.3报错. 加 --without-lzma
@@ -3192,6 +3295,7 @@ compile_libxslt()
 
     LIBXSLT_CONFIGURE="
     ./configure --prefix=$LIBXSLT_BASE \
+                --silent \
                 --with-libxml-prefix=$LIBXML2_BASE
     "
 
@@ -3257,6 +3361,7 @@ compile_sphinx()
                 --sysconfdir=$BASE_DIR/etc/sphinx \
                 --with-iconv \
                 --with-syslog \
+                --silent \
                 $WITH_MYSQL \
                 $WITH_PGSQL
     "
@@ -3295,7 +3400,8 @@ compile_json()
     fi
 
     JSON_CONFIGURE="
-    ./configure --prefix=$JSON_BASE
+    ./configure --prefix=$JSON_BASE \
+                --silent
     "
 
     compile "json-c" "$JSON_FILE_NAME" "json-c-$JSON_VERSION" "$JSON_BASE" "JSON_CONFIGURE"
@@ -3310,7 +3416,8 @@ compile_libfastjson()
     fi
 
     LIBFASTJSON_CONFIGURE="
-        ./configure --prefix=$LIBFASTJSON_BASE
+        ./configure --prefix=$LIBFASTJSON_BASE \
+                    --silent
     "
 
     compile "libfastjson" "$LIBFASTJSON_FILE_NAME" "libfastjson-$LIBFASTJSON_VERSION" "$LIBFASTJSON_BASE" "LIBFASTJSON_CONFIGURE"
@@ -3325,7 +3432,8 @@ compile_libmcrypt()
     fi
 
     LIBMCRYPT_CONFIGURE="
-    ./configure --prefix=$LIBMCRYPT_BASE
+    ./configure --prefix=$LIBMCRYPT_BASE \
+                --silent
     "
 
     compile "libmcrypt" "$LIBMCRYPT_FILE_NAME" "libmcrypt-$LIBMCRYPT_VERSION" "$LIBMCRYPT_BASE" "LIBMCRYPT_CONFIGURE"
@@ -3398,7 +3506,8 @@ compile_tesseract()
     fi
 
     TESSERACT_CONFIGURE="
-        ./configure --prefix=$TESSERACT_BASE
+        ./configure --prefix=$TESSERACT_BASE \
+                    --silent
     "
 
     compile "tesseract" "$TESSERACT_FILE_NAME" "tesseract-${TESSERACT_VERSION}" "$TESSERACT_BASE" "TESSERACT_CONFIGURE"
@@ -3415,10 +3524,33 @@ compile_readline()
     READLINE_CONFIGURE="
         ./configure --prefix=$READLINE_BASE \
                     --enable-multibyte \
+                    --silent \
                     --with-curses
     "
 
     compile "readline" "$READLINE_FILE_NAME" "readline-${READLINE_VERSION}" "$READLINE_BASE" "READLINE_CONFIGURE"
+}
+# }}}
+# {{{ compile_oniguruma()
+compile_oniguruma()
+{
+    is_installed oniguruma "$ONIGURUMA_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    ONIGURUMA_CONFIGURE="
+        configure_oniguruma_command
+    "
+
+    compile "oniguruma" "$ONIGURUMA_FILE_NAME" "oniguruma-${ONIGURUMA_VERSION}" "$ONIGURUMA_BASE" "ONIGURUMA_CONFIGURE"
+}
+# }}}
+# {{{ configure_oniguruma_command()
+configure_oniguruma_command()
+{
+    ./autogen.sh && ./configure --prefix=$ONIGURUMA_BASE \
+                                --silent
 }
 # }}}
 # {{{ compile_jpeg()
@@ -3430,7 +3562,10 @@ compile_jpeg()
     fi
 
     JPEG_CONFIGURE="
-    ./configure --prefix=$JPEG_BASE --enable-shared --enable-static
+    ./configure --prefix=$JPEG_BASE \
+                --silent \
+                --enable-shared \
+                --enable-static
     "
 
     compile "jpeg" "$JPEG_FILE_NAME" "jpeg-$JPEG_VERSION" "$JPEG_BASE" "JPEG_CONFIGURE"
@@ -3523,6 +3658,7 @@ configure_poppler_command()
         CPPFLAGS="$CPPFLAGS" \
         LDFLAGS="$LDFLAGS" \
         ./configure --prefix=$POPPLER_BASE \
+                    --silent \
                     --enable-xpdf-headers
     fi
 }
@@ -3555,6 +3691,7 @@ configure_cairo_command()
 {
     CPPFLAGS="$(get_cppflags $ZLIB_BASE/include)" LDFLAGS="$(get_ldflags $ZLIB_BASE/lib)" \
      ./configure --prefix=$CAIRO_BASE \
+                 --silent \
                  --disable-dependency-tracking
 }
 # }}}
@@ -3624,7 +3761,8 @@ compile_pango()
 
     #meson --prefix=$PANGO_BASE build
     PANGO_CONFIGURE="
-        ./configure --prefix=$PANGO_BASE
+        ./configure --prefix=$PANGO_BASE \
+                    --silent \
     "
 
     compile "pango" "$PANGO_FILE_NAME" "pango-$PANGO_VERSION" "$PANGO_BASE" "PANGO_CONFIGURE"
@@ -3661,6 +3799,7 @@ configure_memcached_command()
 
     ./configure --prefix=$MEMCACHED_BASE \
                 --with-libevent=$LIBEVENT_BASE \
+                --silent \
                 $( echo "$HOST_TYPE"|grep -q x86_64 && echo "--enable-64bit" )
                 # --enable-dtrace
 }
@@ -3786,6 +3925,7 @@ configure_gearmand_command()
                 --with-boost=$( is_installed_boost && echo ${BOOST_BASE} || echo yes ) \
                 --with-postgresql=$( is_installed_postgresql && echo ${POSTGRESQL_BASE}/bin/pg_config || echo yes ) \
                 --with-mysql=$( is_installed_mysql && echo ${MYSQL_BASE}/bin/mysql_config || echo yes ) \
+                --silent \
                 --with-openssl=$OPENSSL_BASE
 
 
@@ -3839,6 +3979,7 @@ compile_expat()
 
     EXPAT_CONFIGURE="
     ./configure --prefix=$EXPAT_BASE \
+                --silent \
                 --without-docbook
     "
 
@@ -3868,6 +4009,7 @@ configure_libpng_command()
 {
     CPPFLAGS="$(get_cppflags $ZLIB_BASE/include)" LDFLAGS="$(get_ldflags $ZLIB_BASE/lib)" \
     ./configure --prefix=$LIBPNG_BASE \
+                --silent \
                 # --with-zlib-prefix=$ZLIB_BASE
 }
 # }}}
@@ -3880,7 +4022,8 @@ compile_sqlite()
     fi
 
     SQLITE_CONFIGURE="
-        ./configure --prefix=$SQLITE_BASE
+        ./configure --prefix=$SQLITE_BASE \
+                    --silent \
     "
 #--enable-json1 \
 #--enable-session \
@@ -3932,6 +4075,7 @@ compile_nghttp2()
 
     NGHTTP2_CONFIGURE="
         ./configure --prefix=$NGHTTP2_BASE \
+                    --silent \
                     --with-libxml2 \
                     $( has_systemd && echo "--with-systemd" ) \
                     --with-boost=$BOOST_BASE
@@ -3967,6 +4111,7 @@ compile_freetype()
 
     FREETYPE_CONFIGURE="
     ./configure --prefix=$FREETYPE_BASE \
+                --silent \
                 $( is_new_version $FREETYPE_VERSION 2.9.1 && echo '--enable-freetype-config') \
                 --with-zlib=yes \
                 --with-png=yes
@@ -4042,6 +4187,7 @@ configure_glib_command()
         cmd="autogen.sh"
     fi
     ./${cmd} --prefix=$GLIB_BASE \
+             --silent \
              --with-pcre=internal
 
              #--with-pcre=system \
@@ -4076,6 +4222,7 @@ compile_util_linux()
 
     UTIL_LINUX_CONFIGURE="
         ./configure --prefix=$UTIL_LINUX_BASE \
+                    --silent \
                     --with-libiconv-prefix=$LIBICONV_BASE \
                     $( has_systemd && echo "--with-systemd" )
     "
@@ -4094,7 +4241,8 @@ compile_xproto()
     fi
 
     XPROTO_CONFIGURE="
-    ./configure --prefix=$XPROTO_BASE
+    ./configure --prefix=$XPROTO_BASE \
+                --silent
     "
 
     compile "xproto" "$XPROTO_FILE_NAME" "xproto-$XPROTO_VERSION" "$XPROTO_BASE" "XPROTO_CONFIGURE"
@@ -4493,9 +4641,20 @@ configure_imap_command()
             }" ./Makefile
     fi
     echo "make command: "
-    echo "make $os_type SSLINCLUDE=$OPENSSL_BASE/include/openssl SSLLIB=$OPENSSL_BASE/lib${tmp_64} SSLKEYS=$OPENSSL_BASE/ssl/private GSSDIR=$KERBEROS_BASE EXTRACFLAGS=-fPIC"
+    echo "make -s -j $MAKE_JOBS $os_type \
+        SSLINCLUDE=$OPENSSL_BASE/include/openssl \
+        SSLLIB=$OPENSSL_BASE/lib${tmp_64} \
+        SSLKEYS=$OPENSSL_BASE/ssl/private \
+        GSSDIR=$KERBEROS_BASE \
+        EXTRACFLAGS=\"$(get_cppflags $OPENSSL_BASE/include) -fPIC\" \
+        "
 
-    make "$os_type" SSLINCLUDE=$OPENSSL_BASE/include/openssl SSLLIB=$OPENSSL_BASE/lib${tmp_64} SSLKEYS=$OPENSSL_BASE/ssl/private GSSDIR=$KERBEROS_BASE EXTRACFLAGS=-fPIC
+    make -s -j $MAKE_JOBS "$os_type" \
+        SSLINCLUDE=$OPENSSL_BASE/include/openssl \
+        SSLLIB=$OPENSSL_BASE/lib${tmp_64} \
+        SSLKEYS=$OPENSSL_BASE/ssl/private \
+        GSSDIR=$KERBEROS_BASE \
+        EXTRACFLAGS="$(get_cppflags $OPENSSL_BASE/include) -fPIC"
 
     if [ "$?" != "0" ]; then
         echo "Install imap failed." >&2;
@@ -4717,6 +4876,31 @@ compile_nginx()
     #/bin/rm -rf ${NGINX_STICKY_MODULE_FILE_NAME%%.*}
 
     #init_nginx_conf
+}
+# }}}
+# {{{ compile_stunnel()
+compile_stunnel()
+{
+    compile_openssl
+
+    is_installed stunnel "$STUNNEL_BASE"
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    STUNNEL_CONFIGURE="
+        ./configure --prefix=$STUNNEL_BASE \
+                    --sysconfdir=$STUNNEL_CONFIG_DIR \
+                    --with-ssl=$OPENSSL_BASE
+    "
+
+    compile "stunnel" "$STUNNEL_FILE_NAME" "stunnel-$STUNNEL_VERSION" "$STUNNEL_BASE" "STUNNEL_CONFIGURE"
+
+    if [ "$OS_NAME" = "linux" ]; then
+        repair_elf_file_rpath $STUNNEL_BASE/bin/stunnel
+    fi
+
+    #init_stunnel_conf
 }
 # }}}
 # {{{ compile_libuuid()
@@ -5058,9 +5242,17 @@ compile_rabbitmq_c()
 
     # compile_libsodium
 
+    #local pkg_name=`rpm -q popt`
+    # popt-1.13-16.el7.x86_64
+    # /usr/share/doc/popt-1.13
+    # 0.9 0.10 要大于等于 1.14
+    # 否则， -DBUILD_TOOLS=OFF
+
+
     RABBITMQ_C_CONFIGURE="
     cmake -DCMAKE_INSTALL_PREFIX=$RABBITMQ_C_BASE \
-          -DCMAKE_INSTALL_LIBDIR=$RABBITMQ_C_BASE/lib
+          -DCMAKE_INSTALL_LIBDIR=$RABBITMQ_C_BASE/lib \
+          -DBUILD_TOOLS=OFF
     "
 
     compile "rabbitmq-c" "$RABBITMQ_C_FILE_NAME" "rabbitmq-c-${RABBITMQ_C_VERSION}" "$RABBITMQ_C_BASE" "RABBITMQ_C_CONFIGURE"
@@ -5116,6 +5308,8 @@ compile_php()
     compile_gettext
     compile_libiconv
     [ `echo "$PHP_VERSION 7.1.999"|tr " " "\n"|sort -rV|head -1` != "$PHP_VERSION" ] && compile_libmcrypt
+    [ `echo "$PHP_VERSION 7.3.0"|tr " " "\n"|sort -rV|head -1` == "$PHP_VERSION" ] && compile_pcre2
+    [ `echo "$PHP_VERSION 7.4.0"|tr " " "\n"|sort -rV|head -1` == "$PHP_VERSION" ] && compile_oniguruma
     compile_curl
     compile_gmp
     compile_libgd
@@ -5141,7 +5335,7 @@ compile_php()
 
     # browscap 支持处理
     # 打开browscap后，只要执行php就会卡，不管用没用get_browser()函数
-    mkdir $PHP_CONFIG_DIR/extra && \
+    mkdir -p $PHP_CONFIG_DIR/extra && \
     cp $BROWSCAP_INI_FILE_NAME $PHP_CONFIG_DIR/extra/browscap.ini
     if [ "$?" != "0" ];then
         echo "Warning: browscp.ini copy faild." >&2
@@ -5197,6 +5391,10 @@ after_php_make_install()
     cp sapi/fpm/php-fpm.service $BASE_DIR/setup/service/php-fpm.service
 
     PHP_EXTENSION_DIR="$( find $PHP_LIB_DIR -name "no-debug-*" )"
+
+    if [ -f "$PHP_CONFIG_DIR/php-cli.ini" ]; then
+        rm -f $PHP_CONFIG_DIR/php-cli.ini
+    fi
 
     init_php_ini
     init_php_fpm_ini
@@ -5649,6 +5847,26 @@ compile_php_extension_pthreads()
     /bin/rm -rf package.xml
 }
 # }}}
+# {{{ compile_php_extension_parallel()
+compile_php_extension_parallel()
+{
+    is_installed_php_extension parallel $PARALLEL_VERSION
+    if [ "$?" = "0" ];then
+        return;
+    fi
+
+    PHP_EXTENSION_PARALLEL_CONFIGURE="
+        ./configure --with-php-config=$PHP_BASE/bin/php-config \
+                    --enable-parallel \
+                    --enable-parallel-coverage
+    "
+                    #--enable-parallel-dev
+
+    compile "php_extension_parallel" "$PARALLEL_FILE_NAME" "parallel-$PARALLEL_VERSION" "parallel.so" "PHP_EXTENSION_PARALLEL_CONFIGURE"
+
+    /bin/rm -rf package.xml
+}
+# }}}
 # {{{ compile_php_extension_scws()
 compile_php_extension_scws()
 {
@@ -6030,10 +6248,11 @@ configure_php_ext_imap_command()
      #if test -r $i/${PHP_LIBDIR}64/libssl.a -o -r $i/${PHP_LIBDIR}64/libssl.$SHLIB_SUFFIX_NAME; then
      #OPENSSL_LIBDIR=$i/${PHP_LIBDIR}64
 
+    OPENSSL_CFLAGS="$(get_cppflags $OPENSSL_BASE/include )" \
+    OPENSSL_LIBS="$(get_ldflags $OPENSSLASE/lib )" \
     ./configure --with-php-config=$PHP_BASE/bin/php-config \
                 --with-imap$(is_installed_imap && echo "=$IMAP_BASE" ) \
-                --with-kerberos=$KERBEROS_BASE \
-                --with-imap-ssl=$OPENSSL_BASE
+                --with-imap-ssl
 
     # CPPFLAGS="$(get_cppflags $OPENSSL_BASE/include)" LDFLAGS="$(get_ldflags $OPENSSL_BASE/lib)" \
                 # --with-libdir=lib64 \
@@ -6418,7 +6637,7 @@ install_cacert()
 {
     echo_build_start "install_cacert"
 
-    if [ !-f "$CACERT_FILE_NAME" ];then
+    if [ ! -f "$CACERT_FILE_NAME" ];then
         echo "file[$CACERT_FILE_NAME] is not exists!" >&2
         exit 1;
     fi
@@ -6780,6 +6999,14 @@ configure_xunsearch_command()
     #1.4.11编译不过去。报libevent 版本不对
     sed -i.bak 's/_EVENT_NUMERIC_VERSION/EVENT__NUMERIC_VERSION/' configure
 
+     # 删除通知
+    sed -i '/sh notify-sh/d' Makefile.in
+    sed -i '/sh notify-sh/d' Makefile.am
+
+    sed -i 's/ notify-sh //' Makefile.am
+    sed -i 's/ notify-sh //' Makefile.in
+    rm -f notify-sh
+
     #apc 换成apcu
     for i in `find sdk/php/ -name "*.php"`; do sed -i 's/apc_/apcu_/' $i; done
 
@@ -7042,7 +7269,14 @@ configure_php_command()
         fi
     fi
 
+    local PCRE_BASE=$PCRE_BASE
+    if [ `echo "$PHP_VERSION 7.3.99"|tr " " "\n"|sort -rV|head -1` == "$PHP_VERSION" ];
+    then
+        local PCRE_BASE=$PCRE2_BASE
+    fi
     #echo $PATH;
+
+    echo $PCRE_BASE
 
     # EXTRA_LIBS="-lresolv" \
     ./configure --prefix=$PHP_BASE \
@@ -7072,6 +7306,7 @@ configure_php_command()
                 --enable-sysvsem \
                 --enable-sysvshm \
                 --enable-shmop \
+                --enable-calendar \
                 --enable-mbstring \
                 --disable-debug \
                 --enable-bcmath \
@@ -7099,12 +7334,24 @@ configure_php_command()
                 # --enable-xml \
                 # --enable-phpdbg \
                 # --enable-phpdbg-webhelper \
+                # --enable-phpdbg-readline
                 # --with-openssl=$OPENSSL_BASE --with-system-ciphers --with-kerberos=$KERBEROS_BASE
 
                 # --with-libzip=$LIBZIP_BASE \
+                # --with-bz2=DIR
 
                 # --with-fpm-systemd \  # Your system does not support systemd.
 
+                # --enable-dba=shared \
+                # --with-qdbm=DIR         DBA: QDBM support
+                # --with-gdbm=DIR         DBA: GDBM support
+                # --with-ndbm=DIR         DBA: NDBM support
+                # --with-db4=DIR          DBA: Oracle Berkeley DB 4.x or 5.x support
+                # --with-dbm=DIR          DBA: DBM support
+                # --with-tcadb=DIR        DBA: Tokyo Cabinet abstract DB support
+                # --with-lmdb=DIR         DBA: Lightning memory-mapped database support
+
+                # --with-enchant=DIR
                 # --without-iconv
                 # --with-tidy=$TIDY_BASE
                 # --with-imagick=$IMAGICK_BASE
@@ -7810,9 +8057,11 @@ check_soft_updates()
             libxml2
             gettext
             readline
+            oniguruma
             libiconv
             libjpeg
             pcre
+            pcre2
             boost
             gearman
             gearmand
@@ -7828,6 +8077,7 @@ check_soft_updates()
             json_c
             libfastjson
             nginx
+            stunnel
             rsyslog
             libuuid
             liblogging
@@ -7860,6 +8110,7 @@ check_soft_updates()
             pecl_grpc
             pecl_protobuf
             pecl_pthreads
+            pecl_parallel
             pecl_zip
             pecl_solr
             pecl_mailparse
@@ -8284,6 +8535,27 @@ check_nginx_version()
 
 }
 # }}}
+# {{{ check_stunnel_version()
+check_stunnel_version()
+{
+    local new_version=`curl -Lk https://www.stunnel.org/downloads.html 2>/dev/null|sed -n 's/^.*\/stunnel-\([0-9.]\{1,\}\)\.tar\.gz".\{1,\}$/\1/p'|sort -rV|head -1`;
+    new_version=${new_version// /}
+    if [ -z "$new_version" ];then
+        echo -e "探测stunnel新版本\033[0;31m失败\033[0m" >&2
+            return 1;
+    fi
+
+    is_new_version $STUNNEL_VERSION $new_version
+    if [ "$?" = "0" ];then
+        [ "$is_echo_latest" = "" -o "$is_echo_latest" != "0" ] && \
+        echo -e "stunnel version is \033[0;32mthe latest.\033[0m"
+        return 0;
+    fi
+
+    echo -e "stunnel current version: \033[0;33m${STUNNEL_VERSION}\033[0m\tnew version: \033[0;35m${new_version}\033[0m"
+
+}
+# }}}
 # {{{ check_nodejs_version()
 check_nodejs_version()
 {
@@ -8621,6 +8893,12 @@ check_pecl_pthreads_version()
     #check_php_pecl_version pthreads $PTHREADS_VERSION
 }
 # }}}
+# {{{ check_pecl_parallel_version()
+check_pecl_parallel_version()
+{
+    check_php_pecl_version parallel $PARALLEL_VERSION
+}
+# }}}
 # {{{ check_pecl_zip_version()
 check_pecl_zip_version()
 {
@@ -8866,6 +9144,12 @@ check_libgpg_error_version()
 check_readline_version()
 {
     check_ftp_gnu_org_version readline $READLINE_VERSION
+}
+# }}}
+# {{{ check_oniguruma_version()
+check_oniguruma_version()
+{
+    check_github_soft_version oniguruma $ONIGURUMA_VERSION "https://github.com/kkos/oniguruma/releases"
 }
 # }}}
 # {{{ check_gettext_version()
@@ -9120,6 +9404,13 @@ check_libjpeg_version()
 check_pcre_version()
 {
     check_sourceforge_soft_version pcre ${PCRE_VERSION//_/.} 's/^.\{0,\}<tr title="\([0-9.]\{1,\}\)" class="folder \{0,\}"> \{0,\}$/\1/p'
+    #check_sourceforge_soft_version pcre ${PCRE_VERSION//_/.} 's/^.\{0,\}<tr title="\([0-9.]\{1,\}\)" class="folder \{0,\}"> \{0,\}$/\1/p' pcre2
+}
+# }}}
+# {{{ check_pcre2_version()
+check_pcre2_version()
+{
+    #check_sourceforge_soft_version pcre ${PCRE_VERSION//_/.} 's/^.\{0,\}<tr title="\([0-9.]\{1,\}\)" class="folder \{0,\}"> \{0,\}$/\1/p'
     check_sourceforge_soft_version pcre ${PCRE_VERSION//_/.} 's/^.\{0,\}<tr title="\([0-9.]\{1,\}\)" class="folder \{0,\}"> \{0,\}$/\1/p' pcre2
 }
 # }}}
