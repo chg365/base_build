@@ -629,6 +629,9 @@ PSOL_FILE_NAME="psol-${PSOL_VERSION}-x$( [ "$HOST_TYPE" = "x86_64" ] && echo "64
 
 # }}}
 
+# 是否尽量可能的使用系统自带lib
+TRY_TO_USE_THE_SYSTEM=1
+
 SBIN_DIR="$BASE_DIR/sbin"
 BIN_DIR="$BASE_DIR/bin"
 PHP_LIB_DIR=$PHP_BASE/lib

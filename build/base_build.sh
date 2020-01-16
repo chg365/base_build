@@ -730,3 +730,12 @@ cd fastText-php-master
 ./configure --with-php-config=/opt/asdf/base1/opt/php/bin/php-config --enable-fasttext=/opt/asdf/base1/opt/fasttext
 make
 
+
+https://github.com/nesk/rialto
+https://github.com/nesk/PuPHPeteer
+
+
+SQL中继
+数据库池连接代理服务器
+http://downloads.sourceforge.net/rudiments/rudiments-1.2.2.tar.gz
+http://downloads.sourceforge.net/sqlrelay/sqlrelay-1.7.0.tar.gz
