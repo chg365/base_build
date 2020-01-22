@@ -169,7 +169,6 @@ delete_soft_old_file()
             geoip2_php
             geoipupdate
             electron
-            phantomjs
             laravel
             yii2
             laravel_framework

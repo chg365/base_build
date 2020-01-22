@@ -5,9 +5,9 @@ curr_dir=$(cd "$(dirname "$0")"; pwd);
 #otool -L
 #brew install
 
-# {{{ yum install OR brew install
+# {{{ yum install
 if [ ! -f $HOME/.chg_base_compile_env ]; then
-    sudo yum install -y cmake gcc texinfo gcc-c++ bison ncurses-devel ncurses byacc \
+    sudo yum install -y cmake gcc texinfo gcc-c++ bison ncurses-devel ncurses byacc pkgconfig \
                         libtool-ltdl-devel popt-devel re2c wget curl libtool coreutils nasm make
     sudo yum install -y curl nss cyrus-sasl cyrus-sasl-devel cyrus-sasl-lib libacl libacl-devel \
                         libattr libattr-devel gperf pam pam-devel krb5-devel krb5-libs \
@@ -18,6 +18,10 @@ if [ ! -f $HOME/.chg_base_compile_env ]; then
 
     sudo yum install -y xz bzip2 tar \
                         xz-devel
+
+    sudo yum  install -y libicu       harfbuzz       boost-program-options \
+
+    sudo yum  install -y libicu-devel harfbuzz-devel boost-devel\
 
     #postgresql
     sudo yum install -y uuid \
@@ -36,7 +40,7 @@ if [ ! -f $HOME/.chg_base_compile_env ]; then
                         expat-devel libffi-devel tcl-devel tk-devel
 
     #wget http://dl.fedoraproject.org/pub/epel/7/x86_64/r/re2c-0.14.3-2.el7.x86_64.rpm
-    sudo yum install -y autoconf m4 automake pkg-config gettext-devel meson mariadb-devel
+    sudo yum install -y autoconf m4 automake pkg-config gettext-devel meson
 
     tmp_str=`uname -r|awk -F. '{print $(NF-1);}'|sed -n 's/el//p'`; # 6 7 8
     if echo $tmp_str |grep -q '^[0-9]\{1,\}$'  ;then
@@ -347,13 +351,16 @@ https://github.com/php-opencv/php-opencv-examples
 https://github.com/nagadomi/waifu2x
 
 
-tar zxf swig-rel-3.0.12.tar.gz
-cd swig-rel-3.0.12
-./autogen.sh
-./configure --prefix=/root/swig --with-pcre-prefix=/usr/local/chg/base/contrib --with-php=/usr/local/chg/base/opt/php/bin/php --with-python3=/usr/local/chg/base/opt/python/bin/python3.6
-make
-make install
-
+#wget --no-check-certificate --content-disposition https://github.com/swig/swig/archive/rel-3.0.12.tar.gz
+#tar zxf swig-rel-3.0.12.tar.gz
+#cd swig-rel-3.0.12
+#./autogen.sh
+#./configure --prefix=$OPT_BASE/swig \
+#            --with-pcre-prefix=$PCRE_BASE \
+#            --with-php=$PHP_BASE/bin/php \
+#            --with-python3=$PYTHON_BASE/bin/python3.6
+#make
+#make install
 
 $PYTHON_BASE/bin/pip3 install --user numpy scipy matplotlib ipython jupyter pandas sympy nose
 

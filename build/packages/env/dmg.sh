@@ -375,15 +375,6 @@ https://github.com/pangudashu/php7-internal
 https://github.com/php-opencv/php-opencv-examples
 https://github.com/nagadomi/waifu2x
 
-
-tar zxf swig-rel-3.0.12.tar.gz
-cd swig-rel-3.0.12
-./autogen.sh
-./configure --prefix=/root/swig --with-pcre-prefix=/usr/local/chg/base/contrib --with-php=/usr/local/chg/base/opt/php/bin/php --with-python3=/usr/local/chg/base/opt/python/bin/python3.6
-make
-make install
-
-
 $PYTHON_BASE/bin/pip3 install --user numpy scipy matplotlib ipython jupyter pandas sympy nose
 
 

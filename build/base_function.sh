@@ -293,12 +293,225 @@ wget_lib_xunsearch()
     rm -rf xunsearch-full-${XUNSEARCH_FULL_VERSION}
 }
 # }}}
+# wget_lib_pkgconfig() {{{
+wget_lib_pkgconfig()
+{
+    wget_lib $PKGCONFIG_FILE_NAME "https://pkg-config.freedesktop.org/releases/$PKGCONFIG_FILE_NAME"
+}
+# }}}
+# wget_lib_mysql() {{{
+wget_lib_mysql()
+{
+    # http://downloads.mysql.com/archives/mysql-${MYSQL_VERSION%.*}/$MYSQL_FILE_NAME
+    # http://mysql.oss.eznetsols.org/Downloads/MySQL-${MYSQL_VERSION%.*}/$MYSQL_FILE_NAME
+    wget_lib $MYSQL_FILE_NAME "https://cdn.mysql.com/Downloads/MySQL-${MYSQL_VERSION%.*}/$MYSQL_FILE_NAME"
+}
+# }}}
+# wget_lib_php() {{{
+wget_lib_php()
+{
+    wget_lib $PHP_FILE_NAME "https://cn2.php.net/distributions/$PHP_FILE_NAME"
+}
+# }}}
+# wget_lib_phalcon() {{{
+wget_lib_phalcon()
+{
+    wget_lib $PHALCON_FILE_NAME "https://github.com/phalcon/cphalcon/archive/v${PHALCON_FILE_NAME#*-}"
+}
+# }}}
+# wget_lib_icu() {{{
+wget_lib_icu()
+{
+    wget_lib $ICU_FILE_NAME "http://download.icu-project.org/files/icu4c/$ICU_VERSION/$ICU_FILE_NAME"
+    #wget_lib $ICU_FILE_NAME "https://fossies.org/linux/misc/$ICU_FILE_NAME"
+}
+# }}}
+# wget_lib_cairo() {{{
+wget_lib_cairo()
+{
+    wget_lib $CAIRO_FILE_NAME "https://cairographics.org/releases/$CAIRO_FILE_NAME"
+}
+# }}}
+# wget_lib_phantomjs() {{{
+wget_lib_phantomjs()
+{
+    #wget_lib $PHANTOMJS_FILE_NAME "https://github.com/ariya/phantomjs/archive/${PHANTOMJS_FILE_NAME#*-}"
+    wget_lib $PHANTOMJS_FILE_NAME "https://bitbucket.org/ariya/phantomjs/downloads/${PHANTOMJS_FILE_NAME}"
+}
+# }}}
+# wget_lib_python() {{{
+wget_lib_python()
+{
+    wget_lib $PYTHON_FILE_NAME "https://www.python.org/ftp/python/${PYTHON_VERSION}/${PYTHON_FILE_NAME}"
+}
+# }}}
+# wget_lib_calibre() {{{
+wget_lib_calibre()
+{
+    #wget_lib $CALIBRE_FILE_NAME "https://github.com/kovidgoyal/calibre/releases/download/v${CALIBRE_VERSION}/${CALIBRE_FILE_NAME}"
+    wget_lib $CALIBRE_FILE_NAME "https://download.calibre-ebook.com/${CALIBRE_VERSION}/${CALIBRE_FILE_NAME}"
+}
+# }}}
+# wget_lib_clamav() {{{
+wget_lib_clamav()
+{
+    wget_lib $CLAMAV_FILE_NAME "https://www.clamav.net/downloads/production/$CLAMAV_FILE_NAME"
+}
+# }}}
+# wget_lib_fontforge() {{{
+wget_lib_fontforge()
+{
+    wget_lib $FONTFORGE_FILE_NAME     "https://github.com/fontforge/fontforge/releases/download/${FONTFORGE_VERSION}/${FONTFORGE_FILE_NAME}"
+    #wget_lib $FONTFORGE_FILE_NAME     "https://github.com/fontforge/fontforge/archive/${FONTFORGE_FILE_NAME#*-}"
+}
+# }}}
+# wget_lib_nodejs() {{{
+wget_lib_nodejs()
+{
+    wget_lib $NODEJS_FILE_NAME "https://nodejs.org/dist/v${NODEJS_VERSION}/${NODEJS_FILE_NAME}"
+}
+# }}}
 # wget_lib_browscap() {{{
 wget_lib_browscap()
 {
     #wget_lib $BROWSCAP_INI_FILE_NAME  "https://browscap.org/stream?q=PHP_BrowsCapINI"
     # wget_lib $BROWSCAP_INI_FILE_NAME  "https://browscap.org/stream?q=Full_PHP_BrowsCapINI"
     wget_lib $BROWSCAP_INI_FILE_NAME  "https://browscap.org/stream?q=Lite_PHP_BrowsCapINI"
+}
+# }}}
+# wget_lib_harfbuzz() {{{
+wget_lib_harfbuzz()
+{
+    wget_lib $HARFBUZZ_FILE_NAME "https://www.freedesktop.org/software/harfbuzz/release/$HARFBUZZ_FILE_NAME"
+}
+# }}}
+# wget_lib_psol() {{{
+wget_lib_psol()
+{
+    wget_lib $PSOL_FILE_NAME "https://dl.google.com/dl/page-speed/psol/${PSOL_FILE_NAME#*-}"
+}
+# }}}
+# wget_lib_libX11() {{{
+wget_lib_libX11()
+{
+    wget_lib $LIBX11_FILE_NAME "https://www.x.org/archive/individual/lib/$LIBX11_FILE_NAME"
+}
+# }}}
+# wget_lib_libxslt() {{{
+wget_lib_libxslt()
+{
+    wget_lib $LIBXSLT_FILE_NAME "ftp://xmlsoft.org/libxslt/$LIBXSLT_FILE_NAME"
+}
+# }}}
+# wget_lib_libxml2() {{{
+wget_lib_libxml2()
+{
+    wget_lib $LIBXML2_FILE_NAME "ftp://xmlsoft.org/libxml2/$LIBXML2_FILE_NAME"
+}
+# }}}
+# wget_lib_readline() {{{
+wget_lib_readline()
+{
+    wget_lib $READLINE_FILE_NAME "https://ftp.gnu.org/gnu/readline/$READLINE_FILE_NAME"
+}
+# }}}
+# wget_lib_rsyslog() {{{
+wget_lib_rsyslog()
+{
+    wget_lib $RSYSLOG_FILE_NAME "https://www.rsyslog.com/files/download/rsyslog/${RSYSLOG_FILE_NAME}"
+}
+# }}}
+# wget_lib_gettext() {{{
+wget_lib_gettext()
+{
+    wget_lib $GETTEXT_FILE_NAME "https://ftp.gnu.org/gnu/gettext/$GETTEXT_FILE_NAME"
+}
+# }}}
+# wget_lib_libgcrypt() {{{
+wget_lib_libgcrypt()
+{
+    wget_lib $LIBGCRYPT_FILE_NAME "ftp://ftp.gnupg.org/gcrypt/libgcrypt/${LIBGCRYPT_FILE_NAME}"
+}
+# }}}
+# wget_lib_kerberos() {{{
+wget_lib_kerberos()
+{
+    local version=${KERBEROS_VERSION%.*};
+    if [ "${version%.*}" = "${version}" ] ;then
+        local version=${KERBEROS_VERSION}
+    fi
+    wget_lib $KERBEROS_FILE_NAME "https://web.mit.edu/kerberos/dist/krb5/${version}/$KERBEROS_FILE_NAME"
+}
+# }}}
+# wget_lib_sphinx() {{{
+wget_lib_sphinx()
+{
+    wget_lib $SPHINX_FILE_NAME "https://github.com/sphinxsearch/sphinx/archive/${SPHINX_FILE_NAME#*-}"
+}
+# }}}
+# wget_lib_glib() {{{
+wget_lib_glib()
+{
+    #wget_lib $GLIB_FILE_NAME "https://github.com/GNOME/glib/archive/${GLIB_FILE_NAME##*-}"
+    wget_lib $GLIB_FILE_NAME "https://ftp.acc.umu.se/pub/gnome/sources/glib/${GLIB_VERSION%.*}/${GLIB_FILE_NAME}"
+}
+# }}}
+# wget_lib_util_linux() {{{
+wget_lib_util_linux()
+{
+    wget_lib $UTIL_LINUX_FILE_NAME "https://www.kernel.org/pub/linux/utils/util-linux/v${version}/${UTIL_LINUX_FILE_NAME}"
+}
+# }}}
+# wget_lib_ImageMagick() {{{
+wget_lib_ImageMagick()
+{
+    wget_lib $IMAGEMAGICK_FILE_NAME "http://www.imagemagick.org/download/releases/${IMAGEMAGICK_FILE_NAME}"
+    #if [ "$?" = "1" ]; then
+        #wget_lib $IMAGEMAGICK_FILE_NAME "https://github.com/ImageMagick/ImageMagick/archive/${IMAGEMAGICK_FILE_NAME#*-}"
+    #fi
+}
+# }}}
+# wget_lib_postgresql() {{{
+wget_lib_postgresql()
+{
+    wget_lib $POSTGRESQL_FILE_NAME "https://ftp.postgresql.org/pub/source/v$POSTGRESQL_VERSION/$POSTGRESQL_FILE_NAME"
+}
+# }}}
+# wget_lib_apache() {{{
+wget_lib_apache()
+{
+    wget_lib $APACHE_FILE_NAME "https://www.apache.org/dist/httpd/$APACHE_FILE_NAME"
+}
+# }}}
+# wget_lib_openssl() {{{
+wget_lib_openssl()
+{
+    wget_lib $OPENSSL_FILE_NAME "https://www.openssl.org/source/$OPENSSL_FILE_NAME"
+}
+# }}}
+# wget_lib_electron() {{{
+wget_lib_electron()
+{
+    wget_lib $ELECTRON_FILE_NAME "https://github.com/electron/electron/archive/v${ELECTRON_FILE_NAME#*-}"
+}
+# }}}
+# wget_lib_pdf2htmlEX() {{{
+wget_lib_pdf2htmlEX()
+{
+    wget_lib $PDF2HTMLEX_FILE_NAME "https://github.com/coolwanglu/pdf2htmlEX/archive/v${PDF2HTMLEX_FILE_NAME#*-}"
+}
+# }}}
+# wget_lib_yii2() {{{
+wget_lib_yii2()
+{
+    wget_lib $YII2_FILE_NAME "https://github.com/yiisoft/yii2/releases/download/${YII2_VERSION}/${YII2_FILE_NAME}"
+}
+# }}}
+# wget_lib_yii2_smarty() {{{
+wget_lib_yii2_smarty()
+{
+    wget_lib $YII2_FILE_NAME "https://github.com/yiisoft/yii2/releases/download/${YII2_VERSION}/${YII2_FILE_NAME}"
+    wget_lib $YII2_SMARTY_FILE_NAME "https://github.com/yiisoft/yii2-smarty/archive/${YII2_SMARTY_FILE_NAME##*-}"
 }
 # }}}
 # rm_bak_file() {{{
@@ -474,19 +687,14 @@ function_exists()
 wget_base_library()
 {
     wget_fail=0;
-    wget_lib $CLAMAV_FILE_NAME        "https://www.clamav.net/downloads/production/$CLAMAV_FILE_NAME"
+    wget_lib_openssl
+    wget_lib_php
     wget_lib $FANN_FILE_NAME          "https://github.com/libfann/fann/archive/${FANN_FILE_NAME##*-}"
-    wget_lib $OPENSSL_FILE_NAME       "https://www.openssl.org/source/$OPENSSL_FILE_NAME"
     wget_lib $CACERT_FILE_NAME        "https://curl.haxx.se/ca/$CACERT_FILE_NAME"
-    wget_lib $ICU_FILE_NAME           "http://download.icu-project.org/files/icu4c/$ICU_VERSION/$ICU_FILE_NAME"
-    #wget_lib $ICU_FILE_NAME           "https://fossies.org/linux/misc/$ICU_FILE_NAME"
     # https://cdnetworks-kr-2.dl.sourceforge.net/project/libpng/zlib/$ZLIB_VERSION/$ZLIB_FILE_NAME
     wget_lib $ZLIB_FILE_NAME          "https://zlib.net/$ZLIB_FILE_NAME"
     wget_lib $LIBZIP_FILE_NAME        "https://libzip.org/download/$LIBZIP_FILE_NAME"
-    wget_lib $READLINE_FILE_NAME      "https://ftp.gnu.org/gnu/readline/$READLINE_FILE_NAME"
-    wget_lib $GETTEXT_FILE_NAME       "https://ftp.gnu.org/gnu/gettext/$GETTEXT_FILE_NAME"
     wget_lib $LIBICONV_FILE_NAME      "https://ftp.gnu.org/gnu/libiconv/$LIBICONV_FILE_NAME"
-    wget_lib $LIBXML2_FILE_NAME       "ftp://xmlsoft.org/libxml2/$LIBXML2_FILE_NAME"
     wget_lib $LIBWEBP_FILE_NAME       "https://github.com/webmproject/libwebp/archive/v${LIBWEBP_FILE_NAME##*-}"
     wget_lib $ONIGURUMA_FILE_NAME     "https://github.com/kkos/oniguruma/archive/v${ONIGURUMA_FILE_NAME##*-}"
     wget_lib $FRIBIDI_FILE_NAME       "https://github.com/fribidi/fribidi/archive/v${FRIBIDI_FILE_NAME##*-}"
@@ -496,23 +704,15 @@ wget_base_library()
     wget_lib $LIBWBXML_FILE_NAME      "https://sourceforge.net/projects/libwbxml/files/libwbxml/${LIBWBXML_VERSION}/${LIBWBXML_FILE_NAME}/download"
     wget_lib $LIBUUID_FILE_NAME       "https://sourceforge.net/projects/libuuid/files/$LIBUUID_FILE_NAME/download"
     wget_lib $CURL_FILE_NAME          "https://curl.haxx.se/download/$CURL_FILE_NAME"
-    # http://downloads.mysql.com/archives/mysql-${MYSQL_VERSION%.*}/$MYSQL_FILE_NAME
-    # http://mysql.oss.eznetsols.org/Downloads/MySQL-${MYSQL_VERSION%.*}/$MYSQL_FILE_NAME
-    wget_lib $MYSQL_FILE_NAME         "https://cdn.mysql.com/Downloads/MySQL-${MYSQL_VERSION%.*}/$MYSQL_FILE_NAME"
     wget_lib_sqlite
-    wget_lib_boost
     wget_lib_xunsearch
     wget_lib $PCRE_FILE_NAME          "https://sourceforge.net/projects/pcre/files/pcre/$PCRE_VERSION/$PCRE_FILE_NAME/download"
     wget_lib $PCRE2_FILE_NAME         "ftp://ftp.pcre.org/pub/pcre/$PCRE2_FILE_NAME"
     wget_lib $NGINX_FILE_NAME         "https://nginx.org/download/$NGINX_FILE_NAME"
     wget_lib $STUNNEL_FILE_NAME       "https://www.stunnel.org/downloads/$STUNNEL_FILE_NAME"
-    wget_lib $NODEJS_FILE_NAME        "https://nodejs.org/dist/v${NODEJS_VERSION}/${NODEJS_FILE_NAME}"
-    #wget_lib $CALIBRE_FILE_NAME       "https://github.com/kovidgoyal/calibre/releases/download/v${CALIBRE_VERSION}/${CALIBRE_FILE_NAME}"
-    wget_lib $CALIBRE_FILE_NAME       "https://download.calibre-ebook.com/${CALIBRE_VERSION}/${CALIBRE_FILE_NAME}"
     wget_lib $GITBOOK_FILE_NAME       "https://github.com/GitbookIO/gitbook/archive/${GITBOOK_FILE_NAME##*-}"
     wget_lib $GITBOOK_CLI_FILE_NAME   "https://github.com/GitbookIO/gitbook-cli/archive/${GITBOOK_CLI_FILE_NAME##*-}"
     wget_lib $NGHTTP2_FILE_NAME       "https://github.com/nghttp2/nghttp2/releases/download/v${NGHTTP2_VERSION}/${NGHTTP2_FILE_NAME}"
-    wget_lib $PHP_FILE_NAME           "https://cn2.php.net/distributions/$PHP_FILE_NAME"
     wget_lib $PTHREADS_FILE_NAME      "https://github.com/krakjoe/pthreads/archive/v${PTHREADS_FILE_NAME##*-}"
     #wget_lib $PTHREADS_FILE_NAME      "https://pecl.php.net/get/$PTHREADS_FILE_NAME"
     wget_lib $PARALLEL_FILE_NAME      "https://pecl.php.net/get/$PARALLEL_FILE_NAME"
@@ -521,17 +721,13 @@ wget_base_library()
     wget_lib $PSR_FILE_NAME           "https://pecl.php.net/get/$PSR_FILE_NAME"
     wget_lib $PHP_PROTOBUF_FILE_NAME  "https://pecl.php.net/get/$PHP_PROTOBUF_FILE_NAME"
     wget_lib $PHP_GRPC_FILE_NAME      "https://pecl.php.net/get/$PHP_GRPC_FILE_NAME"
-    wget_lib $LIBXSLT_FILE_NAME       "ftp://xmlsoft.org/libxslt/$LIBXSLT_FILE_NAME"
     wget_lib $TIDY_FILE_NAME          "https://github.com/htacg/tidy-html5/archive/${TIDY_FILE_NAME##*-}"
-    wget_lib $SPHINX_FILE_NAME        "https://github.com/sphinxsearch/sphinx/archive/${SPHINX_FILE_NAME#*-}"
     wget_lib $PHP_SPHINX_FILE_NAME    "https://github.com/php/pecl-search_engine-sphinx/archive/${PHP_SPHINX_FILE_NAME##*-}"
-    wget_lib $RSYSLOG_FILE_NAME       "https://www.rsyslog.com/files/download/rsyslog/${RSYSLOG_FILE_NAME}"
     wget_lib $LOGROTATE_FILE_NAME     "https://github.com/logrotate/logrotate/releases/download/$LOGROTATE_VERSION/$LOGROTATE_FILE_NAME"
     #wget_lib $LIBFASTJSON_FILE_NAME   "https://github.com/rsyslog/libfastjson/archive/v${LIBFASTJSON_FILE_NAME##*-}"
     wget_lib $LIBFASTJSON_FILE_NAME   "https://download.rsyslog.com/libfastjson/${LIBFASTJSON_FILE_NAME}"
     #wget_lib $LIBLOGGING_FILE_NAME    "https://github.com/rsyslog/liblogging/archive/v${LIBLOGGING_FILE_NAME##*-}"
     wget_lib $LIBLOGGING_FILE_NAME    "https://download.rsyslog.com/liblogging/${LIBLOGGING_FILE_NAME}"
-    wget_lib $LIBGCRYPT_FILE_NAME     "ftp://ftp.gnupg.org/gcrypt/libgcrypt/${LIBGCRYPT_FILE_NAME}"
     wget_lib $LIBGPG_ERROR_FILE_NAME  "ftp://ftp.gnupg.org/gcrypt/libgpg-error//${LIBGPG_ERROR_FILE_NAME}"
     wget_lib $LIBESTR_FILE_NAME       "https://libestr.adiscon.com/files/download/${LIBESTR_FILE_NAME}"
 
@@ -543,18 +739,14 @@ wget_base_library()
     local version=${LIBPNG_VERSION%.*};
     wget_lib $LIBPNG_FILE_NAME        "https://sourceforge.net/projects/libpng/files/libpng${version/./}/$LIBPNG_VERSION/$LIBPNG_FILE_NAME/download"
 
-    #wget_lib $GLIB_FILE_NAME          "https://github.com/GNOME/glib/archive/${GLIB_FILE_NAME##*-}"
-    wget_lib $GLIB_FILE_NAME          "https://ftp.acc.umu.se/pub/gnome/sources/glib/${GLIB_VERSION%.*}/${GLIB_FILE_NAME}"
     #wget_lib $LIBFFI_FILE_NAME        "https://github.com/libffi/libffi/archive/v${LIBFFI_FILE_NAME##*-}"
     wget_lib $LIBFFI_FILE_NAME        "ftp://sourceware.org/pub/libffi/${LIBFFI_FILE_NAME}"
     wget_lib $PIXMAN_FILE_NAME        "https://cairographics.org/releases/$PIXMAN_FILE_NAME"
-    wget_lib $CAIRO_FILE_NAME         "https://cairographics.org/releases/$CAIRO_FILE_NAME"
 
     local version=${UTIL_LINUX_VERSION%.*};
     if [ "${version%.*}" = "${version}" ] ;then
         local version=${UTIL_LINUX_VERSION}
     fi
-    wget_lib $UTIL_LINUX_FILE_NAME    "https://www.kernel.org/pub/linux/utils/util-linux/v${version}/${UTIL_LINUX_FILE_NAME}"
 
     wget_lib $NASM_FILE_NAME          "https://www.nasm.us/pub/nasm/releasebuilds/$NASM_VERSION/$NASM_FILE_NAME"
     wget_lib $JPEG_FILE_NAME          "https://www.ijg.org/files/$JPEG_FILE_NAME"
@@ -567,32 +759,19 @@ wget_base_library()
     fi
     wget_lib $OPENJPEG_FILE_NAME      "https://github.com/uclouvain/openjpeg/archive/${tmp}${OPENJPEG_FILE_NAME#*-}"
     wget_lib $FREETYPE_FILE_NAME      "https://sourceforge.net/projects/freetype/files/freetype${FREETYPE_VERSION%%.*}/$FREETYPE_VERSION/$FREETYPE_FILE_NAME/download"
-    wget_lib $HARFBUZZ_FILE_NAME      "https://www.freedesktop.org/software/harfbuzz/release/$HARFBUZZ_FILE_NAME"
     wget_lib $EXPAT_FILE_NAME         "https://sourceforge.net/projects/expat/files/expat/$EXPAT_VERSION/$EXPAT_FILE_NAME/download"
     wget_lib $FONTCONFIG_FILE_NAME    "https://www.freedesktop.org/software/fontconfig/release/$FONTCONFIG_FILE_NAME"
     wget_lib $POPPLER_FILE_NAME       "https://poppler.freedesktop.org/$POPPLER_FILE_NAME"
-    wget_lib $FONTFORGE_FILE_NAME     "https://github.com/fontforge/fontforge/releases/download/${FONTFORGE_VERSION}/${FONTFORGE_FILE_NAME}"
-    #wget_lib $FONTFORGE_FILE_NAME     "https://github.com/fontforge/fontforge/archive/${FONTFORGE_FILE_NAME#*-}"
-    wget_lib $PDF2HTMLEX_FILE_NAME    "https://github.com/coolwanglu/pdf2htmlEX/archive/v${PDF2HTMLEX_FILE_NAME#*-}"
     wget_lib $DEHYDRATED_FILE_NAME    "https://github.com/lukas2511/dehydrated/archive/v${DEHYDRATED_FILE_NAME#*-}"
     wget_lib $PANGO_FILE_NAME         "https://ftp.gnome.org/pub/GNOME/sources/pango/${PANGO_VERSION%.*}/$PANGO_FILE_NAME"
     wget_lib $LIBXPM_FILE_NAME        "https://www.x.org/releases/individual/lib/$LIBXPM_FILE_NAME"
     wget_lib $LIBXEXT_FILE_NAME       "https://www.x.org/releases/individual/lib/$LIBXEXT_FILE_NAME"
     # wget_lib $LIBGD_FILE_NAME       "https://bitbucket.org/libgd/gd-libgd/downloads/$LIBGD_FILE_NAME"
     wget_lib $LIBGD_FILE_NAME         "https://fossies.org/linux/www/$LIBGD_FILE_NAME"
-    wget_lib $IMAGEMAGICK_FILE_NAME  "http://www.imagemagick.org/download/releases/${IMAGEMAGICK_FILE_NAME}"
-    #if [ "$?" = "1" ]; then
-    #wget_lib $IMAGEMAGICK_FILE_NAME  "https://github.com/ImageMagick/ImageMagick/archive/${IMAGEMAGICK_FILE_NAME#*-}"
-    #fi
     wget_lib $GMP_FILE_NAME           "ftp://ftp.gmplib.org/pub/gmp/$GMP_FILE_NAME"
     #wget_lib $IMAP_FILE_NAME          "ftp://ftp.cac.washington.edu/imap/$IMAP_FILE_NAME"
     wget_lib $IMAP_FILE_NAME          "https://github.com/uw-imap/imap/archive/${IMAP_FILE_NAME#*-}"
     #wget_lib $IMAP_FILE_NAME          "https://www.mirrorservice.org/sites/ftp.cac.washington.edu/imap/$IMAP_FILE_NAME"
-    local version=${KERBEROS_VERSION%.*};
-    if [ "${version%.*}" = "${version}" ] ;then
-        local version=${KERBEROS_VERSION}
-    fi
-    wget_lib $KERBEROS_FILE_NAME      "https://web.mit.edu/kerberos/dist/krb5/${version}/$KERBEROS_FILE_NAME"
     wget_lib $LIBMEMCACHED_FILE_NAME  "https://launchpad.net/libmemcached/${LIBMEMCACHED_VERSION%.*}/$LIBMEMCACHED_VERSION/+download/$LIBMEMCACHED_FILE_NAME"
     #wget_lib $MEMCACHED_FILE_NAME     "https://github.com/memcached/memcached/archive/${MEMCACHED_FILE_NAME##*-}"
     wget_lib $MEMCACHED_FILE_NAME     "https://memcached.org/files/${MEMCACHED_FILE_NAME}"
@@ -604,16 +783,13 @@ wget_base_library()
     #wget_lib $GEARMAND_FILE_NAME      "https://github.com/gearman/gearmand/archive/${GEARMAND_FILE_NAME#*-}"
     wget_lib $PHP_GEARMAN_FILE_NAME   "https://github.com/wcgallego/pecl-gearman/archive/gearman-${PHP_GEARMAN_VERSION}.tar.gz"
     wget_lib $QRENCODE_FILE_NAME      "https://fukuchi.org/works/qrencode/$QRENCODE_FILE_NAME"
-    wget_lib $POSTGRESQL_FILE_NAME    "https://ftp.postgresql.org/pub/source/v$POSTGRESQL_VERSION/$POSTGRESQL_FILE_NAME"
     wget_lib $PGBOUNCER_FILE_NAME     "https://pgbouncer.github.io/downloads/files/${PGBOUNCER_VERSION}/$PGBOUNCER_FILE_NAME"
     wget_lib $APR_FILE_NAME           "https://mirror.bit.edu.cn/apache/apr/$APR_FILE_NAME"
     wget_lib $APR_UTIL_FILE_NAME      "https://mirror.bit.edu.cn/apache/apr/$APR_UTIL_FILE_NAME"
-    wget_lib $APACHE_FILE_NAME        "https://www.apache.org/dist/httpd/$APACHE_FILE_NAME"
     wget_lib $APCU_FILE_NAME          "https://pecl.php.net/get/$APCU_FILE_NAME"
     wget_lib $APCU_BC_FILE_NAME       "https://pecl.php.net/get/$APCU_BC_FILE_NAME"
     wget_lib $YAF_FILE_NAME           "https://github.com/laruence/yaf/archive/$YAF_FILE_NAME"
     #wget_lib $YAF_FILE_NAME           "https://pecl.php.net/get/$YAF_FILE_NAME"
-    wget_lib $PHALCON_FILE_NAME       "https://github.com/phalcon/cphalcon/archive/v${PHALCON_FILE_NAME#*-}"
     wget_lib $XDEBUG_FILE_NAME        "https://pecl.php.net/get/$XDEBUG_FILE_NAME"
     wget_lib $RAPHF_FILE_NAME         "https://pecl.php.net/get/$RAPHF_FILE_NAME"
     wget_lib $PROPRO_FILE_NAME        "https://pecl.php.net/get/$PROPRO_FILE_NAME"
@@ -644,9 +820,7 @@ wget_base_library()
     wget_lib $HIREDIS_FILE_NAME       "https://github.com/redis/hiredis/archive/v${HIREDIS_FILE_NAME#*-}"
     wget_lib $LARAVEL_FRAMEWORK_FILE_NAME "https://github.com/laravel/framework/archive/v${LARAVEL_FRAMEWORK_FILE_NAME#*-}"
     wget_lib $ZEND_FILE_NAME          "https://packages.zendframework.com/releases/ZendFramework-$ZEND_VERSION/$ZEND_FILE_NAME"
-    wget_lib $YII2_FILE_NAME          "https://github.com/yiisoft/yii2/releases/download/${YII2_VERSION}/${YII2_FILE_NAME}"
     wget_lib $SMARTY_FILE_NAME        "https://github.com/smarty-php/smarty/archive/v${SMARTY_FILE_NAME#*-}"
-    wget_lib $YII2_SMARTY_FILE_NAME   "https://github.com/yiisoft/yii2-smarty/archive/${YII2_SMARTY_FILE_NAME##*-}"
 
     wget_lib $PARSEAPP_FILE_NAME      "https://github.com/loncool/parse-app/archive/V${PARSEAPP_FILE_NAME##*-}"
 
@@ -668,14 +842,9 @@ wget_base_library()
     wget_lib $LIBMAXMINDDB_FILE_NAME  "https://github.com/maxmind/libmaxminddb/releases/download/${LIBMAXMINDDB_VERSION}/${LIBMAXMINDDB_FILE_NAME}"
     wget_lib $MAXMIND_DB_READER_PHP_FILE_NAME "https://github.com/maxmind/MaxMind-DB-Reader-php/archive/v${MAXMIND_DB_READER_PHP_FILE_NAME##*-}"
     wget_lib $WEB_SERVICE_COMMON_PHP_FILE_NAME "https://github.com/maxmind/web-service-common-php/archive/v${WEB_SERVICE_COMMON_PHP_FILE_NAME##*-}"
-    wget_lib $PKGCONFIG_FILE_NAME     "https://pkg-config.freedesktop.org/releases/$PKGCONFIG_FILE_NAME"
     wget_lib $GEOIP2_PHP_FILE_NAME    "https://github.com/maxmind/GeoIP2-php/archive/v${GEOIP2_PHP_FILE_NAME##*-}"
     wget_lib $GEOIPUPDATE_FILE_NAME   "https://github.com/maxmind/geoipupdate/archive/v${GEOIPUPDATE_FILE_NAME##*-}"
     #wget_lib $GEOIPUPDATE_FILE_NAME   "https://github.com/maxmind/geoipupdate/releases/download/v${GEOIPUPDATE_VERSION}/$GEOIPUPDATE_FILE_NAME"
-    wget_lib $ELECTRON_FILE_NAME      "https://github.com/electron/electron/archive/v${ELECTRON_FILE_NAME#*-}"
-
-    #wget_lib $PHANTOMJS_FILE_NAME     "https://github.com/ariya/phantomjs/archive/${PHANTOMJS_FILE_NAME#*-}"
-    wget_lib $PHANTOMJS_FILE_NAME     "https://bitbucket.org/ariya/phantomjs/downloads/${PHANTOMJS_FILE_NAME}"
 
     wget_lib $FAMOUS_FILE_NAME "https://github.com/Famous/famous/archive/${FAMOUS_FILE_NAME##*-}"
     wget_lib $FAMOUS_FRAMEWORK_FILE_NAME "https://github.com/Famous/framework/archive/v${FAMOUS_FRAMEWORK_FILE_NAME##*-}"
@@ -687,9 +856,7 @@ wget_base_library()
     wget_lib $NGINX_STICKY_MODULE_FILE_NAME          "https://bitbucket.org/nginx-goodies/nginx-sticky-module-ng/get/${NGINX_STICKY_MODULE_FILE_NAME##*-}"
     wget_lib $NGINX_HTTP_GEOIP2_MODULE_FILE_NAME     "https://github.com/leev/ngx_http_geoip2_module/archive/${NGINX_HTTP_GEOIP2_MODULE_FILE_NAME##*-}"
     wget_lib $NGINX_INCUBATOR_PAGESPEED_FILE_NAME    "https://github.com/apache/incubator-pagespeed-ngx/archive/v${NGINX_INCUBATOR_PAGESPEED_VERSION}${NGINX_INCUBATOR_PAGESPEED_FILE_NAME##*${NGINX_INCUBATOR_PAGESPEED_VERSION}}"
-    wget_lib $PSOL_FILE_NAME "https://dl.google.com/dl/page-speed/psol/${PSOL_FILE_NAME#*-}"
 
-    wget_lib $PYTHON_FILE_NAME "https://www.python.org/ftp/python/${PYTHON_VERSION}/${PYTHON_FILE_NAME}"
 
 #    if [ "$OS_NAME" = 'darwin' ];then
 
@@ -699,7 +866,6 @@ wget_base_library()
         wget_lib $XPROTO_FILE_NAME           "https://www.x.org/archive/individual/proto/$XPROTO_FILE_NAME"
         wget_lib $XTRANS_FILE_NAME           "https://www.x.org/archive/individual/lib/$XTRANS_FILE_NAME"
         wget_lib $LIBXAU_FILE_NAME           "https://www.x.org/archive/individual/lib/$LIBXAU_FILE_NAME"
-        wget_lib $LIBX11_FILE_NAME           "https://www.x.org/archive/individual/lib/$LIBX11_FILE_NAME"
         wget_lib $LIBPTHREAD_STUBS_FILE_NAME "https://www.x.org/archive/individual/xcb/$LIBPTHREAD_STUBS_FILE_NAME"
         wget_lib $LIBXCB_FILE_NAME           "https://www.x.org/archive/individual/xcb/$LIBXCB_FILE_NAME"
         wget_lib $XCB_PROTO_FILE_NAME        "https://www.x.org/archive/individual/xcb/$XCB_PROTO_FILE_NAME"
@@ -748,7 +914,8 @@ wget_env_library()
     wget_lib $CLOOG_FILE_NAME "https://www.bastoul.net/cloog/pages/download/$CLOOG_FILE_NAME"
     # https://www.bastoul.net/cloog/pages/download/piplib-1.4.0.tar.gz
 
-    wget_lib $PYTHON_FILE_NAME "https://www.python.org/ftp/python/$PYTHON_VERSION/$PYTHON_FILE_NAME"
+
+    wget_lib_python
 
     wget_lib $CMAKE_FILE_NAME "https://cmake.org/files/v${CMAKE_VERSION%.*}/$CMAKE_FILE_NAME"
 
@@ -1366,11 +1533,6 @@ is_installed_sphinxclient()
         return 1;
     fi
     # 没有版本比较
-    return;
-    # local version=`LD_LIBRARY_PATH="$MYSQL_BASE/lib:$LD_LIBRARY_PATH" $SPHINX_BASE/bin/searchd -h|sed -n '1p'|awk -F'[ -]' '{ print $2; }'`
-    if [ "$version" != "$SPHINX_VERSION" ];then
-        return 1;
-    fi
     return;
 }
 # }}}
@@ -2761,6 +2923,11 @@ compile_clamav()
         return;
     fi
 
+    wget_lib_clamav
+    if [ "$wget_fail" = "1" ];then
+        exit 1;
+    fi
+
     CLAMAV_CONFIGURE="
         ./configure --prefix=$CLAMAV_BASE \
                     --sysconfdir=$CLAMAV_CONF_DIR \
@@ -2838,7 +3005,6 @@ compile_xapian_core()
 # {{{ compile_xapian_omega()
 compile_xapian_omega()
 {
-    #compile_pkgconfig
     compile_libiconv
     compile_pcre
     if [ "$XAPIAN_CORE_SCWS_VERSION" = "$XAPIAN_OMEGA_VERSION" ]; then
@@ -2890,6 +3056,11 @@ compile_scws()
         return;
     fi
 
+    wget_lib_xunsearch
+    if [ "$wget_fail" = "1" ];then
+        exit 1;
+    fi
+
     SCWS_CONFIGURE="
         ./configure --prefix=$SCWS_BASE \
                     --silent \
@@ -2916,6 +3087,11 @@ compile_xapian_core_scws()
         return;
     fi
 
+    wget_lib_xunsearch
+    if [ "$wget_fail" = "1" ];then
+        exit 1;
+    fi
+
     XAPIAN_CORE_SCWS_CONFIGURE="
         configure_xapian_core_scws_command
     "
@@ -2933,6 +3109,11 @@ compile_xunsearch()
     is_installed xunsearch $XUNSEARCH_BASE
     if [ "$?" = "0" ];then
         return;
+    fi
+
+    wget_lib_xunsearch
+    if [ "$wget_fail" = "1" ];then
+        exit 1;
     fi
 
     XUNSEARCH_CONFIGURE="
@@ -2971,6 +3152,11 @@ compile_pkgconfig()
     if [ "$?" = "0" ];then
         export PKG_CONFIG="$PKGCONFIG_BASE/bin/pkg-config"
         return;
+    fi
+
+    wget_lib_pkgconfig
+    if [ "$wget_fail" = "1" ];then
+        exit 1;
     fi
 
     PKGCONFIG_CONFIGURE="
@@ -3031,6 +3217,11 @@ compile_openssl()
         return;
     fi
 
+    wget_lib_openssl
+    if [ "$wget_fail" = "1" ];then
+        exit 1;
+    fi
+
     local tmp_str=""
     if [ "$OS_NAME" != "darwin" ];then
         tmp_str="-Wl,--enable-new-dtags,-rpath,'\$(LIBRPATH)'"
@@ -3056,6 +3247,18 @@ compile_icu()
     is_installed icu "$ICU_BASE"
     if [ "$?" = "0" ];then
         return;
+    fi
+
+    if [ "$TRY_TO_USE_THE_SYSTEM" = "1" ];then
+        check_system_lib_exists icu ICU_BASE
+        if [ "$?" = "0" ];then
+            return;
+        fi
+    fi
+
+    wget_lib_icu
+    if [ "$wget_fail" = "1" ];then
+        exit 1;
     fi
 
     #export LD_LIBRARY_PATH
@@ -3085,6 +3288,17 @@ compile_boost()
         return;
     fi
 
+    if [ "$TRY_TO_USE_THE_SYSTEM" = "1" ];then
+        check_system_lib_exists boost BOOST_BASE
+        if [ "$?" = "0" ];then
+            return;
+        fi
+    fi
+
+    wget_lib_boost
+    if [ "$wget_fail" = "1" ];then
+        exit 1;
+    fi
     #yum install python-devel bzip2-devel
     #yum install gperf libevent-devel
 
@@ -3208,6 +3422,11 @@ compile_gettext()
         return;
     fi
 
+    wget_lib_gettext
+    if [ "$wget_fail" = "1" ];then
+        exit 1;
+    fi
+
     GETTEXT_CONFIGURE="
     ./configure --prefix=$GETTEXT_BASE \
                 --enable-threads \
@@ -3229,6 +3448,11 @@ compile_libxml2()
     is_installed libxml2 "$LIBXML2_BASE"
     if [ "$?" = "0" ];then
         return;
+    fi
+
+    wget_lib_libxml2
+    if [ "$wget_fail" = "1" ];then
+        exit 1;
     fi
 
     LIBXML2_CONFIGURE="
@@ -3293,6 +3517,11 @@ compile_libxslt()
         return;
     fi
 
+    wget_lib_libxslt
+    if [ "$wget_fail" = "1" ];then
+        exit 1;
+    fi
+
     LIBXSLT_CONFIGURE="
     ./configure --prefix=$LIBXSLT_BASE \
                 --silent \
@@ -3334,12 +3563,16 @@ compile_tidy()
 # {{{ compile_sphinx()
 compile_sphinx()
 {
-    #compile_mysql
     #compile_postgresql
 
     is_installed sphinx "$SPHINX_BASE"
     if [ "$?" = "0" ];then
         return;
+    fi
+
+    wget_lib_sphinx
+    if [ "$wget_fail" = "1" ];then
+        exit 1;
     fi
 
     local WITH_MYSQL="--without-mysql"
@@ -3382,6 +3615,11 @@ compile_sphinxclient()
     is_installed sphinxclient "$SPHINX_CLIENT_BASE"
     if [ "$?" = "0" ];then
         return;
+    fi
+
+    wget_lib_sphinx
+    if [ "$wget_fail" = "1" ];then
+        exit 1;
     fi
 
     SPHINXCLIENT_CONFIGURE="
@@ -3521,6 +3759,11 @@ compile_readline()
         return;
     fi
 
+    wget_lib_readline
+    if [ "$wget_fail" = "1" ];then
+        exit 1;
+    fi
+
     READLINE_CONFIGURE="
         ./configure --prefix=$READLINE_BASE \
                     --enable-multibyte \
@@ -3588,6 +3831,11 @@ compile_pdf2htmlEX()
     is_installed pdf2htmlEX "$PDF2HTMLEX_BASE"
     if [ "$?" = "0" ];then
         return;
+    fi
+
+    wget_lib_pdf2htmlEX
+    if [ "$wget_fail" = "1" ];then
+        exit 1;
     fi
 
     PDF2HTMLEX_CONFIGURE="
@@ -3679,6 +3927,11 @@ compile_cairo()
         return;
     fi
 
+    wget_lib_cairo
+    if [ "$wget_fail" = "1" ];then
+        exit 1;
+    fi
+
     CAIRO_CONFIGURE="
         configure_cairo_command
     "
@@ -3723,7 +3976,6 @@ compile_openjpeg()
 compile_fontforge()
 {
     # yum install -y libtool-ltdl libtool-ltdl-devel patch
-    #compile_pkgconfig
     # libspiro libuninameslist
     compile_freetype
     compile_libiconv
@@ -3734,6 +3986,11 @@ compile_fontforge()
     is_installed fontforge "$FONTFORGE_BASE"
     if [ "$?" = "0" ];then
         return;
+    fi
+
+    wget_lib_fontforge
+    if [ "$wget_fail" = "1" ];then
+        exit 1;
     fi
 
     local old_path="$PATH"
@@ -3831,7 +4088,7 @@ compile_gearmand()
     #compile_libuuid
     #yum install boost boost-devel
     #yum install gperf
-    #yum install mariadb-libs mariadb-devel.x86_64
+    #yum install mariadb-libs mariadb-devel
 
     is_installed gearmand "$GEARMAND_BASE"
     if [ "$?" = "0" ];then
@@ -4132,6 +4389,18 @@ compile_harfbuzz()
         compile_freetype 1
     fi
 
+    if [ "$TRY_TO_USE_THE_SYSTEM" = "1" ];then
+        check_system_lib_exists harfbuzz HARFBUZZ_BASE
+        if [ "$?" = "0" ];then
+            return;
+        fi
+    fi
+
+    wget_lib_harfbuzz
+    if [ "$wget_fail" = "1" ];then
+        exit 1;
+    fi
+
     is_installed harfbuzz "$HARFBUZZ_BASE"
     if [ "$?" = "0" ];then
         return;
@@ -4170,6 +4439,11 @@ compile_glib()
     is_installed glib "$GLIB_BASE"
     if [ "$?" = "0" ];then
         return;
+    fi
+
+    wget_lib_glib
+    if [ "$wget_fail" = "1" ];then
+        exit 1;
     fi
 
     GLIB_CONFIGURE="
@@ -4218,6 +4492,11 @@ compile_util_linux()
     is_installed util_linux "$UTIL_LINUX_BASE"
     if [ "$?" = "0" ];then
         return;
+    fi
+
+    wget_lib_util_linux
+    if [ "$wget_fail" = "1" ];then
+        exit 1;
     fi
 
     UTIL_LINUX_CONFIGURE="
@@ -4419,6 +4698,11 @@ compile_libX11()
     is_installed libX11 "$LIBX11_BASE"
     if [ "$?" = "0" ];then
         return;
+    fi
+
+    wget_lib_libX11
+    if [ "$wget_fail" = "1" ];then
+        exit 1;
     fi
 
     LIBX11_CONFIGURE="
@@ -4681,6 +4965,11 @@ compile_kerberos()
         return;
     fi
 
+    wget_lib_kerberos
+    if [ "$wget_fail" = "1" ];then
+        exit 1;
+    fi
+
     KERBEROS_CONFIGURE="
     ./configure --prefix=$KERBEROS_BASE
     "
@@ -4764,6 +5053,11 @@ compile_postgresql()
         return;
     fi
 
+    wget_lib_postgresql
+    if [ "$wget_fail" = "1" ];then
+        exit 1;
+    fi
+
     POSTGRESQL_CONFIGURE="
         configure_postgresql_command
     "
@@ -4811,6 +5105,11 @@ compile_apache()
         return;
     fi
 
+    wget_lib_apache
+    if [ "$wget_fail" = "1" ];then
+        exit 1;
+    fi
+
     APACHE_CONFIGURE="
     ./configure --prefix=$APACHE_BASE \
                 --sysconfdir=$APACHE_CONFIG_DIR \
@@ -4844,6 +5143,11 @@ compile_nginx()
     fi
 
     compile_libmaxminddb
+
+    wget_lib_psol
+    if [ "$wget_fail" = "1" ];then
+        exit 1;
+    fi
 
     NGINX_CONFIGURE="
         configure_nginx_command
@@ -4932,6 +5236,11 @@ compile_rsyslog()
     is_installed rsyslog "$RSYSLOG_BASE"
     if [ "$?" = "0" ];then
         return;
+    fi
+
+    wget_lib_rsyslog
+    if [ "$wget_fail" = "1" ];then
+        exit 1;
     fi
 
     RSYSLOG_CONFIGURE="
@@ -5060,6 +5369,11 @@ compile_libgcrypt()
         return;
     fi
 
+    wget_lib_libgcrypt
+    if [ "$wget_fail" = "1" ];then
+        exit 1;
+    fi
+
     LIBGCRYPT_CONFIGURE="
     ./configure --prefix=$LIBGCRYPT_BASE
     "
@@ -5151,6 +5465,11 @@ compile_ImageMagick()
     is_installed ImageMagick "$IMAGEMAGICK_BASE"
     if [ "$?" = "0" ];then
         return;
+    fi
+
+    wget_lib_ImageMagick
+    if [ "$wget_fail" = "1" ];then
+        exit 1;
     fi
 
     IMAGEMAGICK_CONFIGURE="
@@ -5272,6 +5591,11 @@ compile_python()
     compile_zlib
     compile_readline
 
+    wget_lib_python
+    if [ "$wget_fail" = "1" ];then
+        exit 1;
+    fi
+
     is_installed python "$PYTHON_BASE"
     if [ "$?" = "0" ];then
         return;
@@ -5324,6 +5648,11 @@ compile_php()
     if [ "$?" = "0" ];then
         PHP_EXTENSION_DIR="$( find $PHP_LIB_DIR -name "no-debug-*" )"
         return;
+    fi
+
+    wget_lib_php
+    if [ "$wget_fail" = "1" ];then
+        exit 1;
     fi
 
     PHP_CONFIGURE="
@@ -5534,6 +5863,11 @@ compile_php_extension_phalcon()
     is_installed_php_extension phalcon $PHALCON_VERSION
     if [ "$?" = "0" ];then
         return;
+    fi
+
+    wget_lib_phalcon
+    if [ "$wget_fail" = "1" ];then
+        exit 1;
     fi
 
     #PHP_VERSION=`$PHP_BASE/bin/php-config --version`
@@ -6287,6 +6621,11 @@ compile_mysql()
         return;
     fi
 
+    wget_lib_mysql
+    if [ "$wget_fail" = "1" ];then
+        exit 1;
+    fi
+
     echo_build_start mysql
 
     decompress $MYSQL_FILE_NAME
@@ -6768,6 +7107,11 @@ compile_zendFramework()
 # {{{ compile_yii2()
 compile_yii2()
 {
+    wget_lib_yii2
+    if [ "$wget_fail" = "1" ];then
+        exit 1;
+    fi
+
     echo_build_start yii2
     decompress $YII2_FILE_NAME
     mkdir -p $YII2_BASE
@@ -6791,14 +7135,19 @@ compile_smarty()
     /bin/rm -rf smarty-$SMARTY_VERSION
 }
 # }}}
-# {{{ compile_yii2_smarty()
+# {{{ compile_yii1_smarty()
 compile_yii2_smarty()
 {
+    wget_lib_yii2_smarty
+    if [ "$wget_fail" = "1" ];then
+        exit 1;
+    fi
+
     echo_build_start yii2-smarty
     decompress $YII2_SMARTY_FILE_NAME
     mkdir -p $YII2_SMARTY_BASE
     cp -r yii2-smarty-$YII2_SMARTY_VERSION/src/* $YII2_SMARTY_BASE/
-    /bin/rm -rf yii2-smarty-$SMARTY_VERSION
+    /bin/rm -rf yii2-smarty-$YII2_SMARTY_VERSION
 }
 # }}}
 # {{{ compile_parseapp()
@@ -6965,6 +7314,8 @@ compile_famous_angular()
     cp famous-angular-${FAMOUS_ANGULAR_VERSION}/dist/famous-angular.min.js $FAMOUS_BASE/
     cp famous-angular-${FAMOUS_ANGULAR_VERSION}/dist/famous-angular.min.css $CSS_BASE/
 
+    rm -rf famous-angular-${FAMOUS_ANGULAR_VERSION}
+
 }
 # }}}
 # {{{ configure command functions
@@ -7084,7 +7435,6 @@ configure_xapian_omega_command()
         XAPIAN_BASE=$XAPIAN_CORE_BASE
     fi
 
-    #PKG_CONFIG="$PKGCONFIG_BASE/bin/pkg-config" \
     #mac     brew install libmagic
     XAPIAN_CONFIG="$XAPIAN_BASE/bin/xapian-config" \
     PCRE_CONFIG="$PCRE_BASE/bin/pcre-config" \
@@ -7768,6 +8118,11 @@ compile_phantomjs()
         return;
     fi
 
+    wget_lib_phantomjs
+    if [ "$wget_fail" = "1" ];then
+        exit 1;
+    fi
+
     echo_build_start phantomjs
 
     local phantomjs_dir=${PHANTOMJS_FILE_NAME%.*}
@@ -7793,6 +8148,11 @@ compile_nodejs()
     is_installed nodejs ${NODEJS_BASE}
     if [ "$?" = "0" ];then
         return;
+    fi
+
+    wget_lib_nodejs
+    if [ "$wget_fail" = "1" ];then
+        exit 1;
     fi
 
     echo_build_start nodejs
@@ -7823,11 +8183,16 @@ compile_calibre()
         return;
     fi
 
+    wget_lib_calibre
+    if [ "$wget_fail" = "1" ];then
+        exit 1;
+    fi
+
     echo_build_start calibre
 
     mkdir -p ${CALIBRE_BASE} && \
-      rm -rf  ${CALIBRE_BASE}/* && \
-      decompress $CALIBRE_FILE_NAME $CALIBRE_BASE
+    rm -rf  ${CALIBRE_BASE}/* && \
+    decompress $CALIBRE_FILE_NAME $CALIBRE_BASE
 
     if [ "$?" != "0" ]; then
         echo "安装calibre失败" >&2
@@ -7917,7 +8282,7 @@ compile_gitbook()
 compile_gitbook_pdf()
 {
     compile_nodejs
-    compile_phantomjs
+    #compile_phantomjs
     compile_gitbook_cli
 
     is_installed gitbook_pdf ${GITBOOK_BASE}
@@ -8151,7 +8516,7 @@ check_soft_updates()
             geoip2_php
             geoipupdate
             electron
-            phantomjs
+            #phantomjs
             laravel
             yii2
             laravel_framework
@@ -9882,6 +10247,97 @@ check_http_version()
 }
 # }}}
 #}}}
+# {{{ check_system_lib_exists()
+check_system_lib_exists()
+{
+    local soft=$1
+    local func_name="check_system_${1}_exists";
+
+    function_exists "$func_name";
+
+    if [ "$?" = "0" ];then
+        $func_name
+        return $?;
+    fi
+
+    check_system_common_exists $soft ${2}
+
+    return $?
+}
+# }}}
+# {{{ check_system_common_exists()
+check_system_common_exists()
+{
+    local soft=$1
+    local LIB_BASE_DIR_NAME="${2}";
+    local PC_NAME="$3"
+
+    if [ "${LIB_BASE_DIR_NAME}" = "" ];then
+        LIB_BASE_DIR_NAME="`echo $soft|tr [a-z] [A-Z]`_BASE"
+    fi
+
+    if [ "$PC_NAME" = "" ];then
+        PC_NAME=$soft
+    fi
+
+    local prefix=`pkg-config --variable=prefix $PC_NAME`;
+    local flag="$?"
+
+    if [ "$flag" != "0" ];then
+        return $flag;
+    fi
+
+    if [ "$prefix" = "" -o ! -d "$prefix" ];then
+        return 1;
+    fi
+
+    #local COMMAND="$LIB_BASE_DIR_NAME=\"$prefix\""
+    #${!COMMAND}
+
+    eval $LIB_BASE_DIR_NAME="$prefix"
+}
+# }}}
+# {{{ check_system_icu_exists()
+check_system_icu_exists()
+{
+    check_system_common_exists icu ICU_BASE "icu-uc"
+
+    return $?
+}
+# }}}
+# {{{ check_system_boost_exists()
+check_system_boost_exists()
+{
+    local tmp_arr=( "/usr/lib64" "/usr/lib" "/usr/local/lib" );
+    local i="";
+    local num="";
+    local tmp_dir=""
+    local prefix=""
+    for i in ${tmp_arr[@]}; do
+    {
+        if [ -d "$i" ];then
+            num=`find $i -name "libboost_program_options.so*" |wc -l`;
+            if [ "$num" -qt "0" ];then
+                tmp_dir=${i%lib*};
+                if [ -f "$tmp_dir/include/boost/version.hpp" ];then
+                    prefix=$tmp_dir;
+                    break;
+                fi
+            fi
+        fi
+    }
+    done
+
+    if [ "$prefix" = "" -o ! -d "$prefix" ];then
+        return 1;
+    fi
+
+    #eval $LIB_BASE_DIR_NAME="$prefix"
+    BOOST_BASE="$prefix"
+
+    return $?
+}
+# }}}
 # {{{ version_compare() 11出错误 0 相同 1 前高于后 2 前低于后
 version_compare()
 {
@@ -10526,16 +10982,6 @@ init_setup()
 
 #./configure --prefix=/opt/vim810 --enable-luainterp=yes --enable-perlinterp=yes --enable-pythoninterp=yes --enable-rubyinterp=yes --enable-multibyte --enable-python3interp=yes
 #./configure --enable-gui=no --without-x
-
-#wget --no-check-certificate --content-disposition https://github.com/swig/swig/archive/rel-3.0.12.tar.gz
-#tar zxf swig-rel-3.0.12.tar.gz
-#cd swig-rel-3.0.12
-#./autogen.sh
-#./configure --prefix=$OPT_BASE/swig --with-php=$PHP_BASE/bin
-#make
-#make install
-#cd ..
-#rm -rf swig-rel-3.0.12
 
     icu
     boost

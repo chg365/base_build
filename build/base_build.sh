@@ -143,7 +143,7 @@ if [ `echo "$autoconf_version 2.63"|tr " " "\n"|sort -rV|head -1` = "2.63" ] ; t
 fi
 export LANG=en_US.utf8
 #export LC_ALL=en_US.utf8
- 
+
 echo `date "+%Y-%m-%d %H:%M:%S"` start
 start_time=`date +%s`
 
@@ -342,13 +342,16 @@ compile_xapian_bindings_php
 compile_libmaxminddb
 compile_php_extension_maxminddb
 compile_geoipupdate
-compile_php_extension_imap
+#compile_php_extension_imap
 install_dehydrated
 cp_GeoLite2_data
 #install_web_service_common_php #无用
 install_geoip2_php
 #compile_gitbook_cli
+
+# ebook
 compile_calibre
+
 compile_smarty
 compile_yii2
 compile_yii2_smarty
@@ -414,7 +417,7 @@ exit;
 #/bin/rm -rf "SWFUpload v$SWFUPLOAD_VERSION Core"
 
 ################################################################################
-# Install drupal 
+# Install drupal
 ################################################################################
 #wget --no-check-certificate --content-disposition https://github.com/laravel/laravel/archive/master.zip
 #wget http://ftp.drupal.org/files/projects/drupal-7.38.tar.gz
@@ -440,7 +443,7 @@ exit;
 #tar zxf XQuartz-2.7.9.tar.gz
 #cd xorg-server-XQuartz-2.7.9/
 #./autogen.sh
-#./configure 
+#./configure
 
 
 #wget http://download.savannah.gnu.org/releases/acl/acl-2.2.52.src.tar.gz
@@ -644,17 +647,7 @@ https://github.com/pangudashu/php7-internal
 https://github.com/php-opencv/php-opencv-examples
 https://github.com/nagadomi/waifu2x
 
-
-tar zxf swig-rel-3.0.12.tar.gz
-cd swig-rel-3.0.12
-./autogen.sh
-./configure --prefix=/root/swig --with-pcre-prefix=/usr/local/chg/base/contrib --with-php=/usr/local/chg/base/opt/php/bin/php --with-python3=/usr/local/chg/base/opt/python/bin/python3.6
-make
-make install
-
-
 $PYTHON_BASE/bin/pip3 install --user numpy scipy matplotlib ipython jupyter pandas sympy nose
-
 
 # remove color codes
 # sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g"
