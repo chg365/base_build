@@ -459,6 +459,10 @@ wget_lib_glib()
 # wget_lib_util_linux() {{{
 wget_lib_util_linux()
 {
+    local version=${UTIL_LINUX_VERSION%.*};
+    if [ "${version%.*}" = "${version}" ] ;then
+        local version=${UTIL_LINUX_VERSION}
+    fi
     wget_lib $UTIL_LINUX_FILE_NAME "https://www.kernel.org/pub/linux/utils/util-linux/v${version}/${UTIL_LINUX_FILE_NAME}"
 }
 # }}}
@@ -742,11 +746,6 @@ wget_base_library()
     #wget_lib $LIBFFI_FILE_NAME        "https://github.com/libffi/libffi/archive/v${LIBFFI_FILE_NAME##*-}"
     wget_lib $LIBFFI_FILE_NAME        "ftp://sourceware.org/pub/libffi/${LIBFFI_FILE_NAME}"
     wget_lib $PIXMAN_FILE_NAME        "https://cairographics.org/releases/$PIXMAN_FILE_NAME"
-
-    local version=${UTIL_LINUX_VERSION%.*};
-    if [ "${version%.*}" = "${version}" ] ;then
-        local version=${UTIL_LINUX_VERSION}
-    fi
 
     wget_lib $NASM_FILE_NAME          "https://www.nasm.us/pub/nasm/releasebuilds/$NASM_VERSION/$NASM_FILE_NAME"
     wget_lib $JPEG_FILE_NAME          "https://www.ijg.org/files/$JPEG_FILE_NAME"
@@ -1694,7 +1693,7 @@ is_installed_zlib()
 # {{{ is_installed_libzip()
 is_installed_libzip()
 {
-    local FILENAME="$LIBZIP_BASE/lib/pkgconfig/libzip.pc"
+    local FILENAME=`find $LIBZIP_BASE/{lib,lib64}/pkgconfig/ -name libzip.pc`
     if [ ! -f "$FILENAME" ];then
         return 1;
     fi
@@ -2986,6 +2985,8 @@ compile_fann()
 # {{{ compile_xapian_core()
 compile_xapian_core()
 {
+    compile_zlib
+
     is_installed xapian_core "$XAPIAN_CORE_BASE"
     if [ "$?" = "0" ];then
         return;
@@ -3005,6 +3006,7 @@ compile_xapian_core()
 # {{{ compile_xapian_omega()
 compile_xapian_omega()
 {
+    compile_zlib
     compile_libiconv
     compile_pcre
     if [ "$XAPIAN_CORE_SCWS_VERSION" = "$XAPIAN_OMEGA_VERSION" ]; then
@@ -3080,6 +3082,7 @@ compile_scws()
 # {{{ compile_xapian_core_scws()
 compile_xapian_core_scws()
 {
+    compile_zlib
     compile_scws
 
     is_installed xapian_core_scws "$XAPIAN_CORE_SCWS_BASE"
@@ -3759,6 +3762,13 @@ compile_readline()
         return;
     fi
 
+    if [ "$TRY_TO_USE_THE_SYSTEM" = "1" ];then
+        check_system_lib_exists readline
+        if [ "$?" = "0" ];then
+            return;
+        fi
+    fi
+
     wget_lib_readline
     if [ "$wget_fail" = "1" ];then
         exit 1;
@@ -4353,6 +4363,13 @@ compile_nghttp2()
 # {{{ compile_freetype()
 compile_freetype()
 {
+    if [ "$TRY_TO_USE_THE_SYSTEM" = "1" ];then
+        check_system_lib_exists freetype FREETYPE_BASE freetype2
+        if [ "$?" = "0" ];then
+            return;
+        fi
+    fi
+
     # 强制安装时，传一个参数，不安装harfbuzz,
     local is_force="$1"
     if [ "$is_force" = "" ]; then
@@ -4381,6 +4398,13 @@ compile_freetype()
 # {{{ compile_harfbuzz()
 compile_harfbuzz()
 {
+    if [ "$TRY_TO_USE_THE_SYSTEM" = "1" ];then
+        check_system_lib_exists harfbuzz HARFBUZZ_BASE
+        if [ "$?" = "0" ];then
+            return;
+        fi
+    fi
+
     [ "$OS_NAME" != "darwin" ] && compile_glib
     compile_icu
 
@@ -4433,7 +4457,7 @@ compile_glib()
     #ftp://oss.sgi.com/projects/fam/download/stable/fam-2.7.0.tar.gz
 
     if [ "$OS_NAME" != "darwin" ]; then
-        compile_util_linux
+        : #compile_util_linux
     fi
 
     is_installed glib "$GLIB_BASE"
@@ -4552,6 +4576,13 @@ compile_xcb_proto()
         return;
     fi
 
+    if [ "$TRY_TO_USE_THE_SYSTEM" = "1" ];then
+        check_system_lib_exists xcb_proto XCB_PROTO_BASE "xcb-proto"
+        if [ "$?" = "0" ];then
+            return;
+        fi
+    fi
+
     XCB_PROTO_CONFIGURE="
     ./configure --prefix=$XCB_PROTO_BASE
     "
@@ -4597,6 +4628,13 @@ compile_libxcb()
     is_installed libxcb "$LIBXCB_BASE"
     if [ "$?" = "0" ];then
         return;
+    fi
+
+    if [ "$TRY_TO_USE_THE_SYSTEM" = "1" ];then
+        check_system_lib_exists libxcb LIBXCB_BASE "xcb"
+        if [ "$?" = "0" ];then
+            return;
+        fi
     fi
 
     LIBXCB_CONFIGURE="
@@ -4700,6 +4738,13 @@ compile_libX11()
         return;
     fi
 
+    if [ "$TRY_TO_USE_THE_SYSTEM" = "1" ];then
+        check_system_lib_exists libX11 LIBX11_BASE x11
+        if [ "$?" = "0" ];then
+            return;
+        fi
+    fi
+
     wget_lib_libX11
     if [ "$wget_fail" = "1" ];then
         exit 1;
@@ -4789,6 +4834,13 @@ compile_gmp()
     is_installed gmp "$GMP_BASE"
     if [ "$?" = "0" ];then
         return;
+    fi
+
+    if [ "$TRY_TO_USE_THE_SYSTEM" = "1" ];then
+        check_system_lib_exists gmp GMP_BASE
+        if [ "$?" = "0" ];then
+            return;
+        fi
     fi
 
     GMP_CONFIGURE="
@@ -4985,6 +5037,13 @@ compile_libmemcached()
         return;
     fi
 
+    if [ "$TRY_TO_USE_THE_SYSTEM" = "1" ];then
+        check_system_lib_exists libmemcached LIBMEMCACHED_BASE
+        if [ "$?" = "0" ];then
+            return;
+        fi
+    fi
+
     # yum install cyrus-sasl-devel
     #gcc (GCC) 4.4.6 时没有问题
     #CC="gcc44" CXX="g++44"  \
@@ -5042,7 +5101,7 @@ compile_postgresql()
         compile_libuuid
     fi
     compile_zlib
-    compile_readline
+    #compile_readline
     compile_libxml2
     compile_libxslt
     compile_openssl
@@ -7338,6 +7397,8 @@ configure_xapian_core_scws_command()
     # 不改，使用不上字典
     sed -i.bak "s#SCWS_ETCDIR=\"\{0,1\}\$SCWS_DIR/etc\"\{0,1\}#SCWS_ETCDIR=$(sed_quote2 $SCWS_CONFIG_DIR)#" configure
 
+    CPPFLAGS="$(get_cppflags $ZLIB_BASE/include)" \
+    LDFLAGS="$(get_ldflags $ZLIB_BASE/lib)" \
     ./configure --prefix=$XAPIAN_CORE_SCWS_BASE \
                 --with-scws=$SCWS_BASE
 }
@@ -7436,6 +7497,8 @@ configure_xapian_omega_command()
     fi
 
     #mac     brew install libmagic
+    CPPFLAGS="$(get_cppflags $ZLIB_BASE/include)" \
+    LDFLAGS="$(get_ldflags $ZLIB_BASE/lib)" \
     XAPIAN_CONFIG="$XAPIAN_BASE/bin/xapian-config" \
     PCRE_CONFIG="$PCRE_BASE/bin/pcre-config" \
     ./configure --prefix=$XAPIAN_OMEGA_BASE \
@@ -7629,6 +7692,7 @@ configure_php_command()
     echo $PCRE_BASE
 
     # EXTRA_LIBS="-lresolv" \
+    CURL_FEATURES=$CURL_BASE \
     ./configure --prefix=$PHP_BASE \
                 --sysconfdir=$PHP_FPM_CONFIG_DIR \
                 --with-config-file-path=$PHP_CONFIG_DIR \
@@ -7765,9 +7829,9 @@ configure_icu_command()
 # {{{ configure_postgresql_command()
 configure_postgresql_command()
 {
-    CFLAGS="$(get_cppflags $ZLIB_BASE/include $OPENSSL_BASE/include $LIBXML2_BASE/include $LIBXSLT_BASE/include $READLINE_BASE/include $GETTEXT_BASE/include)" \
-    CPPFLAGS="$(get_cppflags $ZLIB_BASE/include $OPENSSL_BASE/include $LIBXML2_BASE/include $LIBXSLT_BASE/include $READLINE_BASE/include $GETTEXT_BASE/include)" \
-    LDFLAGS="$(get_ldflags $ZLIB_BASE/lib $OPENSSL_BASE/lib $LIBXML2_BASE/lib $LIBXSLT_BASE/lib $READLINE_BASE/lib $GETTEXT_BASE/lib)" \
+    CFLAGS="$(get_cppflags $ZLIB_BASE/include $OPENSSL_BASE/include $LIBXML2_BASE/include $LIBXSLT_BASE/include $GETTEXT_BASE/include)" \
+    CPPFLAGS="$(get_cppflags $ZLIB_BASE/include $OPENSSL_BASE/include $LIBXML2_BASE/include $LIBXSLT_BASE/include $GETTEXT_BASE/include)" \
+    LDFLAGS="$(get_ldflags $ZLIB_BASE/lib $OPENSSL_BASE/lib $LIBXML2_BASE/lib $LIBXSLT_BASE/lib $GETTEXT_BASE/lib)" \
     ./configure --prefix=$POSTGRESQL_BASE \
                 --with-libxml \
                 --with-libxslt \
@@ -7889,6 +7953,8 @@ configure_libmemcached_command()
     #
     #yum  install  gcc*
     #CC="gcc44" CXX="g++44"
+
+    sed -i.bak 's/if (opt_servers == false)/if (opt_servers == NULL)/g' clients/memflush.cc
 
     if [ "$OS_NAME" = 'darwin' ];then
         # 1.0.18编译不过去时的处理
@@ -10260,7 +10326,7 @@ check_system_lib_exists()
         return $?;
     fi
 
-    check_system_common_exists $soft ${2}
+    check_system_common_exists $soft $2 $3
 
     return $?
 }
@@ -10270,7 +10336,7 @@ check_system_common_exists()
 {
     local soft=$1
     local LIB_BASE_DIR_NAME="${2}";
-    local PC_NAME="$3"
+    local PC_NAME="${3}"
 
     if [ "${LIB_BASE_DIR_NAME}" = "" ];then
         LIB_BASE_DIR_NAME="`echo $soft|tr [a-z] [A-Z]`_BASE"
@@ -10317,7 +10383,7 @@ check_system_boost_exists()
     {
         if [ -d "$i" ];then
             num=`find $i -name "libboost_program_options.so*" |wc -l`;
-            if [ "$num" -qt "0" ];then
+            if [ "$num" -gt "0" ];then
                 tmp_dir=${i%lib*};
                 if [ -f "$tmp_dir/include/boost/version.hpp" ];then
                     prefix=$tmp_dir;
@@ -10334,6 +10400,70 @@ check_system_boost_exists()
 
     #eval $LIB_BASE_DIR_NAME="$prefix"
     BOOST_BASE="$prefix"
+
+    return $?
+}
+# }}}
+# {{{ check_system_readline_exists()
+check_system_readline_exists()
+{
+    local tmp_arr=( "/usr/lib64" "/usr/lib" "/usr/local/lib" );
+    local i="";
+    local num="";
+    local tmp_dir=""
+    local prefix=""
+    for i in ${tmp_arr[@]}; do
+    {
+        if [ -d "$i" ];then
+            num=`find $i -name "libreadline.so*" |wc -l`;
+            if [ "$num" -gt "0" ];then
+                tmp_dir=${i%lib*};
+                if [ -f "$tmp_dir/include/readline/readline.h" ];then
+                    prefix=$tmp_dir;
+                    break;
+                fi
+            fi
+        fi
+    }
+    done
+
+    if [ "$prefix" = "" -o ! -d "$prefix" ];then
+        return 1;
+    fi
+
+    READLINE_BASE="$prefix"
+
+    return $?
+}
+# }}}
+# {{{ check_system_readline_exists()
+check_system_readline_exists()
+{
+    local tmp_arr=( "/usr/lib64" "/usr/lib" "/usr/local/lib" );
+    local i="";
+    local num="";
+    local tmp_dir=""
+    local prefix=""
+    for i in ${tmp_arr[@]}; do
+    {
+        if [ -d "$i" ];then
+            num=`find $i -name "libgmp.so*" |wc -l`;
+            if [ "$num" -gt "0" ];then
+                tmp_dir=${i%lib*};
+                if [ -f "$tmp_dir/include/gmp.h" ];then
+                    prefix=$tmp_dir;
+                    break;
+                fi
+            fi
+        fi
+    }
+    done
+
+    if [ "$prefix" = "" -o ! -d "$prefix" ];then
+        return 1;
+    fi
+
+    READLINE_BASE="$prefix"
 
     return $?
 }
@@ -10983,6 +11113,7 @@ init_setup()
 #./configure --prefix=/opt/vim810 --enable-luainterp=yes --enable-perlinterp=yes --enable-pythoninterp=yes --enable-rubyinterp=yes --enable-multibyte --enable-python3interp=yes
 #./configure --enable-gui=no --without-x
 
-    icu
-    boost
-    harfbuzz
+
+# configure: WARNING: unrecognized options: --with-pcre-regex, --with-pcre-dir, --enable-zip, --with-libzip, --with-libxml-dir, --with-libexpat-dir, --with-gd, --with-freetype-dir, --with-webp-dir, --with-jpeg-dir, --with-png-dir, --with-xpm-dir
+
+
