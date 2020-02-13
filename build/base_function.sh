@@ -5613,6 +5613,7 @@ compile_libunwind()
 # {{{ compile_rabbitmq_c()
 compile_rabbitmq_c()
 {
+    compile_openssl
     is_installed rabbitmq_c "$RABBITMQ_C_BASE"
     if [ "$?" = "0" ];then
         return;
@@ -5629,11 +5630,17 @@ compile_rabbitmq_c()
 
     RABBITMQ_C_CONFIGURE="
     cmake -DCMAKE_INSTALL_PREFIX=$RABBITMQ_C_BASE \
-          -DCMAKE_INSTALL_LIBDIR=$RABBITMQ_C_BASE/lib \
           -DBUILD_TOOLS=OFF
     "
 
     compile "rabbitmq-c" "$RABBITMQ_C_FILE_NAME" "rabbitmq-c-${RABBITMQ_C_VERSION}" "$RABBITMQ_C_BASE" "RABBITMQ_C_CONFIGURE"
+
+    if [ "$OS_NAME" = "linux" ]; then
+        for i in `find $RABBITMQ_C_BASE/ -name "librabbitmq.so*" -type f`;
+        do
+            repair_elf_file_rpath $i;
+        done
+    fi
 }
 # }}}
 # {{{ compile_python()
@@ -8127,9 +8134,11 @@ configure_php_amqp_command()
         tmp_str="64"
     fi
 
-    CPPFLAGS="$(get_cppflags $RABBITMQ_C_BASE/include)" \
-    LDFLAGS="$(get_ldflags $RABBITMQ_C_BASE/lib${tmp_str})" \
-    ./configure --with-php-config=$PHP_BASE/bin/php-config --with-amqp \
+    #CPPFLAGS="$(get_cppflags $RABBITMQ_C_BASE/include)" \
+    #LDFLAGS="$(get_ldflags $RABBITMQ_C_BASE/lib${tmp_str})" \
+    ./configure --with-php-config=$PHP_BASE/bin/php-config \
+                --with-amqp \
+                --with-libdir=lib${tmp_str} \
                 --with-librabbitmq-dir=$RABBITMQ_C_BASE
 }
 # }}}

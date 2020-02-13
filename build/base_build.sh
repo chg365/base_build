@@ -145,14 +145,16 @@ fi
 # 下载开源软件新版本
 wget_base_library
 
-#compile_python
-compile_xunsearch
-#compile_xapian_core
-compile_xapian_omega
 if [ "$OS_NAME" != 'darwin' ];then
     # mac下 这个软件不能用
     compile_patchelf
 fi
+# make[1]: *** [pybuilddir.txt] Error 1
+#export LANG=zh_CN.utf8
+#compile_python
+compile_xunsearch
+#compile_xapian_core
+compile_xapian_omega
 compile_nodejs
 compile_openssl
 #compile_ImageMagick
