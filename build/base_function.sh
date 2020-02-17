@@ -7659,12 +7659,12 @@ configure_python_command()
     CPPFLAGS="$(get_cppflags $ZLIB_BASE/include $OPENSSL_BASE/include $READLINE_BASE/include)" \
     LDFLAGS="$(get_ldflags $ZLIB_BASE/lib $OPENSSL_BASE/lib $READLINE_BASE/lib)" \
     ./configure --prefix=$PYTHON_BASE \
-                --enable-optimizations \
                 --enable-ipv6 \
                 --with-system-expat \
                 --with-system-ffi \
                 --enable-loadable-sqlite-extensions \
                 --with-openssl=$OPENSSL_BASE \
+                #--enable-optimizations \
 
                 #--sysconfdir=$BASE_DIR/etc/python
 }
